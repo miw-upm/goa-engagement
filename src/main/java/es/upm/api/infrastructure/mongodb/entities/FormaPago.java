@@ -11,11 +11,11 @@ import org.springframework.beans.BeanUtils;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class FormaPagoEntity {
+public class FormaPago {
     private String descripcion;
     private Integer porcentaje;
 
-    public FormaPagoEntity(FormaPagos formaPagos) {
+    public FormaPago(FormaPagos formaPagos) {
         BeanUtils.copyProperties(formaPagos, this);
     }
 

@@ -27,12 +27,12 @@ public class HojaEncargoEntity {
     @Singular
     private List<UUID> adjuntoIds;
     @Singular
-    @DBRef
-    private List<DocumentoAceptacionEntity> documentoAceptacionEntities;
+    private List<DocumentoAceptacion> documentosAceptacions;
+    @Singular
+    private List<FormaPago> formaPagos;
     @Singular
     @DBRef
-    private List<FormaPagoEntity> formaPagoEntities;
-    private List<ProcedimientoLegalEntity> procedimientoLegalEntities;
+    private List<ProcedimientoLegalEntity> procedimientoLegales;
 
     public HojaEncargoEntity(HojaEncargo hojaEncargo) {
         BeanUtils.copyProperties(hojaEncargo, this);
@@ -50,15 +50,15 @@ public class HojaEncargoEntity {
                     .toList());
         }
 
-        if (this.documentoAceptacionEntities != null) {
-            hojaEncargo.setDocumentosAceptacion(this.documentoAceptacionEntities.stream()
-                    .map(DocumentoAceptacionEntity::toDocumentoAceptacion)
+        if (this.documentosAceptacions != null) {
+            hojaEncargo.setDocumentosAceptacion(this.documentosAceptacions.stream()
+                    .map(DocumentoAceptacion::toDocumentoAceptacion)
                     .toList());
         }
-        hojaEncargo.setFormasPagos(this.formaPagoEntities.stream()
-                .map(FormaPagoEntity::toFormaPago)
+        hojaEncargo.setFormasPagos(this.formaPagos.stream()
+                .map(FormaPago::toFormaPago)
                 .toList());
-        hojaEncargo.setProcedimientosLegales(this.procedimientoLegalEntities.stream()
+        hojaEncargo.setProcedimientosLegales(this.procedimientoLegales.stream()
                 .map(ProcedimientoLegalEntity::toProcedimientoLegal)
                 .toList());
         return hojaEncargo;

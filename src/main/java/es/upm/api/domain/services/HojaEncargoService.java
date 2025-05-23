@@ -26,8 +26,9 @@ public class HojaEncargoService {
         hojaEncargo.setPropietario(
                 this.userWebClient.readUserById(hojaEncargo.getPropietario().getId())
         );
-        hojaEncargo.getAdjuntos().replaceAll(usuario ->
-                this.userWebClient.readUserById(usuario.getId())
+        hojaEncargo.setAdjuntos(hojaEncargo.getAdjuntos().stream()
+                .map(userDto -> this.userWebClient.readUserById(userDto.getId()))
+                .toList()
         );
         return hojaEncargo;
     }

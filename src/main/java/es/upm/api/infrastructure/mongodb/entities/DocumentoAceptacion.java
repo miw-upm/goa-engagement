@@ -1,6 +1,5 @@
 package es.upm.api.infrastructure.mongodb.entities;
 
-import es.upm.api.domain.model.DocumentoAceptacion;
 import es.upm.api.domain.model.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,20 +14,20 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DocumentoAceptacionEntity {
+public class DocumentoAceptacion {
     private LocalDateTime fechaHorafirma;
     private String justificante;
     private UUID userId;
 
-    public DocumentoAceptacionEntity(DocumentoAceptacion aceptacion) {
+    public DocumentoAceptacion(es.upm.api.domain.model.DocumentoAceptacion aceptacion) {
         BeanUtils.copyProperties(aceptacion, this);
         if (aceptacion.getFirmante() != null) {
             this.userId = aceptacion.getFirmante().getId();
         }
     }
 
-    public DocumentoAceptacion toDocumentoAceptacion() {
-        DocumentoAceptacion aceptacion = new DocumentoAceptacion();
+    public es.upm.api.domain.model.DocumentoAceptacion toDocumentoAceptacion() {
+        es.upm.api.domain.model.DocumentoAceptacion aceptacion = new es.upm.api.domain.model.DocumentoAceptacion();
         BeanUtils.copyProperties(this, aceptacion);
         aceptacion.setFirmante(UserDto.builder().id(this.userId).build());
         return aceptacion;

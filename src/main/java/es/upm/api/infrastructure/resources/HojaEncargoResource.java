@@ -16,7 +16,7 @@ import java.util.UUID;
 @RequestMapping(HojaEncargoResource.HOJAS_ENCARGO)
 public class HojaEncargoResource {
     public static final String HOJAS_ENCARGO = "/hojas-encargo";
-    public static final String ID = "/{id}";
+    public static final String ID_ID = "/{id}";
 
     private final HojaEncargoService hojaEncargoService;
 
@@ -26,7 +26,7 @@ public class HojaEncargoResource {
     }
 
     @PreAuthorize(Security.ALL)
-    @GetMapping(ID)
+    @GetMapping(ID_ID)
     public HojaEncargo read(@PathVariable UUID id) {
         return this.hojaEncargoService.readById(id);
     }
