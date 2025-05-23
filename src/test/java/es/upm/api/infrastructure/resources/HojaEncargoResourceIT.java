@@ -21,10 +21,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-public class HojaEncargoResourceIT {
+class HojaEncargoResourceIT {
 
     @Autowired
     HojaEncargoResource providerResource;
+
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
@@ -38,5 +39,6 @@ public class HojaEncargoResourceIT {
                         UserDto.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
         mockMvc.perform(get(HojaEncargoResource.HOJAS_ENCARGO + HojaEncargoResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                 .andExpect(status().isOk());
+
     }
 }

@@ -10,7 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,7 +39,5 @@ class HojaEncargoServiceIT {
                     assertThat(retrieveEncargo.getPropietario().getMobile()).isEqualTo("666000666");
                     assertThat(retrieveEncargo.getDescuento()).isEqualTo(20);
                 });
-
-        System.out.println( hojaEncargoService.readById(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001")));
     }
 }

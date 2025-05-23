@@ -42,37 +42,37 @@ public class DatabaseSeederDev {
         log.warn("------- Initial Load from JAVA ---------------------------------------------------------------");
         TareaLegalEntity[] tareas = {
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
-                        .titulo("Estudio de antecedentes y documentación.").build(),
+                        .titulo("Estudio de antecedentes y documentación").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
-                        .titulo("Asesoramiento jurídico.").build(),
+                        .titulo("Asesoramiento jurídico").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
-                        .titulo("Localización de personas.").build(),
+                        .titulo("Localización de personas").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
-                        .titulo("Negociación de la aceptación o renuncia con contrario.").build(),
+                        .titulo("Negociación de la aceptación o renuncia con contrario").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0004"))
-                        .titulo("Tramitación notarial de la herencia.").build(),
+                        .titulo("Tramitación notarial de la herencia").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0005"))
-                        .titulo("Liquidación del Impuesto de Sucesiones y Plusvalía Mortis causa.").build(),
+                        .titulo("Liquidación del Impuesto de Sucesiones y Plusvalía Mortis causa").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0006"))
-                        .titulo("Redacción del cuaderno particional de la herencia ante el notario correspondiente.").build(),
+                        .titulo("Redacción del cuaderno particional de la herencia ante el notario correspondiente").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0007"))
-                        .titulo("Liquidación de Impuesto de Sucesiones (prescrito).").build(),
+                        .titulo("Liquidación de Impuesto de Sucesiones (prescrito)").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0008"))
-                        .titulo("Averiguación de los posibles pasivos (deuda) existente.").build(),
+                        .titulo("Averiguación de los posibles pasivos (deuda) existente").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0009"))
                         .titulo("Tramitación de los seguros.").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff000a"))
-                        .titulo("Estudio de antecedentes y documentación.").build(),
+                        .titulo("Estudio de antecedentes y documentación").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa1-bbbb-cccc-dddd-eeeeffff000b"))
-                        .titulo("Redacción de la escritura de herencia y tramitación con la notaría correspondiente.")
+                        .titulo("Redacción de la escritura de herencia y tramitación con la notaría correspondiente")
                         .build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa2-bbbb-cccc-dddd-eeeeffff000c"))
-                        .titulo("Asistencia letrada en la notaría.").build(),
+                        .titulo("Asistencia letrada en la notaría").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000d"))
-                        .titulo("Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad.")
+                        .titulo("Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad")
                         .build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000e"))
-                        .titulo("Tramitación de la venta de las viviendas de la herencia con la inmobiliaria.")
+                        .titulo("Tramitación de la venta de las viviendas de la herencia con la inmobiliaria")
                         .build()
         };
         this.tareaLegalRepository.saveAll(List.of(tareas));

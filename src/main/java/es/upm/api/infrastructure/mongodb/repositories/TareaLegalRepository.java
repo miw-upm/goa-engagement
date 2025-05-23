@@ -8,5 +8,7 @@ import java.util.UUID;
 
 public interface TareaLegalRepository extends MongoRepository<TareaLegalEntity, UUID> {
     Optional<TareaLegalEntity> findByTitulo(String titulo);
+
+    void deleteByTitulo(String titulo);
 }
 
