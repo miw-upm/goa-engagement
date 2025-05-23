@@ -5,10 +5,10 @@ import lombok.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -22,12 +22,11 @@ public class ProcedimientoLegalEntity {
     private UUID id;
     @Indexed(unique = true)
     private String titulo;
-    private Boolean finalizado;
+    private LocalDate fechaInicio;
+    private LocalDate fechaCierre;
     private BigDecimal presupuesto;
     private Boolean ivaIncluido;
-    @Singular
-    @DBRef
-    private List<TareaLegalEntity> tareaLegalEntities;
+    private List<String> tareasLegales;
 
     public ProcedimientoLegalEntity(ProcedimientoLegal procedimientoLegal) {
         BeanUtils.copyProperties(procedimientoLegal, this);
@@ -36,11 +35,6 @@ public class ProcedimientoLegalEntity {
     public ProcedimientoLegal toProcedimientoLegal() {
         ProcedimientoLegal procedimientoLegal = new ProcedimientoLegal();
         BeanUtils.copyProperties(this, procedimientoLegal);
-        procedimientoLegal.setTareas(
-                this.tareaLegalEntities.stream()
-                        .map(TareaLegalEntity::toTareaLegal)
-                        .toList()
-        );
         return procedimientoLegal;
     }
 }

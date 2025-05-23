@@ -25,7 +25,7 @@ public class HojaEncargo {
     private Integer descuento;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate fechaCreacion;
-    private Boolean abierta;
+    private LocalDate fechaCierre;
     @NotNull
     private UserDto propietario;
     private List<UserDto> adjuntos;

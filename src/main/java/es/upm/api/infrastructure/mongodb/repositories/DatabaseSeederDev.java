@@ -81,27 +81,29 @@ public class DatabaseSeederDev {
         ProcedimientoLegalEntity[] procedimientos = {
                 ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                         .titulo("Procedimiento de herencia.")
-                        .tareaLegalEntities(List.of(tareas[0], tareas[1], tareas[2], tareas[3], tareas[4], tareas[5], tareas[6]))
-                        .presupuesto(new BigDecimal("2500")).finalizado(false).ivaIncluido(false).build(),
+                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[2].getTitulo(),
+                                tareas[3].getTitulo(), tareas[4].getTitulo(), tareas[5].getTitulo(), tareas[6].getTitulo()))
+                        .presupuesto(new BigDecimal("2500")).fechaInicio(LocalDate.now().minusDays(2)).ivaIncluido(false).build(),
                 ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
                         .titulo("División de Herencia.")
-                        .tareaLegalEntities(List.of(tareas[0], tareas[1], tareas[7], tareas[8], tareas[9], tareas[10], tareas[11]))
-                        .presupuesto(new BigDecimal("3000")).finalizado(false).ivaIncluido(true).build(),
+                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[7].getTitulo(),
+                                tareas[8].getTitulo(), tareas[9].getTitulo(), tareas[10].getTitulo(), tareas[11].getTitulo()))
+                        .presupuesto(new BigDecimal("3000")).fechaInicio(LocalDate.now()).ivaIncluido(true).build(),
                 ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
                         .titulo("Herencia notarial.")
-                        .tareaLegalEntities(List.of(tareas[0], tareas[1], tareas[12], tareas[13]))
-                        .presupuesto(new BigDecimal("1000")).finalizado(false).ivaIncluido(false).build(),
+                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[12].getTitulo(), tareas[13].getTitulo()))
+                        .presupuesto(new BigDecimal("1000")).fechaInicio(LocalDate.now()).ivaIncluido(false).build(),
                 ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
                         .titulo("Procedimiento de ejecución hipotecaria.")
-                        .tareaLegalEntities(List.of(tareas[0], tareas[1], tareas[14]))
-                        .presupuesto(new BigDecimal("4000")).finalizado(false).ivaIncluido(false).build(),
+                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[14].getTitulo()))
+                        .presupuesto(new BigDecimal("4000")).fechaInicio(LocalDate.now()).ivaIncluido(false).build(),
         };
         this.procedimientoLegalRepository.saveAll(List.of(procedimientos));
         log.warn("        ------- procedimientos legales ------------------------------------------------------------");
 
         HojaEncargoEntity[] encargos = {
                 HojaEncargoEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
-                        .descuento(10).fechaCreacion(LocalDate.now()).abierta(true)
+                        .descuento(10).fechaCreacion(LocalDate.now().minusDays(5))
                         .formaPago(FormaPago.builder().descripcion("Provisión de fondos").porcentaje(40).build())
                         .formaPago(FormaPago.builder().descripcion("Finalizado el procedimiento").porcentaje(60).build())
                         .propietarioId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
@@ -110,7 +112,7 @@ public class DatabaseSeederDev {
                                 .fechaHorafirma(LocalDateTime.now()).justificante("link de justificante").build())
                         .procedimientoLegales(List.of(procedimientos[0])).build(),
                 HojaEncargoEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
-                        .descuento(20).fechaCreacion(LocalDate.now()).abierta(false)
+                        .descuento(20).fechaCreacion(LocalDate.now())
                         .formaPago(FormaPago.builder().descripcion("Provisión de fondos").porcentaje(40).build())
                         .formaPago(FormaPago.builder().descripcion("Finalizado el procedimiento").porcentaje(60).build())
                         .propietarioId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))

@@ -22,7 +22,7 @@ public class HojaEncargoEntity {
     private UUID id;
     private Integer descuento;
     private LocalDate fechaCreacion;
-    private Boolean abierta;
+    private LocalDate fechaCierre;
     private UUID propietarioId;
     @Singular
     private List<UUID> adjuntoIds;

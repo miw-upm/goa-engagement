@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,9 +22,10 @@ public class ProcedimientoLegal {
     @NotNull
     @NotBlank
     private String titulo;
-    private Boolean finalizado;
+    private LocalDate fechaInicio;
+    private LocalDate fechaCierre;
     private BigDecimal presupuesto;
     private Boolean ivaIncluido;
     @ListNotEmpty
-    private List<TareaLegal> tareas;
+    private List<String> tareasLegales;
 }
