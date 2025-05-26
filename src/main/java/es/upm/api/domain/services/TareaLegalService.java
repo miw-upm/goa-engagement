@@ -5,6 +5,7 @@ import es.upm.api.domain.persistence.TareaLegalPersistence;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
@@ -26,7 +27,11 @@ public class TareaLegalService {
         this.tareaLegalPersistence.create(tareaLegal);
     }
 
-    public void deleteByTitulo(String titulo) {
-        this.tareaLegalPersistence.deleteByTitulo(titulo);
+    public void deleteById(UUID id) {
+        this.tareaLegalPersistence.deleteById(id);
+    }
+
+    public void update(TareaLegal tareaLegal) {
+        this.tareaLegalPersistence.read(tareaLegal.getId());
     }
 }

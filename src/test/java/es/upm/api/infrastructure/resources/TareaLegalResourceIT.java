@@ -27,7 +27,7 @@ class TareaLegalResourceIT {
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
-        mockMvc.perform(get(TareaLegalResource.TAREAS_LEGALES))
+        mockMvc.perform(get(TareaLegalResource.TAREAS_LEGALES + TareaLegalResource.TITULOS))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tareasLegales", hasItem("Estudio de antecedentes y documentación")));
     }

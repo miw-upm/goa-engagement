@@ -8,12 +8,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+import java.util.stream.Stream;
+
 @RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
 @RequestMapping(TareaLegalResource.TAREAS_LEGALES)
 public class TareaLegalResource {
     public static final String TAREAS_LEGALES = "/tareas-legales";
-    public static final String TITULO_ID = "/{titulo}";
+    public static final String ID_ID = "/{id}";
+    public static final String TITULOS = "/titulos";
 
     private final TareaLegalService tareaLegalService;
 
@@ -21,9 +25,13 @@ public class TareaLegalResource {
     public TareaLegalResource(TareaLegalService tareaLegalService) {
         this.tareaLegalService = tareaLegalService;
     }
-
     @GetMapping
-    public TareasLegalesDto findAll() {
+    public Stream<TareaLegal> findAll() {
+        return this.tareaLegalService.findAll();
+    }
+
+    @GetMapping(TITULOS)
+    public TareasLegalesDto findTitles() {
         return new TareasLegalesDto(this.tareaLegalService.findAll()
                 .map(TareaLegal::getTitulo)
                 .toList());
@@ -34,9 +42,14 @@ public class TareaLegalResource {
         this.tareaLegalService.create(tareaLegal);
     }
 
-    @DeleteMapping(TITULO_ID)
-    public void deleteByTitulo(@PathVariable String titulo) {
-        this.tareaLegalService.deleteByTitulo(titulo);
+    @DeleteMapping(ID_ID)
+    public void deleteByID(@PathVariable UUID id) {
+        this.tareaLegalService.deleteById(id);
+    }
+
+    @PutMapping(ID_ID)
+    public void update(@PathVariable UUID id, @RequestBody TareaLegal tareaLegal) {
+        this.tareaLegalService.update(tareaLegal);
     }
 
 }

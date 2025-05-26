@@ -1,5 +1,6 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.TareaLegal;
 import es.upm.api.domain.persistence.TareaLegalPersistence;
 import es.upm.api.infrastructure.mongodb.entities.TareaLegalEntity;
@@ -7,6 +8,7 @@ import es.upm.api.infrastructure.mongodb.repositories.TareaLegalRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
@@ -32,7 +34,15 @@ public class TareaLegalPersistenceMongodb implements TareaLegalPersistence {
     }
 
     @Override
-    public void deleteByTitulo(String titulo) {
-        this.tareaLegalRepository.deleteByTitulo(titulo);
+    public void deleteById(UUID id) {
+        this.tareaLegalRepository.deleteById(id);
+    }
+
+    @Override
+    public TareaLegal read(UUID id) {
+        return this.tareaLegalRepository.findById(id)
+                .orElseThrow(()-> new NotFoundException("Tarea legal no encontrada, id:" + id))
+                .toTareaLegal();
+
     }
 }
