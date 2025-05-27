@@ -3,9 +3,3 @@ spring:
   data:
     mongodb:
       uri: mongodb://mongo:mongo@localhost:27017/goaencargo?authSource=admin
-
-springdoc:
-  swagger-ui:
-    oauth:
-      client-id: client-id
-      client-secret: client-secret
