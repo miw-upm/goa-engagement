@@ -3,7 +3,7 @@ package es.upm.api.infrastructure.resources;
 import es.upm.api.domain.model.TareaLegal;
 import es.upm.api.domain.services.TareaLegalService;
 import es.upm.api.infrastructure.resources.view.TareasLegalesDto;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +25,10 @@ public class TareaLegalResource {
     public TareaLegalResource(TareaLegalService tareaLegalService) {
         this.tareaLegalService = tareaLegalService;
     }
+
     @GetMapping
-    public Stream<TareaLegal> findAll() {
-        return this.tareaLegalService.findAll();
+    public Stream<TareaLegal> findNullSafe(@RequestParam(required = false) String titulo) {
+        return this.tareaLegalService.findNullSafe(titulo);
     }
 
     @GetMapping(TITULOS)
@@ -38,7 +39,7 @@ public class TareaLegalResource {
     }
 
     @PostMapping
-    public void create(@RequestBody TareaLegal tareaLegal) {
+    public void create(@Valid @RequestBody TareaLegal tareaLegal) {
         this.tareaLegalService.create(tareaLegal);
     }
 
@@ -49,7 +50,7 @@ public class TareaLegalResource {
 
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @RequestBody TareaLegal tareaLegal) {
-        this.tareaLegalService.update(tareaLegal);
+        this.tareaLegalService.update(id, tareaLegal);
     }
 
 }

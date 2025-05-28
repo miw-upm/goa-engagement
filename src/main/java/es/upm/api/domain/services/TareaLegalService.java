@@ -18,12 +18,8 @@ public class TareaLegalService {
         this.tareaLegalPersistence = tareaLegalPersistence;
     }
 
-
-    public Stream<TareaLegal> findAll() {
-        return this.tareaLegalPersistence.findAll();
-    }
-
     public void create(TareaLegal tareaLegal) {
+        tareaLegal.setId(UUID.randomUUID());
         this.tareaLegalPersistence.create(tareaLegal);
     }
 
@@ -31,7 +27,15 @@ public class TareaLegalService {
         this.tareaLegalPersistence.deleteById(id);
     }
 
-    public void update(TareaLegal tareaLegal) {
-        this.tareaLegalPersistence.read(tareaLegal.getId());
+    public void update(UUID id, TareaLegal tareaLegal) {
+        this.tareaLegalPersistence.update(id, tareaLegal);
+    }
+
+    public Stream<TareaLegal> findNullSafe(String titulo) {
+        return this.tareaLegalPersistence.findNullSafe(titulo);
+    }
+
+    public Stream<TareaLegal> findAll() {
+        return this.tareaLegalPersistence.findAll();
     }
 }

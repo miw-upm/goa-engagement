@@ -60,7 +60,7 @@ public class DatabaseSeederDev {
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0008"))
                         .titulo("Averiguación de los posibles pasivos (deuda) existente").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0009"))
-                        .titulo("Tramitación de los seguros.").build(),
+                        .titulo("Tramitación de los seguros").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff000a"))
                         .titulo("Estudio de antecedentes y documentación").build(),
                 TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa1-bbbb-cccc-dddd-eeeeffff000b"))

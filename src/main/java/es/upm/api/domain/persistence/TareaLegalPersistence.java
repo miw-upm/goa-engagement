@@ -8,11 +8,15 @@ import java.util.stream.Stream;
 
 @Repository
 public interface TareaLegalPersistence {
-    Stream<TareaLegal> findAll();
-
     void create(TareaLegal tareaLegal);
 
     void deleteById(UUID id);
 
     TareaLegal read(UUID id);
+
+    Stream<TareaLegal> findNullSafe(String titulo);
+
+    Stream<TareaLegal> findAll();
+
+    void update(UUID id, TareaLegal tareaLegal);
 }
