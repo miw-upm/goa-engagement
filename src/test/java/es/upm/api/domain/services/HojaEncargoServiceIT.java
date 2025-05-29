@@ -31,8 +31,7 @@ class HojaEncargoServiceIT {
                 .willAnswer(invocation ->
                         UserDto.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
 
-        HojaEncargo hojaEncargo = hojaEncargoService.readById(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"));
-        assertThat(hojaEncargo)
+        assertThat(hojaEncargoService.readById(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001")))
                 .isNotNull()
                 .satisfies(retrieveEncargo -> {
                     assertThat(retrieveEncargo.getPropietario().getFirstName()).isEqualTo("mock");
