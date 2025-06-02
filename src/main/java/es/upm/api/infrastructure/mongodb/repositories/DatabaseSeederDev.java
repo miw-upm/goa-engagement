@@ -15,14 +15,14 @@ import java.util.UUID;
 @Service
 @Profile({"dev", "test"})
 public class DatabaseSeederDev {
-    private final TareaLegalRepository tareaLegalRepository;
-    private final ProcedimientoLegalRepository procedimientoLegalRepository;
-    private final HojaEncargoRepository hojaEncargoRepository;
+    private final LegalTaskRepository legalTaskRepository;
+    private final LegalProcedureRepository legalProcedureRepository;
+    private final EngagementLetterRepository engagementLetterRepository;
 
-    public DatabaseSeederDev(TareaLegalRepository tareaLegalRepository, ProcedimientoLegalRepository procedimientoLegalRepository, HojaEncargoRepository hojaEncargoRepository) {
-        this.tareaLegalRepository = tareaLegalRepository;
-        this.procedimientoLegalRepository = procedimientoLegalRepository;
-        this.hojaEncargoRepository = hojaEncargoRepository;
+    public DatabaseSeederDev(LegalTaskRepository legalTaskRepository, LegalProcedureRepository legalProcedureRepository, EngagementLetterRepository engagementLetterRepository) {
+        this.legalTaskRepository = legalTaskRepository;
+        this.legalProcedureRepository = legalProcedureRepository;
+        this.engagementLetterRepository = engagementLetterRepository;
         this.deleteAllAndInitializeAndSeedDataBase();
     }
 
@@ -32,96 +32,107 @@ public class DatabaseSeederDev {
     }
 
     private void deleteAllAndInitialize() {
-        this.hojaEncargoRepository.deleteAll();
-        this.procedimientoLegalRepository.deleteAll();
-        this.tareaLegalRepository.deleteAll();
+        this.engagementLetterRepository.deleteAll();
+        this.legalProcedureRepository.deleteAll();
+        this.legalTaskRepository.deleteAll();
         log.warn("------- Delete All -----------");
     }
 
     private void seedDataBaseJava() {
         log.warn("------- Initial Load from JAVA ---------------------------------------------------------------");
-        TareaLegalEntity[] tareas = {
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
-                        .titulo("Estudio de antecedentes y documentación").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
-                        .titulo("Asesoramiento jurídico").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
-                        .titulo("Localización de personas").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
-                        .titulo("Negociación de la aceptación o renuncia con contrario").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0004"))
-                        .titulo("Tramitación notarial de la herencia").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0005"))
-                        .titulo("Liquidación del Impuesto de Sucesiones y Plusvalía Mortis causa").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0006"))
-                        .titulo("Redacción del cuaderno particional de la herencia ante el notario correspondiente").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0007"))
-                        .titulo("Liquidación de Impuesto de Sucesiones (prescrito)").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0008"))
-                        .titulo("Averiguación de los posibles pasivos (deuda) existente").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0009"))
-                        .titulo("Tramitación de los seguros").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff000a"))
-                        .titulo("Estudio de antecedentes y documentación").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa1-bbbb-cccc-dddd-eeeeffff000b"))
-                        .titulo("Redacción de la escritura de herencia y tramitación con la notaría correspondiente")
+        LegalTaskEntity[] tareas = {
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+                        .title("Estudio de antecedentes y documentación").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
+                        .title("Asesoramiento jurídico").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
+                        .title("Localización de personas").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
+                        .title("Negociación de la aceptación o renuncia con contrario").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0004"))
+                        .title("Tramitación notarial de la herencia").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0005"))
+                        .title("Liquidación del Impuesto de Sucesiones y Plusvalía Mortis causa").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0006"))
+                        .title("Redacción del cuaderno particional de la herencia ante el notario correspondiente").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0007"))
+                        .title("Liquidación de Impuesto de Sucesiones (prescrito)").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0008"))
+                        .title("Averiguación de los posibles pasivos (deuda) existente").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0009"))
+                        .title("Tramitación de los seguros").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff000a"))
+                        .title("Estudio de antecedentes y documentación").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa1-bbbb-cccc-dddd-eeeeffff000b"))
+                        .title("Redacción de la escritura de herencia y tramitación con la notaría correspondiente")
                         .build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa2-bbbb-cccc-dddd-eeeeffff000c"))
-                        .titulo("Asistencia letrada en la notaría").build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000d"))
-                        .titulo("Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad")
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa2-bbbb-cccc-dddd-eeeeffff000c"))
+                        .title("Asistencia letrada en la notaría").build(),
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000d"))
+                        .title("Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad")
                         .build(),
-                TareaLegalEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000e"))
-                        .titulo("Tramitación de la venta de las viviendas de la herencia con la inmobiliaria")
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000e"))
+                        .title("Tramitación de la venta de las viviendas de la herencia con la inmobiliaria")
                         .build()
         };
-        this.tareaLegalRepository.saveAll(List.of(tareas));
+        this.legalTaskRepository.saveAll(List.of(tareas));
         log.warn("        ------- tareas legales --------------------------------------------------------------------");
 
-        ProcedimientoLegalEntity[] procedimientos = {
-                ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
-                        .titulo("Procedimiento de herencia.")
-                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[2].getTitulo(),
-                                tareas[3].getTitulo(), tareas[4].getTitulo(), tareas[5].getTitulo(), tareas[6].getTitulo()))
-                        .presupuesto(new BigDecimal("2500")).fechaInicio(LocalDate.now().minusDays(2)).ivaIncluido(false).build(),
-                ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
-                        .titulo("División de Herencia.")
-                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[7].getTitulo(),
-                                tareas[8].getTitulo(), tareas[9].getTitulo(), tareas[10].getTitulo(), tareas[11].getTitulo()))
-                        .presupuesto(new BigDecimal("3000")).fechaInicio(LocalDate.now()).ivaIncluido(true).build(),
-                ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
-                        .titulo("Herencia notarial.")
-                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[12].getTitulo(), tareas[13].getTitulo()))
-                        .presupuesto(new BigDecimal("1000")).fechaInicio(LocalDate.now()).ivaIncluido(false).build(),
-                ProcedimientoLegalEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
-                        .titulo("Procedimiento de ejecución hipotecaria.")
-                        .tareasLegales(List.of(tareas[0].getTitulo(), tareas[1].getTitulo(), tareas[14].getTitulo()))
-                        .presupuesto(new BigDecimal("4000")).fechaInicio(LocalDate.now()).ivaIncluido(false).build(),
+        LegalProcedureTemplateEntity[] plantillaProcedimientos = {
+                LegalProcedureTemplateEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+                        .title("Procedimiento de herencia")
+                        .legalTaskEntities(List.of(tareas[0], tareas[1], tareas[2], tareas[3], tareas[4], tareas[5], tareas[6]))
+                        .budget(new BigDecimal("2500")).build(),
+                LegalProcedureTemplateEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
+                        .title("División de Herencia")
+                        .legalTaskEntities(List.of(tareas[0], tareas[1], tareas[7], tareas[8], tareas[9], tareas[10], tareas[11]))
+                        .budget(new BigDecimal("3000")).build(),
+                LegalProcedureTemplateEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
+                        .title("Herencia notarial").legalTaskEntities(List.of(tareas[0], tareas[1], tareas[12], tareas[13]))
+                        .budget(new BigDecimal("1000")).build(),
+                LegalProcedureTemplateEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
+                        .title("Procedimiento de ejecución hipotecaria").legalTaskEntities(List.of(tareas[0], tareas[1], tareas[14]))
+                        .budget(new BigDecimal("4000")).build(),
         };
-        this.procedimientoLegalRepository.saveAll(List.of(procedimientos));
+        this.legalProcedureRepository.saveAll(List.of(plantillaProcedimientos));
         log.warn("        ------- procedimientos legales ------------------------------------------------------------");
 
-        HojaEncargoEntity[] encargos = {
-                HojaEncargoEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
-                        .descuento(10).fechaCreacion(LocalDate.now().minusDays(5))
-                        .formaPago(FormaPago.builder().descripcion("Provisión de fondos").porcentaje(40).build())
-                        .formaPago(FormaPago.builder().descripcion("Finalizado el procedimiento").porcentaje(60).build())
-                        .propietarioId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
-                        .adjuntoId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
-                        .documentosAceptacion(DocumentoAceptacion.builder()
-                                .fechaHorafirma(LocalDateTime.now()).justificante("link de justificante").build())
-                        .procedimientoLegales(List.of(procedimientos[0])).build(),
-                HojaEncargoEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
-                        .descuento(20).fechaCreacion(LocalDate.now())
-                        .formaPago(FormaPago.builder().descripcion("Provisión de fondos").porcentaje(40).build())
-                        .formaPago(FormaPago.builder().descripcion("Finalizado el procedimiento").porcentaje(60).build())
-                        .propietarioId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
-                        .adjuntoId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
-                        .documentosAceptacion(DocumentoAceptacion.builder()
-                                .fechaHorafirma(LocalDateTime.now()).justificante("link de justificante").build())
-                        .procedimientoLegales(List.of(procedimientos[1], procedimientos[2])).build(),
+
+        LegalProcedureEntity[] procedimientos = {
+                LegalProcedureEntity.builder().title(plantillaProcedimientos[0].getTitle())
+                        .legalTasks(List.of(tareas[0].getTitle(), tareas[1].getTitle(), tareas[2].getTitle(),
+                                tareas[3].getTitle(), tareas[4].getTitle(), tareas[5].getTitle(), tareas[6].getTitle()))
+                        .budget(new BigDecimal("2500")).startDate(LocalDate.now().minusDays(2)).vatIncluded(false).build(),
+                LegalProcedureEntity.builder().title(plantillaProcedimientos[1].getTitle())
+                        .legalTasks(List.of(tareas[0].getTitle(), tareas[1].getTitle(), tareas[7].getTitle(),
+                                tareas[8].getTitle(), tareas[9].getTitle(), tareas[10].getTitle(), tareas[11].getTitle()))
+                        .budget(new BigDecimal("3000")).startDate(LocalDate.now()).vatIncluded(true).build(),
+                LegalProcedureEntity.builder().title(plantillaProcedimientos[2].getTitle())
+                        .legalTasks(List.of(tareas[0].getTitle(), tareas[1].getTitle(), tareas[12].getTitle(), tareas[13].getTitle()))
+                        .budget(new BigDecimal("1000")).startDate(LocalDate.now()).vatIncluded(false).build(),
         };
-        this.hojaEncargoRepository.saveAll(List.of(encargos));
+
+        EngagementLetterEntity[] encargos = {
+                EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+                        .discount(10).creationDate(LocalDate.now().minusDays(5))
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage(40).build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage(60).build())
+                        .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
+                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
+                        .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
+                                .signatureDate(LocalDateTime.now()).receipt("link de justificante").build())
+                        .legalProcedureEntities(List.of(procedimientos[0])).build(),
+                EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
+                        .discount(20).creationDate(LocalDate.now())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage(40).build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage(60).build())
+                        .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
+                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
+                        .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
+                                .signatureDate(LocalDateTime.now()).receipt("link de justificante").build())
+                        .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2])).build(),
+        };
+        this.engagementLetterRepository.saveAll(List.of(encargos));
         log.warn("        ------- Hojas de encargo ------------------------------------------------------------------");
     }
 
