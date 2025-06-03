@@ -30,7 +30,7 @@ public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
     }
 
     private void assertNotExist(String title) {
-        if (legalTaskRepository.findByTitle(title, TITLE).isPresent()) {
+        if (legalTaskRepository.findByTitle(title).isPresent()) {
             throw new ConflictException("A legal task with a similar title already exists: " + title);
         }
     }
@@ -66,11 +66,18 @@ public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
     @Override
     public void update(UUID id, LegalTask legalTask) {
         LegalTaskEntity legalTaskEntityDb = this.legalTaskRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Legal task not found, id, id:" + id));
+                .orElseThrow(() -> new NotFoundException("Legal task not found, id:" + id));
         if (!legalTaskEntityDb.getTitle().equals(legalTask.getTitle())) {
             this.assertNotExist(legalTask.getTitle());
             legalTaskEntityDb.setTitle(legalTask.getTitle());
             this.legalTaskRepository.save(legalTaskEntityDb);
         }
+    }
+
+    @Override
+    public LegalTask findByTitle(String title) {
+        return this.legalTaskRepository.findByTitle(title)
+                .orElseThrow(() -> new NotFoundException("Legal task not found, title:" + title))
+                .toLegalTask();
     }
 }

@@ -25,8 +25,8 @@ public class LegalProcedureTemplateResource {
     }
 
     @GetMapping
-    public Stream<LegalProcedureTemplate> findNullSafe(@RequestParam(required = false) String nombre) {
-        return this.legalProcedureTemplateService.findNullSafe(nombre);
+    public Stream<LegalProcedureTemplate> findNullSafe(@RequestParam(required = false) String title) {
+        return this.legalProcedureTemplateService.findNullSafe(title);
     }
 
     @GetMapping(ID_ID)
@@ -35,8 +35,8 @@ public class LegalProcedureTemplateResource {
     }
 
     @PostMapping
-    public void create(@Valid @RequestBody LegalProcedureTemplate legalProcedureTemplate) {
-        this.legalProcedureTemplateService.create(legalProcedureTemplate);
+    public void create(@Valid @RequestBody LegalProcedureTemplate dto) {
+        this.legalProcedureTemplateService.create(dto);
     }
 
     @PutMapping(ID_ID)

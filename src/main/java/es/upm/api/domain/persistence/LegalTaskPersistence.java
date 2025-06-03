@@ -19,4 +19,6 @@ public interface LegalTaskPersistence {
     Stream<LegalTask> findAll();
 
     void update(UUID id, LegalTask legalTask);
+
+    LegalTask findByTitle(String title);
 }

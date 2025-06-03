@@ -2,7 +2,6 @@ package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.services.LegalTaskService;
-import es.upm.api.infrastructure.resources.view.LegalTasksDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,7 +16,6 @@ import java.util.stream.Stream;
 public class LegalTaskResource {
     public static final String LEGAL_TASKS = "/legal-tasks";
     public static final String ID_ID = "/{id}";
-    public static final String TITLES = "/titles";
 
     private final LegalTaskService legalTaskService;
 
@@ -26,16 +24,14 @@ public class LegalTaskResource {
         this.legalTaskService = legalTaskService;
     }
 
-    @GetMapping
-    public Stream<LegalTask> findNullSafe(@RequestParam(required = false) String titulo) {
-        return this.legalTaskService.findNullSafe(titulo);
+    @GetMapping(ID_ID)
+    public LegalTask read(@PathVariable UUID id) {
+        return this.legalTaskService.read(id);
     }
 
-    @GetMapping(TITLES)
-    public LegalTasksDto findTitles() {
-        return new LegalTasksDto(this.legalTaskService.findAll()
-                .map(LegalTask::getTitle)
-                .toList());
+    @GetMapping
+    public Stream<LegalTask> findNullSafe(@RequestParam(required = false) String title) {
+        return this.legalTaskService.findNullSafe(title);
     }
 
     @PostMapping

@@ -18,4 +18,8 @@ public class LegalTask {
     @NotNull
     @NotBlank
     private String title;
+
+    public LegalTask ofTitle() {
+        return LegalTask.builder().title(this.title).build();
+    }
 }

@@ -95,8 +95,7 @@ public class DatabaseSeederDev {
                         .budget(new BigDecimal("4000")).build(),
         };
         this.legalProcedureRepository.saveAll(List.of(plantillaProcedimientos));
-        log.warn("        ------- procedimientos legales ------------------------------------------------------------");
-
+        log.warn("        ------- plantilla de procedimientos legales -----------------------------------------------");
 
         LegalProcedureEntity[] procedimientos = {
                 LegalProcedureEntity.builder().title(plantillaProcedimientos[0].getTitle())

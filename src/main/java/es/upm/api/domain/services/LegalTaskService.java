@@ -38,4 +38,8 @@ public class LegalTaskService {
     public Stream<LegalTask> findAll() {
         return this.legalTaskPersistence.findAll();
     }
+
+    public LegalTask read(UUID id) {
+        return this.legalTaskPersistence.read(id);
+    }
 }

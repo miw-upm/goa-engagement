@@ -13,6 +13,6 @@ public interface LegalTaskRepository extends MongoRepository<LegalTaskEntity, UU
     @Query("{ 'title': { $regex: ?0, $options: 'i' } }")
     List<LegalTaskEntity> findByTitleContainingIgnoreCase(String title, Sort sort);
 
-    Optional<LegalTaskEntity> findByTitle(String title, Sort sort);
+    Optional<LegalTaskEntity> findByTitle(String title);
 }
 

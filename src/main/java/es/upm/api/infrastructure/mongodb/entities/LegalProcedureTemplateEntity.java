@@ -36,6 +36,7 @@ public class LegalProcedureTemplateEntity {
     public LegalProcedureTemplate toLegalProcedureTemplate() {
         LegalProcedureTemplate legalProcedureTemplate = new LegalProcedureTemplate();
         BeanUtils.copyProperties(this, legalProcedureTemplate);
+        legalProcedureTemplate.setLegalTasks(legalTaskEntities.stream().map(LegalTaskEntity::toLegalTask).toList());
         return legalProcedureTemplate;
     }
 }

@@ -15,7 +15,7 @@ public interface LegalProcedureTemplatePersistence {
 
     LegalProcedureTemplate read(UUID id);
 
-    Stream<LegalProcedureTemplate> findNullSafe(String nombre);
+    Stream<LegalProcedureTemplate> findNullSafe(String title);
 
     Stream<LegalProcedureTemplate> findAll();
 
