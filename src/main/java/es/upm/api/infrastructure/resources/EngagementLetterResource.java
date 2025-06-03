@@ -2,12 +2,10 @@ package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.services.EngagementLetterService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
@@ -25,10 +23,25 @@ public class EngagementLetterResource {
         this.engagementLetterService = engagementLetterService;
     }
 
-    @PreAuthorize(Security.ALL)
+    @PostMapping
+    public void create(@Valid @RequestBody EngagementLetter engagementLetter) {
+        this.engagementLetterService.create(engagementLetter);
+    }
+
     @GetMapping(ID_ID)
     public EngagementLetter read(@PathVariable UUID id) {
         return this.engagementLetterService.readById(id);
     }
+
+    @PutMapping(ID_ID)
+    public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
+        this.engagementLetterService.update(id, engagementLetter);
+    }
+
+    @DeleteMapping(ID_ID)
+    public void delete(@PathVariable UUID id) {
+        this.engagementLetterService.delete(id);
+    }
+
 }
 

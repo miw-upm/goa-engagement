@@ -45,7 +45,6 @@ public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
         return this.legalTaskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Legal task not found, id:" + id))
                 .toLegalTask();
-
     }
 
     @Override
@@ -56,7 +55,6 @@ public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
             return this.legalTaskRepository.findByTitleContainingIgnoreCase(title, TITLE).stream()
                     .map(LegalTaskEntity::toLegalTask);
         }
-
     }
 
     @Override

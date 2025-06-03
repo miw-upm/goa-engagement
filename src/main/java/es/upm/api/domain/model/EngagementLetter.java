@@ -32,6 +32,7 @@ public class EngagementLetter {
     private List<UserDto> attachments;
     @ListNotEmpty
     private List<LegalProcedure> legalProcedures;
-    private List<AcceptanceDocument> acceptanceDocuments;
+    @ListNotEmpty
     private List<PaymentMethod> paymentMethods;
+    private List<AcceptanceDocument> acceptanceDocuments;
 }

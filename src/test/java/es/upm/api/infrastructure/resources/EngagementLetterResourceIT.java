@@ -32,7 +32,7 @@ class EngagementLetterResourceIT {
     private UserWebClient userWebClient;
 
     @Test
-    @WithMockUser(username = "admin", authorities = {"SCOPE_customer"})
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->

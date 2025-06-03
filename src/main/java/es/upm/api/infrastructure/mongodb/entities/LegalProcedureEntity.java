@@ -1,7 +1,6 @@
 package es.upm.api.infrastructure.mongodb.entities;
 
 import es.upm.api.domain.model.LegalProcedure;
-import es.upm.api.domain.model.LegalProcedureTemplate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,8 +23,8 @@ public class LegalProcedureEntity {
     private Boolean vatIncluded;
     private List<String> legalTasks;
 
-    public LegalProcedureEntity(LegalProcedureTemplate legalProcedureTemplate) {
-        BeanUtils.copyProperties(legalProcedureTemplate, this);
+    public LegalProcedureEntity(LegalProcedure legalProcedure) {
+        BeanUtils.copyProperties(legalProcedure, this);
     }
 
     public LegalProcedure toLegalProcedure() {

@@ -29,9 +29,6 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
 
     @Override
     public void deleteById(UUID id) {
-        if (!this.repository.existsById(id)) {
-            throw new NotFoundException("LegalProcedureTemplate id not found: " + id);
-        }
         this.repository.deleteById(id);
     }
 
@@ -44,11 +41,11 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
     }
 
     @Override
-    public Stream<LegalProcedureTemplate> findNullSafe(String titulo) {
-        if (titulo == null || titulo.isBlank()) {
+    public Stream<LegalProcedureTemplate> findNullSafe(String title) {
+        if (title == null || title.isBlank()) {
             return this.findAll();
         }
-        return this.repository.findByTitleContainingIgnoreCase(titulo, Sort.by(Sort.Direction.ASC, "title"))
+        return this.repository.findByTitleContainingIgnoreCase(title, Sort.by(Sort.Direction.ASC, "title"))
                 .stream().map(LegalProcedureTemplateEntity::toLegalProcedureTemplate);
     }
 
