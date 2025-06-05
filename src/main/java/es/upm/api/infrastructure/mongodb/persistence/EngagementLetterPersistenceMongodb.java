@@ -2,6 +2,7 @@ package es.upm.api.infrastructure.mongodb.persistence;
 
 import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.infrastructure.mongodb.entities.AcceptanceDocumentEntity;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public class EngagementLetterPersistenceMongodb implements EngagementLetterPersistence {
@@ -70,6 +72,12 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
         engagementLetter.setId(id);
         engagementLetter.setCreationDate(engagementLetterBd.getCreationDate());
         this.engagementLetterRepository.save(this.convertToEngagementLetterEntity(engagementLetter));
+    }
+
+    @Override
+    public Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria) {
+        return this.engagementLetterRepository.findByOpened(criteria).stream()
+                .map(EngagementLetterEntity::toEngagementLetter);
     }
 
     @Override

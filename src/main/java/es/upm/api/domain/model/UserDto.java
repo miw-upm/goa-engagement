@@ -15,4 +15,5 @@ public class UserDto {
     private UUID id;
     private String mobile;
     private String firstName;
+    private String familyName;
 }

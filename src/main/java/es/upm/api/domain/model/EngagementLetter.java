@@ -20,11 +20,11 @@ import java.util.UUID;
 @AllArgsConstructor
 public class EngagementLetter {
     private UUID id;
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    private LocalDate creationDate;
     @Min(0)
     @Max(100)
     private Integer discount;
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate creationDate;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate closingDate;
     @NotNull

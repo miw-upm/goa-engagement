@@ -1,6 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.EngagementLetterFindCriteria;
 import es.upm.api.domain.services.EngagementLetterService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +9,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
@@ -21,6 +23,11 @@ public class EngagementLetterResource {
     @Autowired
     public EngagementLetterResource(EngagementLetterService engagementLetterService) {
         this.engagementLetterService = engagementLetterService;
+    }
+
+    @GetMapping
+    public Stream<EngagementLetter> findNullSafe(@ModelAttribute EngagementLetterFindCriteria criteria) {
+       return this.engagementLetterService.findNullSafe(criteria);
     }
 
     @PostMapping

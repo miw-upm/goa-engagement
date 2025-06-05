@@ -1,10 +1,12 @@
 package es.upm.api.domain.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.EngagementLetterFindCriteria;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public interface EngagementLetterPersistence {
@@ -15,4 +17,6 @@ public interface EngagementLetterPersistence {
     void delete(UUID id);
 
     void update(UUID id, EngagementLetter engagementLetter);
+
+    Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria);
 }
