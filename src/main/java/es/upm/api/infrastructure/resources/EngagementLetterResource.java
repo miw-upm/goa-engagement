@@ -27,7 +27,7 @@ public class EngagementLetterResource {
 
     @GetMapping
     public Stream<EngagementLetter> findNullSafe(@ModelAttribute EngagementLetterFindCriteria criteria) {
-       return this.engagementLetterService.findNullSafe(criteria);
+        return this.engagementLetterService.findNullSafe(criteria);
     }
 
     @PostMapping

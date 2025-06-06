@@ -2,7 +2,6 @@ package es.upm.api.domain.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.EngagementLetterFindCriteria;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -12,7 +11,7 @@ import java.util.stream.Stream;
 public interface EngagementLetterPersistence {
     EngagementLetter readById(UUID id);
 
-    void create(@Valid EngagementLetter engagementLetter);
+    void create(EngagementLetter engagementLetter);
 
     void delete(UUID id);
 

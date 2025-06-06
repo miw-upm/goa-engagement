@@ -13,6 +13,7 @@ import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -30,6 +31,7 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
     @Override
     public void create(EngagementLetter engagementLetter) {
         EngagementLetterEntity engagementLetterEntity = this.convertToEngagementLetterEntity(engagementLetter);
+        System.out.println(">>>> ENTITY: " + engagementLetterEntity);
         this.engagementLetterRepository.save(engagementLetterEntity);
     }
 
@@ -76,8 +78,23 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
 
     @Override
     public Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria) {
-        return this.engagementLetterRepository.findByOpened(criteria).stream()
-                .map(EngagementLetterEntity::toEngagementLetter);
+        List<EngagementLetterEntity> result;
+        if (Boolean.TRUE.equals(criteria.getOpened())) {
+            result = this.engagementLetterRepository.findByOpened();
+        } else {
+            result = this.engagementLetterRepository.findByClosed();
+        }
+        if (criteria.getLegalProcedureTitle() != null) {
+            return result.stream()
+                    .filter(engagement -> engagement.getLegalProcedureEntities().stream()
+                            .anyMatch(procedure -> procedure.getTitle().toLowerCase()
+                                    .contains(criteria.getLegalProcedureTitle().toLowerCase())))
+                    .map(EngagementLetterEntity::toEngagementLetter);
+        } else {
+            return result.stream()
+                    .map(EngagementLetterEntity::toEngagementLetter);
+        }
+
     }
 
     @Override

@@ -2,11 +2,13 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.infrastructure.webclients.UserWebClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -40,6 +42,12 @@ public class EngagementLetterService {
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
+        engagementLetter.setOwner(
+                this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
+        );
+        engagementLetter.getAttachments().forEach(attachment -> {
+            attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId());
+        });
         this.engagementLetterPersistence.create(engagementLetter);
     }
 
@@ -52,6 +60,15 @@ public class EngagementLetterService {
     }
 
     public Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria) {
-        return this.engagementLetterPersistence.findNullSafe(criteria);
+        if (criteria.getOwner() == null) {
+            return this.engagementLetterPersistence.findNullSafe(criteria);
+        } else {
+            List<UUID> ids = this.userWebClient.findNullSafe(criteria.getOwner()).stream()
+                    .map(UserDto::getId).toList();
+            return this.engagementLetterPersistence.findNullSafe(criteria)
+                    .filter(engagementLetter -> {
+                        return ids.contains(engagementLetter.getOwner().getId());
+                    });
+        }
     }
 }
