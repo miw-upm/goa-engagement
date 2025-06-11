@@ -14,7 +14,7 @@
 
 ```sh
 > cd <folder path>
-> git clone https://github.com/miw-upm/goa-encargo
+> git clone https://github.com/miw-upm/goa-engagement
 ```
 
 2. Importar el proyecto mediante **IntelliJ IDEA**
