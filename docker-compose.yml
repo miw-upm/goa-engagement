@@ -1,5 +1,5 @@
 services:
-  goa-encargo:
+  goa-engagement:
     build: .
     image: goa-engagement:latest
     restart: always
