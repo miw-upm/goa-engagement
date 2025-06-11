@@ -44,9 +44,12 @@ class EngagementLetterServiceIT {
                 .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage(100).build()))
                 .build();
 
+        BDDMockito.given(this.userWebClient.readUserByMobile(any(String.class)))
+                .willAnswer(invocation ->
+                        UserDto.builder().id(this.engagementLetter.getOwner().getId()).mobile(invocation.getArgument(0)).firstName("mock").build());
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
-                        UserDto.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
+                        UserDto.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
         this.engagementLetterService.create(this.engagementLetter);
     }
 
@@ -56,7 +59,7 @@ class EngagementLetterServiceIT {
                 .isNotNull()
                 .satisfies(retrieveEngagement -> {
                     assertThat(retrieveEngagement.getOwner().getFirstName()).isEqualTo("mock");
-                    assertThat(retrieveEngagement.getOwner().getMobile()).isEqualTo("666000666");
+                    assertThat(retrieveEngagement.getOwner().getMobile()).isEqualTo("123456789");
                     assertThat(retrieveEngagement.getDiscount()).isEqualTo(20);
                 });
     }

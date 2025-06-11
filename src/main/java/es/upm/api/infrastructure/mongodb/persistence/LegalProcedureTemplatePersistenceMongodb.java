@@ -3,6 +3,7 @@ package es.upm.api.infrastructure.mongodb.persistence;
 import es.upm.api.domain.exceptions.ConflictException;
 import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.LegalProcedureTemplate;
+import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.persistence.LegalProcedureTemplatePersistence;
 import es.upm.api.infrastructure.mongodb.entities.LegalProcedureTemplateEntity;
 import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
@@ -32,12 +33,12 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
     public void create(LegalProcedureTemplate procedure) {
         this.assertNotExist(procedure.getTitle());
         LegalProcedureTemplateEntity entity = new LegalProcedureTemplateEntity(procedure);
-        entity.setLegalTaskEntities(readTaskAssured(procedure));
+        entity.setLegalTaskEntities(readTaskAssured(procedure.getLegalTasks()));
         this.procedureRepository.save(entity);
     }
 
-    private List<LegalTaskEntity> readTaskAssured(LegalProcedureTemplate procedure) {
-        return procedure.getLegalTasks().stream()
+    private List<LegalTaskEntity> readTaskAssured(List<LegalTask> tasks) {
+        return  tasks.stream()
                 .map(legalTask -> this.taskRepository.findByTitle(legalTask.getTitle())
                         .orElseThrow(() -> new NotFoundException("Legal Task not found, title: " + legalTask.getTitle())))
                 .toList();
@@ -84,7 +85,7 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
             this.assertNotExist(procedure.getTitle());
         }
         LegalProcedureTemplateEntity entity = new LegalProcedureTemplateEntity(procedure);
-        entity.setLegalTaskEntities(readTaskAssured(procedure));
+        entity.setLegalTaskEntities(readTaskAssured(procedure.getLegalTasks()));
         this.procedureRepository.save(entity);
     }
 }

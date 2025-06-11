@@ -61,17 +61,15 @@ public class DatabaseSeederDev {
                         .title("Averiguación de los posibles pasivos (deuda) existente").build(),
                 LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0009"))
                         .title("Tramitación de los seguros").build(),
-                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff000a"))
-                        .title("Estudio de antecedentes y documentación").build(),
-                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa1-bbbb-cccc-dddd-eeeeffff000b"))
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa1-bbbb-cccc-dddd-eeeeffff000a"))
                         .title("Redacción de la escritura de herencia y tramitación con la notaría correspondiente")
                         .build(),
-                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa2-bbbb-cccc-dddd-eeeeffff000c"))
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa2-bbbb-cccc-dddd-eeeeffff000b"))
                         .title("Asistencia letrada en la notaría").build(),
-                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000d"))
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000c"))
                         .title("Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad")
                         .build(),
-                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000e"))
+                LegalTaskEntity.builder().id(UUID.fromString("aaaaaaa3-bbbb-cccc-dddd-eeeeffff000d"))
                         .title("Tramitación de la venta de las viviendas de la herencia con la inmobiliaria")
                         .build()
         };
@@ -91,7 +89,7 @@ public class DatabaseSeederDev {
                         .title("Herencia notarial").legalTaskEntities(List.of(tareas[0], tareas[1], tareas[12], tareas[13]))
                         .budget(new BigDecimal("1000")).build(),
                 LegalProcedureTemplateEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
-                        .title("Procedimiento de ejecución hipotecaria").legalTaskEntities(List.of(tareas[0], tareas[1], tareas[14]))
+                        .title("Procedimiento de ejecución hipotecaria").legalTaskEntities(List.of(tareas[0], tareas[1], tareas[13]))
                         .budget(new BigDecimal("4000")).build(),
         };
         this.legalProcedureRepository.saveAll(List.of(plantillaProcedimientos));

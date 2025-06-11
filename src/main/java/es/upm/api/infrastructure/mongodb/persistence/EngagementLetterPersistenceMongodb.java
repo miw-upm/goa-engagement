@@ -31,7 +31,6 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
     @Override
     public void create(EngagementLetter engagementLetter) {
         EngagementLetterEntity engagementLetterEntity = this.convertToEngagementLetterEntity(engagementLetter);
-        System.out.println(">>>> ENTITY: " + engagementLetterEntity);
         this.engagementLetterRepository.save(engagementLetterEntity);
     }
 

@@ -45,9 +45,9 @@ public class EngagementLetterService {
         engagementLetter.setOwner(
                 this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
-        engagementLetter.getAttachments().forEach(attachment -> {
-            attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId());
-        });
+        if(engagementLetter.getAttachments()!=null) {
+            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
+        }
         this.engagementLetterPersistence.create(engagementLetter);
     }
 
