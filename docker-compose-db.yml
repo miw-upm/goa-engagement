@@ -32,8 +32,6 @@ services:
       - goa
 
 volumes:
-  mysql_data:
-    name: "mysql-data"
   postgres_data:
     name: "postgres-data"
   mongo_data:
@@ -47,18 +45,6 @@ networks:
 
 # Construir todas las BD
 #> docker compose -f docker-compose-db.yml -p databases up -d
-
-# CONSOLA & COMANDOS MySQL
-#> docker exec -it mysql-server mysql -u root -p
-#  show databases;
-#  create database poo;
-#  drop database poo;
-#  use poo;
-#  show tables;
-#  describe mytable;
-#  select * from mytable;
-#  drop table mytable;
-#  exit
 
 # CONSOLA & COMANDOS Postgres
 #> docker exec -it postgres-server  psql -U postgres
@@ -74,7 +60,7 @@ networks:
 #  delete from <table>;
 
 # CONSOLA & COMANDOS mongo
-#> docker exec -it mongo-server mongosh "mongodb://mongo:mongo@localhost:27017/devops?authSource=admin"
+#> docker exec -it mongo-server mongosh "mongodb://mongo:mongo@localhost:27017/goaengagement?authSource=admin"
 #  help
 #  db.version()
 #  db.stats()
