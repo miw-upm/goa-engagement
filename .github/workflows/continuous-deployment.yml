@@ -52,15 +52,15 @@ jobs:
           host: ${{ secrets.AWS_LIGHTSAIL_IP }}
           username: ${{ secrets.AWS_LIGHTSAIL_USER }}
           key: ${{ secrets.AWS_LIGHTSAIL_SSH_KEY }}
-          with:
-            script: |
-              docker rm -f goa-engagement || true
-              docker pull ghcr.io/miw-upm/goa-engagement:latest
-              docker run -d \
-                --name goa-engagement \
-                --restart always \
-                --network goa \
-                -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
-                -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
-                -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
-                ghcr.io/miw-upm/goa-engagement:latest
+          script: |
+            echo ${{ secrets.GHCR_PERSONAL_ACCESS_TOKEN }} | docker login ${{ env.GHCR_URL }} -u ${{ github.actor }} --password-stdin
+            docker rm -f goa-engagement || true
+            docker pull ghcr.io/miw-upm/goa-engagement:latest
+            docker run -d \
+              --name goa-engagement \
+              --restart always \
+              --network goa \
+              -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
+              -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
+              -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
+              ghcr.io/miw-upm/goa-engagement:latest
