@@ -60,7 +60,7 @@ jobs:
               --name ${{ env.ARTIFACT }} \
               --restart always \
               --network goa \
-              -e MONGO_URI=${{ secrets.MONGO_URI }} \
+              -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
               -e API_CLIENT_ID=${{ secrets.API_CLIENT_ID }} \
               -e API_CLIENT_SECRET=${{ secrets.API_CLIENT_SECRET }} \
               ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:latest
