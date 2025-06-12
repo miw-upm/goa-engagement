@@ -64,3 +64,4 @@ jobs:
               -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
               -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
                ${{ env.GHCR_URL }}/${{ env.ARTIFACT }}:latest
+            docker image prune -f
