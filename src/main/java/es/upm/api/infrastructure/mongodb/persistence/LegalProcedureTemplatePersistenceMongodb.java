@@ -38,7 +38,7 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
     }
 
     private List<LegalTaskEntity> readTaskAssured(List<LegalTask> tasks) {
-        return  tasks.stream()
+        return tasks.stream()
                 .map(legalTask -> this.taskRepository.findByTitle(legalTask.getTitle())
                         .orElseThrow(() -> new NotFoundException("Legal Task not found, title: " + legalTask.getTitle())))
                 .toList();
