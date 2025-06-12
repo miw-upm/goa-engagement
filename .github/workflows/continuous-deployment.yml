@@ -60,7 +60,9 @@ jobs:
               --name ${{ env.ARTIFACT }} \
               --restart always \
               --network goa \
-              -e MONGODB_URI=${{ secrets.MONGODB_URI }} \
-              -e API_CLIENT_ID=${{ secrets.API_CLIENT_ID }} \
-              -e API_CLIENT_SECRET=${{ secrets.API_CLIENT_SECRET }} \
+              -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
+              -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
+              -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
               ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:latest
+            sleep 20
+            docker image prune --filter "until=12h" -f
