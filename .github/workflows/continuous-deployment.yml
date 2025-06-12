@@ -63,4 +63,4 @@ jobs:
               -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
               -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
               -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
-              ghcr.io/miw-upm/${{ env.ARTIFACT }}:latest
+              ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:latest
