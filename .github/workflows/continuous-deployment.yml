@@ -55,7 +55,7 @@ jobs:
           script: |
             echo ${{ secrets.GHCR_PERSONAL_ACCESS_TOKEN }} | docker login ${{ env.GHCR_URL }} -u ${{ github.actor }} --password-stdin
             docker rm -f ${{ env.ARTIFACT }} || true
-            docker pull ${{ env.GHCR_URL }}/${{ env.REPOSITORY }}:latest
+            docker pull ghcr.io/miw-upm/goa-engagement:latest
             docker run -d \
               --name ${{ env.ARTIFACT }} \
               --restart always \
@@ -63,6 +63,4 @@ jobs:
               -e MONGODB_URI="${{ secrets.MONGODB_URI }}" \
               -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
               -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
-               ${{ env.GHCR_URL }}/${{ env.ARTIFACT }}:latest
-            sleep 20
-            docker image prune --filter "until=12h" -f
+              ghcr.io/miw-upm/${{ env.ARTIFACT }}:latest
