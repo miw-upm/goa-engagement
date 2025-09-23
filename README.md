@@ -20,17 +20,18 @@
 2. Importar el proyecto mediante **IntelliJ IDEA**
     * **Open**, y seleccionar la carpeta del proyecto.
 
-### :gear: Ejecución en local co IntelliJ
+### :gear: Ejecución en local con IntelliJ
 
-* Ejecutar la clase **Application**
-
-```sh
-> docker compose up --build -d
-```
+* Ejecutar la clase **Application** con IntelliJ
 
 ### :gear: Ejecución en local con Docker
+* Crear la red, solo una vez:
 
-* Ejecutar en el proyecto la siguiente secuencia de comandos de Docker ( :warning: **incluir el punto final** ):
+```sh
+> docker network create devopsNet
+```
+
+* Ejecutar en el proyecto la siguiente secuencia de comandos de Docker:
 
 ```sh
 > docker compose up --build -d

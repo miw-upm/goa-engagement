@@ -3,8 +3,7 @@ services:
     build: .
     image: goa-engagement:latest
     restart: always
-    ports:
-      - "8082:8082"
+#    ports: ["0:8082"] # Expose the container port on a random host port
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:mongo@mongo:27017/goaengagement?authSource=admin
       EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://host.docker.internal:8761/eureka/
@@ -18,3 +17,4 @@ networks:
     external: true
 
 #> docker compose up --build -d
+#> docker compose up --build -d --scale goa-engagement=2
