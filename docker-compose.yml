@@ -4,8 +4,9 @@ services:
     image: goa-engagement:latest
     restart: always
 #    ports: ["0:8082"] # Expose the container port on a random host port
+#    ports: ["8082"] # Don't expose the container port
     environment:
-      SPRING_DATA_MONGODB_URI: mongodb://mongo:mongo@mongo:27017/goaengagement?authSource=admin
+      SPRING_DATA_MONGODB_URI: mongodb://mongo:mongo@mongo:27017/goaengagementdb?authSource=admin
       EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://host.docker.internal:8761/eureka/
       SPRING_SECURITY_OAUTH2_JWK-URI: http://host.docker.internal:8080/api/goa-user/oauth2/jwks
       SPRING_SECURITY_OAUTH2_TOKEN-URI: http://host.docker.internal:8080/api/goa-user/oauth2/token

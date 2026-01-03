@@ -10,11 +10,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 import java.util.UUID;
 
-@FeignClient(name = UserWebClient.TPV_USER, configuration = FeignConfig.class)
+@FeignClient(name = UserWebClient.GOA_USER, configuration = FeignConfig.class)
 public interface UserWebClient {
 
     String USERS_ID_ID = "/users/{id}";
-    String TPV_USER = "goa-user";
+    String GOA_USER = "goa-user";
     String MOBILE_ID_ID = "/users/mobile/{mobile}";
     String USERS = "/users";
 
