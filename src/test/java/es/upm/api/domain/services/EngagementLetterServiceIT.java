@@ -5,7 +5,7 @@ import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.UserDto;
-import es.upm.api.infrastructure.webclients.UserWebClient;
+import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;

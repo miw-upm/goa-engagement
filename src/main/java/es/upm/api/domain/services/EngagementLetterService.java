@@ -4,7 +4,7 @@ import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
-import es.upm.api.infrastructure.webclients.UserWebClient;
+import es.upm.api.domain.webclients.UserWebClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

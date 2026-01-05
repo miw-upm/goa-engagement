@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.UserDto;
-import es.upm.api.infrastructure.webclients.UserWebClient;
+import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;

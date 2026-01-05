@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.webclients;
+package es.upm.api.domain.webclients;
 
 import es.upm.api.configurations.FeignConfig;
 import es.upm.api.domain.model.UserDto;
