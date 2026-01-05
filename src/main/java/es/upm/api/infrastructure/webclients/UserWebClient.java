@@ -12,16 +12,15 @@ import java.util.UUID;
 
 @FeignClient(name = UserWebClient.GOA_USER, configuration = FeignConfig.class)
 public interface UserWebClient {
-
-    String USERS_ID_ID = "/users/{id}";
     String GOA_USER = "goa-user";
-    String MOBILE_ID_ID = "/users/mobile/{mobile}";
     String USERS = "/users";
+    String ID_ID = "/{id}";
+    String MOBILE_ID = "/{mobile}";
 
-    @GetMapping(USERS_ID_ID)
+    @GetMapping(USERS + ID_ID)
     UserDto readUserById(@PathVariable UUID id);
 
-    @GetMapping(MOBILE_ID_ID)
+    @GetMapping(USERS + MOBILE_ID)
     UserDto readUserByMobile(@PathVariable String mobile);
 
     @GetMapping(USERS)
