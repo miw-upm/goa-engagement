@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 @RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
@@ -25,8 +25,8 @@ public class LegalProcedureTemplateResource {
     }
 
     @GetMapping
-    public Stream<LegalProcedureTemplate> findNullSafe(@RequestParam(required = false) String title) {
-        return this.legalProcedureTemplateService.findNullSafe(title);
+    public List<LegalProcedureTemplate> findNullSafe(@RequestParam(required = false) String title) {
+        return this.legalProcedureTemplateService.findNullSafe(title).toList();
     }
 
     @GetMapping(ID_ID)
