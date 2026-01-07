@@ -48,7 +48,7 @@ public class EngagementLetterEntity {
                     .toList());
         }
         if (this.acceptanceDocumentEntities != null) {
-            engagementLetter.setAcceptanceDocuments(this.acceptanceDocumentEntities.stream()
+            engagementLetter.setAcceptanceEngagements(this.acceptanceDocumentEntities.stream()
                     .map(AcceptanceDocumentEntity::toAcceptanceDocument)
                     .toList());
         }

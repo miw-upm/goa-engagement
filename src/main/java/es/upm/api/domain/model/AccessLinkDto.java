@@ -5,15 +5,12 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AcceptanceDocument {
-    private LocalDateTime signatureDate;
-    private String receipt;
-    private UserDto signer;
+public class AccessLinkDto {
+    UUID id;
 }
-

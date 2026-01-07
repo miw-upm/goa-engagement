@@ -53,7 +53,7 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
                         .map(PaymentMethodEntity::new)
                         .toList()
         );
-        Optional.ofNullable(engagementLetter.getAcceptanceDocuments())
+        Optional.ofNullable(engagementLetter.getAcceptanceEngagements())
                 .ifPresent(documents -> engagementLetterEntity.setAcceptanceDocumentEntities(
                         documents.stream()
                                 .map(AcceptanceDocumentEntity::new)

@@ -34,5 +34,5 @@ public class EngagementLetter {
     private List<LegalProcedure> legalProcedures;
     @ListNotEmpty
     private List<PaymentMethod> paymentMethods;
-    private List<AcceptanceDocument> acceptanceDocuments;
+    private List<AcceptanceEngagement> acceptanceEngagements;
 }
