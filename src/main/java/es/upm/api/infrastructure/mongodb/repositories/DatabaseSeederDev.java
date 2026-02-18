@@ -116,8 +116,7 @@ public class DatabaseSeederDev {
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage(60).build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
-                        .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
-                                .signatureDate(LocalDateTime.now()).receipt("link de justificante").build())
+                        .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder().build())
                         .legalProcedureEntities(List.of(procedimientos[0])).build(),
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
                         .discount(20).creationDate(LocalDate.now())
@@ -126,7 +125,7 @@ public class DatabaseSeederDev {
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
-                                .signatureDate(LocalDateTime.now()).receipt("link de justificante").build())
+                                .signatureDate(LocalDateTime.now()).build())
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2])).build(),
         };
         this.engagementLetterRepository.saveAll(List.of(encargos));
