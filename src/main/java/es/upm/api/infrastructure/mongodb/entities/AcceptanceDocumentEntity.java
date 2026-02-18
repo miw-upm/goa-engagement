@@ -17,8 +17,8 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AcceptanceDocumentEntity {
     private LocalDateTime signatureDate;
-    private String receipt;
     private UUID signer;
+    private UUID accessLinkId;
 
     public AcceptanceDocumentEntity(AcceptanceEngagement acceptance) {
         BeanUtils.copyProperties(acceptance, this, "signer");

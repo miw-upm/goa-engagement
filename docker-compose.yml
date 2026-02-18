@@ -22,3 +22,6 @@ networks:
 
 #> docker compose up --build -d
 #> docker compose up --build -d --scale goa-engagement=2
+
+# Para ver los logs de arranque
+#> docker logs -f goa-user
