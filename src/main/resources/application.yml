@@ -3,7 +3,7 @@ spring:
     name: goa-engagement
   profiles:
     # Profile ----------------------------------------
-    active: dev
+    active: prod
   # ------------------------------------------------
   output:
     ansi:
