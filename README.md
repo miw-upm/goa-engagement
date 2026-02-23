@@ -4,6 +4,11 @@
 
 > Este proyecto es un apoyo docente de la asignatura y contiene ejemplos prácticos sobre Spring
 
+### Estado del código
+[![CI goa-engagement](https://github.com/miw-upm/goa-engagement/actions/workflows/ci.yml/badge.svg)](https://github.com/miw-upm/goa-engagement/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=miw-upm-github_goa-engagement&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=miw-upm-github_goa-engagement)
+[![AWS broken](https://gestion.ocanabogados.es/api/goa-engagement/system/version-badge)](https://gestion.ocanabogados.es/api/goa-engagement/system)
+
 ### Tecnologías necesarias
 
 `Java` `Maven` `GitHub` `GitHub Actions` `Spring-Boot` `GitHub Packages` `Docker` `OpenAPI`
