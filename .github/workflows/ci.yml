@@ -1,4 +1,4 @@
-name: CI
+name: CI goa-engagement
 on:
   push:
     branches:
