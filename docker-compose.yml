@@ -3,7 +3,7 @@ services:
     build: .
     image: goa-engagement:latest
     restart: always
-#    ports: ["0:8082"] # Expose the container port on a random host port
+    ports: ["0:8082"] # Expose the container port on a random host port
 #    ports: ["8082"] # Don't expose the container port
     environment:
       SPRING_DATA_MONGODB_URI: mongodb://mongo:mongo@mongo:27017/goaengagementdb?authSource=admin
