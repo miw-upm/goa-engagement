@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentEntity {
-    private LocalDateTime date;
+    private LocalDateTime createdDate;
     private String content;
 
     public CommentEntity(Comment comment) {

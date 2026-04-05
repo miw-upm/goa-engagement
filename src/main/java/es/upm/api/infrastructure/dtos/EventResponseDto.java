@@ -1,14 +1,13 @@
-package es.upm.api.domain.model;
+package es.upm.api.infrastructure.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import es.upm.api.domain.model.EventType;
+import es.upm.api.domain.model.Status;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -17,24 +16,24 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Event {
+public class EventResponseDto {
     private UUID id;
-    @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime createdDate;  // Generated automatically by system
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-    private LocalDateTime eventDate;   // Assigned by user
+    private LocalDateTime createdDate;  // System-generated
 
-    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime eventDate;   // User-provided
+
     private EventType type;
-    @NotBlank
+
     private String title;
+
     private String description;
-    @NotNull
+
     private Status status;
-    @NotNull
+
     private UUID engagementLetterId;
-    private List<Comment> comments;
+
+    private List<CommentDto> comments;
 }

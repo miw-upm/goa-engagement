@@ -21,7 +21,8 @@ import java.util.UUID;
 public class EventEntity {
     @Id
     private UUID id;
-    private LocalDateTime date;
+    private LocalDateTime createdDate;   // System-generated
+    private LocalDateTime eventDate;     // User-provided
     private EventType type;
     private String title;
     private String description;
