@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.dtos;
 
-import es.upm.api.domain.model.Comment;
+
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
 import jakarta.validation.Valid;
