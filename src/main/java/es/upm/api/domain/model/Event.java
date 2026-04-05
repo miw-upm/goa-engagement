@@ -24,7 +24,7 @@ public class Event {
     @NotNull
     private EventType type;
     @NotBlank
-    private String Title;
+    private String title;
     private String description;
     @NotNull
     private Status status;

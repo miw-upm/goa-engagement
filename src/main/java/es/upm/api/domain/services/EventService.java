@@ -1,7 +1,6 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.persistence.EventPersistence;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import es.upm.api.domain.model.Event;
 
@@ -13,7 +12,6 @@ public class EventService {
     private final EventPersistence eventPersistence;
     private final EngagementLetterService engagementLetterService;
 
-    @Autowired
     public EventService(EventPersistence eventPersistence, EngagementLetterService engagementLetterService) {
         this.eventPersistence = eventPersistence;
         this.engagementLetterService = engagementLetterService;
