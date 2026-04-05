@@ -45,9 +45,6 @@ class EventServiceIT {
     private EventService eventService;
 
     @Autowired
-    private EventPersistence eventPersistence;
-
-    @Autowired
     private EngagementLetterService engagementLetterService;
 
     private UUID engagementLetterId;

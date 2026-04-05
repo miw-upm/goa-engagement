@@ -468,8 +468,8 @@ class EventMapperIT {
         assertThat(responseDto.getStatus()).isEqualTo(Status.PENDING);
         assertThat(responseDto.getEngagementLetterId()).isEqualTo(engagementLetterId);
         assertThat(responseDto.getComments()).hasSize(1);
-        assertThat(responseDto.getComments().get(0).getContent()).isEqualTo("Test comment");
-        assertThat(responseDto.getComments().get(0).getCreatedDate()).isNotNull();
+        assertThat(responseDto.getComments().getFirst().getContent()).isEqualTo("Test comment");
+        assertThat(responseDto.getComments().getFirst().getCreatedDate()).isNotNull();
     }
 }
 
