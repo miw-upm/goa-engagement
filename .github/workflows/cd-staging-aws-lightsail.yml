@@ -61,8 +61,7 @@ jobs:
               --memory 512m \
               --memory-swap 1024m \
               -e MONGODB_URI="${{ secrets.MONGODB_URI_STAGING }}" \
-              -e JWK_URI="https://goa.miwupm.es/api/goa-user/oauth2/jwks" \
-              -e TOKEN_URI="https://goa.miwupm.es/api/goa-user/oauth2/token" \
+              -e HOST="https://goa.miwupm.es" \
               -e API_CLIENT_ID="${{ secrets.API_CLIENT_ID }}" \
               -e API_CLIENT_SECRET="${{ secrets.API_CLIENT_SECRET }}" \
               ghcr.io/${{ env.REPOSITORY }}:latest
