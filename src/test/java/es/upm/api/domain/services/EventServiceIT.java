@@ -1,6 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.Comment;
+import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -47,6 +49,8 @@ class EventServiceIT {
         eventDate = LocalDateTime.now().plusDays(1);
         Mockito.reset(engagementLetterService);
         Mockito.reset(userWebClient);
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
     }
 
     @Test
@@ -78,38 +82,22 @@ class EventServiceIT {
     }
 
     @Test
-    void testCreateEventWithComments() {
-        // Arrange
-        List<Comment> comments = new ArrayList<>();
-        comments.add(Comment.builder()
-                .createdDate(LocalDateTime.now())
-                .content("First comment")
-                .build());
-        comments.add(Comment.builder()
-                .createdDate(LocalDateTime.now())
-                .content("Second comment")
-                .build());
-
+    void testCreateEventStartsWithoutComments() {
         Event event = Event.builder()
                 .eventDate(eventDate)
                 .type(EventType.PHASES)
-                .title("Event with Comments")
+                .title("Event without initial comments")
                 .description("Test Description")
                 .status(Status.IN_PROGRESS)
                 .engagementLetterId(engagementLetterId)
-                .comments(comments)
                 .build();
 
-        // Act
         Event createdEvent = eventService.create(event);
 
-        // Assert
         assertThat(createdEvent).isNotNull();
         assertThat(createdEvent.getId()).isNotNull();
         assertThat(createdEvent.getCreatedDate()).isNotNull();
-        assertThat(createdEvent.getComments()).hasSize(2);
-        assertThat(createdEvent.getComments().get(0).getContent()).isEqualTo("First comment");
-        assertThat(createdEvent.getComments().get(1).getContent()).isEqualTo("Second comment");
+        assertThat(createdEvent.getComments()).isEmpty();
     }
 
     @Test
@@ -354,10 +342,10 @@ class EventServiceIT {
         Event persistedEvent = eventPersistence.readById(createdEvent.getId());
         assertThat(createdComment.getCreatedDate()).isNotNull();
         assertThat(createdComment.getContent()).isEqualTo("Seguimiento del evento");
-        assertThat(createdComment.getAuthor().getId()).isEqualTo(authenticatedUser.getId());
+        assertThat(createdComment.getAuthorId()).isEqualTo(authenticatedUser.getId());
         assertThat(persistedEvent.getComments()).hasSize(1);
         assertThat(persistedEvent.getComments().getFirst().getContent()).isEqualTo("Seguimiento del evento");
-        assertThat(persistedEvent.getComments().getFirst().getAuthor().getId()).isEqualTo(authenticatedUser.getId());
+        assertThat(persistedEvent.getComments().getFirst().getAuthorId()).isEqualTo(authenticatedUser.getId());
     }
 
     @Test

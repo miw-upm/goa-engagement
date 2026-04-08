@@ -21,11 +21,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -53,6 +52,8 @@ class EventResourceIT {
     void setUp() {
         engagementLetterId = UUID.randomUUID();
         eventDate = LocalDateTime.now().plusDays(1);
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
         BDDMockito.given(this.userWebClient.readUserByMobile("600000001"))
                 .willReturn(UserDto.builder()
                         .id(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0001"))
@@ -72,7 +73,6 @@ class EventResourceIT {
                 .description("Event Description")
                 .status(Status.PENDING)
                 .engagementLetterId(engagementLetterId)
-                .comments(null)
                 .build();
 
         String eventJson = objectMapper.writeValueAsString(eventCreateDto);
@@ -95,20 +95,14 @@ class EventResourceIT {
 
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
-    void testCreateEventWithComments() throws Exception {
-        // Arrange
-        List<CommentCreateDto> comments = new ArrayList<>();
-        comments.add(CommentCreateDto.builder().content("First comment").build());
-        comments.add(CommentCreateDto.builder().content("Second comment").build());
-
+    void testCreateEventStartsWithoutComments() throws Exception {
         EventCreateDto eventCreateDto = EventCreateDto.builder()
                 .eventDate(eventDate)
                 .type(EventType.PHASES)
-                .title("Event with Comments")
+                .title("Event without Comments")
                 .description("Event Description")
                 .status(Status.IN_PROGRESS)
                 .engagementLetterId(engagementLetterId)
-                .comments(comments)
                 .build();
 
         String eventJson = objectMapper.writeValueAsString(eventCreateDto);
@@ -121,13 +115,9 @@ class EventResourceIT {
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.createdDate", notNullValue()))
                 .andExpect(jsonPath("$.type", is("PHASES")))
-                .andExpect(jsonPath("$.title", is("Event with Comments")))
+                .andExpect(jsonPath("$.title", is("Event without Comments")))
                 .andExpect(jsonPath("$.status", is("IN_PROGRESS")))
-                .andExpect(jsonPath("$.comments", hasSize(2)))
-                .andExpect(jsonPath("$.comments[0].content", is("First comment")))
-                .andExpect(jsonPath("$.comments[0].createdDate", notNullValue()))
-                .andExpect(jsonPath("$.comments[1].content", is("Second comment")))
-                .andExpect(jsonPath("$.comments[1].createdDate", notNullValue()));
+                .andExpect(jsonPath("$.comments", hasSize(0)));
     }
 
     @Test
@@ -307,32 +297,6 @@ class EventResourceIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(eventJson))
                 .andExpect(status().isUnauthorized());
-    }
-
-    @Test
-    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
-    void testCreateEventWithEmptyCommentContent_ShouldFail() throws Exception {
-        // Arrange
-        List<CommentCreateDto> comments = new ArrayList<>();
-        comments.add(CommentCreateDto.builder().content("  ").build()); // Empty content
-
-        EventCreateDto eventCreateDto = EventCreateDto.builder()
-                .eventDate(eventDate)
-                .type(EventType.MILESTONE)
-                .title("Event Title")
-                .description("Event Description")
-                .status(Status.PENDING)
-                .engagementLetterId(engagementLetterId)
-                .comments(comments)
-                .build();
-
-        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
-
-        // Act & Assert
-        mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
-                .andExpect(status().isBadRequest());
     }
 
     @Test
