@@ -1,9 +1,7 @@
 package es.upm.api.infrastructure.dtos;
 
-
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -11,9 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 @Builder
@@ -32,6 +28,4 @@ public class EventCreateDto {
     private Status status;
     @NotNull(message = "Engagement letter ID is required")
     private UUID engagementLetterId;
-    @Valid
-    private List<CommentCreateDto> comments;
 }

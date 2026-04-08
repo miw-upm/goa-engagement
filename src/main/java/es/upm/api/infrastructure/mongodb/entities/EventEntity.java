@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,21 +33,17 @@ public class EventEntity {
 
     public EventEntity(Event event) {
         BeanUtils.copyProperties(event, this);
-        if(event.getComments() != null) {
-            this.comments = event.getComments().stream().
-                    map(CommentEntity::new).
-                    toList();
-        }
+        this.comments = event.getComments() == null ? new ArrayList<>() : event.getComments().stream()
+                .map(CommentEntity::new)
+                .toList();
     }
 
     public Event toEvent() {
         Event event = new Event();
         BeanUtils.copyProperties(this, event);
-        if(this.comments != null) {
-            event.setComments(this.comments.stream()
-                    .map(CommentEntity::toComment)
-                    .toList());
-        }
+        event.setComments(this.comments == null ? new ArrayList<>() : this.comments.stream()
+                .map(CommentEntity::toComment)
+                .toList());
         return event;
     }
 
