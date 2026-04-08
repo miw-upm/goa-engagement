@@ -1,6 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
+import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.PublicAccessToken;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -89,28 +91,58 @@ public class EngagementLetterService {
     }
 
     public EngagementLetter readPublicByToken(String token) {
-        PublicAccessToken publicAccessToken = this.validatePublicAccessToken(token);
+        PublicAccessToken publicAccessToken = this.validatePublicAccessToken(token, "access");
         int currentUsedCount = Optional.ofNullable(publicAccessToken.getUsedCount()).orElse(0);
         publicAccessToken.setUsedCount(currentUsedCount + 1);
         this.publicAccessTokenPersistence.update(publicAccessToken);
         return this.engagementLetterPersistence.readById(publicAccessToken.getEngagementLetterId());
     }
 
-    private PublicAccessToken validatePublicAccessToken(String token) {
+    public EngagementLetter acceptPublicByToken(String token) {
+        PublicAccessToken publicAccessToken = this.validatePublicAccessToken(token, "accept");
+        EngagementLetter engagementLetter = this.engagementLetterPersistence.readById(publicAccessToken.getEngagementLetterId());
+        if (engagementLetter.getClosingDate() != null) {
+            throw new BadRequestException("Cannot accept engagement letter: engagement letter is closed");
+        }
+        if (engagementLetter.getAcceptanceEngagements() != null && !engagementLetter.getAcceptanceEngagements().isEmpty()) {
+            throw new BadRequestException("Cannot accept engagement letter: engagement letter has already been accepted");
+        }
+
+        AcceptanceEngagement acceptanceEngagement = AcceptanceEngagement.builder()
+                .signatureDate(LocalDateTime.now())
+                .signer(Optional.ofNullable(publicAccessToken.getCustomerId())
+                        .map(customerId -> UserDto.builder().id(customerId).build())
+                        .orElse(null))
+                .build();
+        List<AcceptanceEngagement> acceptanceEngagements = new ArrayList<>(
+                Optional.ofNullable(engagementLetter.getAcceptanceEngagements()).orElse(List.of())
+        );
+        acceptanceEngagements.add(acceptanceEngagement);
+        engagementLetter.setAcceptanceEngagements(acceptanceEngagements);
+        this.engagementLetterPersistence.update(engagementLetter.getId(), engagementLetter);
+
+        int currentUsedCount = Optional.ofNullable(publicAccessToken.getUsedCount()).orElse(0);
+        publicAccessToken.setUsedCount(currentUsedCount + 1);
+        publicAccessToken.setIsActive(false);
+        this.publicAccessTokenPersistence.update(publicAccessToken);
+        return engagementLetter;
+    }
+
+    private PublicAccessToken validatePublicAccessToken(String token, String action) {
         PublicAccessToken publicAccessToken = this.publicAccessTokenPersistence.readByToken(token);
         if (!Boolean.TRUE.equals(publicAccessToken.getIsActive())) {
-            throw new BadRequestException("Cannot access engagement letter: public access token is inactive");
+            throw new BadRequestException("Cannot " + action + " engagement letter: public access token is inactive");
         }
         if (publicAccessToken.getExpiresAt() != null && publicAccessToken.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new BadRequestException("Cannot access engagement letter: public access token has expired");
+            throw new BadRequestException("Cannot " + action + " engagement letter: public access token has expired");
         }
         int currentUsedCount = Optional.ofNullable(publicAccessToken.getUsedCount()).orElse(0);
         int maxUses = Optional.ofNullable(publicAccessToken.getMaxUses()).orElse(Integer.MAX_VALUE);
         if (currentUsedCount >= maxUses) {
-            throw new BadRequestException("Cannot access engagement letter: public access token has exceeded its maximum uses");
+            throw new BadRequestException("Cannot " + action + " engagement letter: public access token has exceeded its maximum uses");
         }
         if (publicAccessToken.getPurpose() != TokenPurpose.ACCEPT_ENGAGEMENT) {
-            throw new BadRequestException("Cannot access engagement letter: public access token purpose is invalid");
+            throw new BadRequestException("Cannot " + action + " engagement letter: public access token purpose is invalid");
         }
         return publicAccessToken;
     }
