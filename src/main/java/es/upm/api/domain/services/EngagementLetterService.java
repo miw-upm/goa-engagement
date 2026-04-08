@@ -88,6 +88,33 @@ public class EngagementLetterService {
         return this.publicAccessTokenPersistence.create(publicAccessToken);
     }
 
+    public EngagementLetter readPublicByToken(String token) {
+        PublicAccessToken publicAccessToken = this.validatePublicAccessToken(token);
+        int currentUsedCount = Optional.ofNullable(publicAccessToken.getUsedCount()).orElse(0);
+        publicAccessToken.setUsedCount(currentUsedCount + 1);
+        this.publicAccessTokenPersistence.update(publicAccessToken);
+        return this.engagementLetterPersistence.readById(publicAccessToken.getEngagementLetterId());
+    }
+
+    private PublicAccessToken validatePublicAccessToken(String token) {
+        PublicAccessToken publicAccessToken = this.publicAccessTokenPersistence.readByToken(token);
+        if (!Boolean.TRUE.equals(publicAccessToken.getIsActive())) {
+            throw new BadRequestException("Cannot access engagement letter: public access token is inactive");
+        }
+        if (publicAccessToken.getExpiresAt() != null && publicAccessToken.getExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new BadRequestException("Cannot access engagement letter: public access token has expired");
+        }
+        int currentUsedCount = Optional.ofNullable(publicAccessToken.getUsedCount()).orElse(0);
+        int maxUses = Optional.ofNullable(publicAccessToken.getMaxUses()).orElse(Integer.MAX_VALUE);
+        if (currentUsedCount >= maxUses) {
+            throw new BadRequestException("Cannot access engagement letter: public access token has exceeded its maximum uses");
+        }
+        if (publicAccessToken.getPurpose() != TokenPurpose.ACCEPT_ENGAGEMENT) {
+            throw new BadRequestException("Cannot access engagement letter: public access token purpose is invalid");
+        }
+        return publicAccessToken;
+    }
+
     public Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria) {
         if (criteria.getOwner() == null) {
             return this.engagementLetterPersistence.findNullSafe(criteria);

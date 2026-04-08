@@ -1,5 +1,6 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.PublicAccessToken;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.infrastructure.mongodb.entities.PublicAccessTokenEntity;
@@ -18,6 +19,19 @@ public class PublicAccessTokenPersistenceMongodb implements PublicAccessTokenPer
 
     @Override
     public PublicAccessToken create(PublicAccessToken publicAccessToken) {
+        return this.publicAccessTokenRepository.save(new PublicAccessTokenEntity(publicAccessToken))
+                .toPublicAccessToken();
+    }
+
+    @Override
+    public PublicAccessToken readByToken(String token) {
+        return this.publicAccessTokenRepository.findByToken(token)
+                .orElseThrow(() -> new NotFoundException("The PublicAccessToken doesn't exist: " + token))
+                .toPublicAccessToken();
+    }
+
+    @Override
+    public PublicAccessToken update(PublicAccessToken publicAccessToken) {
         return this.publicAccessTokenRepository.save(new PublicAccessTokenEntity(publicAccessToken))
                 .toPublicAccessToken();
     }
