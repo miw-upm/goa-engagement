@@ -4,17 +4,16 @@ import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
+import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.persistence.EventPersistence;
-import es.upm.api.infrastructure.mongodb.persistence.EventPersistenceMongodb;
+import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,29 +22,21 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.*;
 
-@DataMongoTest
+@SpringBootTest
 @ActiveProfiles("test")
-@Import({EventService.class, EventPersistenceMongodb.class})
 class EventServiceIT {
-
-    @TestConfiguration
-    static class EventServiceTestConfiguration {
-        @Bean
-        public EventService eventService(EventPersistence eventPersistence, EngagementLetterService engagementLetterService) {
-            return new EventService(eventPersistence, engagementLetterService);
-        }
-
-        @Bean
-        public EngagementLetterService engagementLetterService() {
-            return Mockito.mock(EngagementLetterService.class);
-        }
-    }
 
     @Autowired
     private EventService eventService;
 
     @Autowired
+    private EventPersistence eventPersistence;
+
+    @MockitoBean
     private EngagementLetterService engagementLetterService;
+
+    @MockitoBean
+    private UserWebClient userWebClient;
 
     private UUID engagementLetterId;
     private LocalDateTime eventDate;
@@ -55,6 +46,7 @@ class EventServiceIT {
         engagementLetterId = UUID.randomUUID();
         eventDate = LocalDateTime.now().plusDays(1);
         Mockito.reset(engagementLetterService);
+        Mockito.reset(userWebClient);
     }
 
     @Test
@@ -332,6 +324,56 @@ class EventServiceIT {
         // Assert
         assertThat(createdEvent).isNotNull();
         assertThat(createdEvent.getDescription()).isNull();
+    }
+
+    @Test
+    void testAddCommentToEvent() {
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with comment")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+        UserDto authenticatedUser = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .firstName("Laura")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(authenticatedUser.getMobile()))
+                .thenReturn(authenticatedUser);
+
+        Comment createdComment = eventService.addComment(
+                createdEvent.getId(),
+                authenticatedUser.getMobile(),
+                "Seguimiento del evento"
+        );
+
+        Event persistedEvent = eventPersistence.readById(createdEvent.getId());
+        assertThat(createdComment.getCreatedDate()).isNotNull();
+        assertThat(createdComment.getContent()).isEqualTo("Seguimiento del evento");
+        assertThat(createdComment.getAuthor().getId()).isEqualTo(authenticatedUser.getId());
+        assertThat(persistedEvent.getComments()).hasSize(1);
+        assertThat(persistedEvent.getComments().getFirst().getContent()).isEqualTo("Seguimiento del evento");
+        assertThat(persistedEvent.getComments().getFirst().getAuthor().getId()).isEqualTo(authenticatedUser.getId());
+    }
+
+    @Test
+    void testAddCommentToMissingEvent() {
+        UserDto authenticatedUser = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(authenticatedUser.getMobile()))
+                .thenReturn(authenticatedUser);
+
+        assertThatThrownBy(() -> eventService.addComment(
+                UUID.randomUUID(),
+                authenticatedUser.getMobile(),
+                "Comentario"
+        )).hasMessageContaining("The Event ID doesn't exist");
     }
 }
 

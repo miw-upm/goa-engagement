@@ -498,5 +498,34 @@ class EventPersistenceMongodbIT {
         // Comments should be null or empty depending on implementation
         assertThat(savedEvent.get().getComments()).isNull();
     }
+
+    @Test
+    void testAddCommentToEvent() {
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Commentable event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Comment comment = Comment.builder()
+                .author(es.upm.api.domain.model.UserDto.builder().id(UUID.randomUUID()).build())
+                .createdDate(LocalDateTime.now())
+                .content("Comentario persistido")
+                .build();
+        eventPersistence.create(event);
+
+        Comment persistedComment = eventPersistence.addComment(eventId, comment);
+
+        Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
+        assertThat(persistedComment.getContent()).isEqualTo("Comentario persistido");
+        assertThat(savedEvent).isPresent();
+        assertThat(savedEvent.get().getComments()).hasSize(1);
+        assertThat(savedEvent.get().getComments().getFirst().getContent()).isEqualTo("Comentario persistido");
+        assertThat(savedEvent.get().getComments().getFirst().getAuthorId()).isEqualTo(comment.getAuthor().getId());
+    }
 }
 
