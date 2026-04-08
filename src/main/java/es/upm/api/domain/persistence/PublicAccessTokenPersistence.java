@@ -6,4 +6,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PublicAccessTokenPersistence {
     PublicAccessToken create(PublicAccessToken publicAccessToken);
+
+    PublicAccessToken readByToken(String token);
+
+    PublicAccessToken update(PublicAccessToken publicAccessToken);
 }
