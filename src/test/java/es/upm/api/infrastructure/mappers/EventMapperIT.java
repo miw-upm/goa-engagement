@@ -4,7 +4,6 @@ import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
-import es.upm.api.infrastructure.dtos.CommentCreateDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventResponseDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -29,16 +28,17 @@ class EventMapperIT {
 
     private UUID engagementLetterId;
     private LocalDateTime eventDate;
+    private UUID authorId;
 
     @BeforeEach
     void setUp() {
         engagementLetterId = UUID.randomUUID();
         eventDate = LocalDateTime.now().plusDays(1);
+        authorId = UUID.randomUUID();
     }
 
     @Test
-    void testToEntity_FromCreateDto_WithoutComments() {
-        // Arrange
+    void testToEntity_FromCreateDto() {
         EventCreateDto dto = EventCreateDto.builder()
                 .eventDate(eventDate)
                 .type(EventType.MILESTONE)
@@ -46,13 +46,10 @@ class EventMapperIT {
                 .description("Test Description")
                 .status(Status.PENDING)
                 .engagementLetterId(engagementLetterId)
-                .comments(null)
                 .build();
 
-        // Act
         Event event = eventMapper.toEntity(dto);
 
-        // Assert
         assertThat(event).isNotNull();
         assertThat(event.getId()).isNull();
         assertThat(event.getCreatedDate()).isNull();
@@ -63,41 +60,6 @@ class EventMapperIT {
         assertThat(event.getStatus()).isEqualTo(Status.PENDING);
         assertThat(event.getEngagementLetterId()).isEqualTo(engagementLetterId);
         assertThat(event.getComments()).isEmpty();
-    }
-
-    @Test
-    void testToEntity_FromCreateDto_WithComments() {
-        // Arrange
-        List<CommentCreateDto> comments = new ArrayList<>();
-        comments.add(CommentCreateDto.builder().content("First comment").build());
-        comments.add(CommentCreateDto.builder().content("Second comment").build());
-
-        EventCreateDto dto = EventCreateDto.builder()
-                .eventDate(eventDate)
-                .type(EventType.PHASES)
-                .title("Event with Comments")
-                .description("Test Description")
-                .status(Status.IN_PROGRESS)
-                .engagementLetterId(engagementLetterId)
-                .comments(comments)
-                .build();
-
-        LocalDateTime beforeMapping = LocalDateTime.now();
-
-        // Act
-        Event event = eventMapper.toEntity(dto);
-
-        LocalDateTime afterMapping = LocalDateTime.now();
-
-        // Assert
-        assertThat(event).isNotNull();
-        assertThat(event.getComments()).hasSize(2);
-        assertThat(event.getComments().getFirst().getContent()).isEqualTo("First comment");
-        assertThat(event.getComments().get(1).getContent()).isEqualTo("Second comment");
-        // Verify that createdDate is automatically set
-        assertThat(event.getComments().getFirst().getCreatedDate()).isNotNull();
-        assertThat(event.getComments().getFirst().getCreatedDate()).isAfterOrEqualTo(beforeMapping);
-        assertThat(event.getComments().getFirst().getCreatedDate()).isBeforeOrEqualTo(afterMapping);
     }
 
     @Test
@@ -242,10 +204,12 @@ class EventMapperIT {
 
         List<Comment> comments = new ArrayList<>();
         comments.add(Comment.builder()
+                .authorId(authorId)
                 .createdDate(commentDate)
                 .content("First comment")
                 .build());
         comments.add(Comment.builder()
+                .authorId(authorId)
                 .createdDate(commentDate)
                 .content("Second comment")
                 .build());
@@ -268,8 +232,10 @@ class EventMapperIT {
         // Assert
         assertThat(dto).isNotNull();
         assertThat(dto.getComments()).hasSize(2);
+        assertThat(dto.getComments().get(0).getAuthorId()).isEqualTo(authorId);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("First comment");
         assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(commentDate);
+        assertThat(dto.getComments().get(1).getAuthorId()).isEqualTo(authorId);
         assertThat(dto.getComments().get(1).getContent()).isEqualTo("Second comment");
         assertThat(dto.getComments().get(1).getCreatedDate()).isEqualTo(commentDate);
     }
@@ -434,9 +400,6 @@ class EventMapperIT {
     @Test
     void testRoundTripMapping_CreateDtoToEventToResponseDto() {
         // Arrange
-        List<CommentCreateDto> commentDtos = new ArrayList<>();
-        commentDtos.add(CommentCreateDto.builder().content("Test comment").build());
-
         EventCreateDto createDto = EventCreateDto.builder()
                 .eventDate(eventDate)
                 .type(EventType.MILESTONE)
@@ -444,7 +407,6 @@ class EventMapperIT {
                 .description("Test Description")
                 .status(Status.PENDING)
                 .engagementLetterId(engagementLetterId)
-                .comments(commentDtos)
                 .build();
 
         // Act - First mapping: CreateDto to Entity
@@ -467,9 +429,7 @@ class EventMapperIT {
         assertThat(responseDto.getDescription()).isEqualTo("Test Description");
         assertThat(responseDto.getStatus()).isEqualTo(Status.PENDING);
         assertThat(responseDto.getEngagementLetterId()).isEqualTo(engagementLetterId);
-        assertThat(responseDto.getComments()).hasSize(1);
-        assertThat(responseDto.getComments().getFirst().getContent()).isEqualTo("Test comment");
-        assertThat(responseDto.getComments().getFirst().getCreatedDate()).isNotNull();
+        assertThat(responseDto.getComments()).isEmpty();
     }
 }
 

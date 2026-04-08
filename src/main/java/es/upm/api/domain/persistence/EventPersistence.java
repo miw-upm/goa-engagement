@@ -1,9 +1,16 @@
 package es.upm.api.domain.persistence;
 
+import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import org.springframework.stereotype.Repository;
+
+import java.util.UUID;
 
 @Repository
 public interface EventPersistence {
     void create(Event event);
+
+    Event readById(UUID id);
+
+    Comment addComment(UUID eventId, Comment comment);
 }

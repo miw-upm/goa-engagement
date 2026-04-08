@@ -33,6 +33,7 @@ class EventPersistenceMongodbIT {
     private UUID engagementLetterId;
     private LocalDateTime eventDate;
     private LocalDateTime createdDate;
+    private UUID authorId;
 
     @BeforeEach
     void setUp() {
@@ -43,6 +44,7 @@ class EventPersistenceMongodbIT {
         engagementLetterId = UUID.randomUUID();
         eventDate = LocalDateTime.now().plusDays(1);
         createdDate = LocalDateTime.now();
+        authorId = UUID.randomUUID();
     }
 
     @Test
@@ -76,39 +78,23 @@ class EventPersistenceMongodbIT {
     }
 
     @Test
-    void testCreateEventWithComments() {
-        // Arrange
-        List<Comment> comments = new ArrayList<>();
-        comments.add(Comment.builder()
-                .createdDate(LocalDateTime.now())
-                .content("First comment")
-                .build());
-        comments.add(Comment.builder()
-                .createdDate(LocalDateTime.now())
-                .content("Second comment")
-                .build());
-
+    void testCreateEventStartsWithoutComments() {
         Event event = Event.builder()
                 .id(eventId)
                 .createdDate(createdDate)
                 .eventDate(eventDate)
                 .type(EventType.PHASES)
-                .title("Event with Comments")
+                .title("Event without Comments")
                 .description("Test Description")
                 .status(Status.IN_PROGRESS)
                 .engagementLetterId(engagementLetterId)
-                .comments(comments)
                 .build();
 
-        // Act
         eventPersistence.create(event);
 
-        // Assert
         Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
         assertThat(savedEvent).isPresent();
-        assertThat(savedEvent.get().getComments()).hasSize(2);
-        assertThat(savedEvent.get().getComments().get(0).getContent()).isEqualTo("First comment");
-        assertThat(savedEvent.get().getComments().get(1).getContent()).isEqualTo("Second comment");
+        assertThat(savedEvent.get().getComments()).isEmpty();
     }
 
     @Test
@@ -299,10 +285,12 @@ class EventPersistenceMongodbIT {
         // Arrange
         List<CommentEntity> commentEntities = new ArrayList<>();
         commentEntities.add(CommentEntity.builder()
+                .authorId(authorId)
                 .createdDate(LocalDateTime.now())
                 .content("Test comment 1")
                 .build());
         commentEntities.add(CommentEntity.builder()
+                .authorId(authorId)
                 .createdDate(LocalDateTime.now())
                 .content("Test comment 2")
                 .build());
@@ -324,7 +312,9 @@ class EventPersistenceMongodbIT {
 
         // Assert
         assertThat(event.getComments()).hasSize(2);
+        assertThat(event.getComments().get(0).getAuthorId()).isEqualTo(authorId);
         assertThat(event.getComments().get(0).getContent()).isEqualTo("Test comment 1");
+        assertThat(event.getComments().get(1).getAuthorId()).isEqualTo(authorId);
         assertThat(event.getComments().get(1).getContent()).isEqualTo("Test comment 2");
     }
 
@@ -361,10 +351,12 @@ class EventPersistenceMongodbIT {
         // Arrange
         List<Comment> comments = new ArrayList<>();
         comments.add(Comment.builder()
+                .authorId(authorId)
                 .createdDate(LocalDateTime.now())
                 .content("Comment 1")
                 .build());
         comments.add(Comment.builder()
+                .authorId(authorId)
                 .createdDate(LocalDateTime.now())
                 .content("Comment 2")
                 .build());
@@ -395,6 +387,7 @@ class EventPersistenceMongodbIT {
         // Arrange
         LocalDateTime commentDate = LocalDateTime.now();
         CommentEntity commentEntity = CommentEntity.builder()
+                .authorId(authorId)
                 .createdDate(commentDate)
                 .content("Test comment")
                 .build();
@@ -404,6 +397,7 @@ class EventPersistenceMongodbIT {
 
         // Assert
         assertThat(comment).isNotNull();
+        assertThat(comment.getAuthorId()).isEqualTo(authorId);
         assertThat(comment.getCreatedDate()).isEqualTo(commentDate);
         assertThat(comment.getContent()).isEqualTo("Test comment");
     }
@@ -413,6 +407,7 @@ class EventPersistenceMongodbIT {
         // Arrange
         LocalDateTime commentDate = LocalDateTime.now();
         Comment comment = Comment.builder()
+                .authorId(authorId)
                 .createdDate(commentDate)
                 .content("Test comment")
                 .build();
@@ -422,6 +417,7 @@ class EventPersistenceMongodbIT {
 
         // Assert
         assertThat(commentEntity).isNotNull();
+        assertThat(commentEntity.getAuthorId()).isEqualTo(authorId);
         assertThat(commentEntity.getCreatedDate()).isEqualTo(commentDate);
         assertThat(commentEntity.getContent()).isEqualTo("Test comment");
     }
@@ -495,8 +491,36 @@ class EventPersistenceMongodbIT {
         // Assert
         Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
         assertThat(savedEvent).isPresent();
-        // Comments should be null or empty depending on implementation
-        assertThat(savedEvent.get().getComments()).isNull();
+        assertThat(savedEvent.get().getComments()).isEmpty();
+    }
+
+    @Test
+    void testAddCommentToEvent() {
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Commentable event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Comment comment = Comment.builder()
+                .authorId(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .content("Comentario persistido")
+                .build();
+        eventPersistence.create(event);
+
+        Comment persistedComment = eventPersistence.addComment(eventId, comment);
+
+        Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
+        assertThat(persistedComment.getContent()).isEqualTo("Comentario persistido");
+        assertThat(savedEvent).isPresent();
+        assertThat(savedEvent.get().getComments()).hasSize(1);
+        assertThat(savedEvent.get().getComments().getFirst().getContent()).isEqualTo("Comentario persistido");
+        assertThat(savedEvent.get().getComments().getFirst().getAuthorId()).isEqualTo(comment.getAuthorId());
     }
 }
 
