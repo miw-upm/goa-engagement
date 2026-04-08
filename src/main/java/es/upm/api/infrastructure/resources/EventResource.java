@@ -4,7 +4,6 @@ import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.services.EventService;
 import es.upm.api.infrastructure.dtos.CommentCreateDto;
-import es.upm.api.infrastructure.dtos.EventCommentResponseDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventResponseDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
@@ -44,14 +43,13 @@ public class EventResource {
     @PostMapping(ID_COMMENTS)
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create comment for event")
-    public EventCommentResponseDto createComment(@PathVariable UUID eventId,
-                                                 @Valid @RequestBody CommentCreateDto commentCreateDto,
-                                                 Authentication authentication) {
-        Comment createdComment = this.eventService.addComment(
+    public void createComment(@PathVariable UUID eventId,
+                              @Valid @RequestBody CommentCreateDto commentCreateDto,
+                              Authentication authentication) {
+        this.eventService.addComment(
                 eventId,
                 authentication.getName(),
                 commentCreateDto.getContent()
         );
-        return this.eventMapper.toEventCommentResponseDto(createdComment);
     }
 }
