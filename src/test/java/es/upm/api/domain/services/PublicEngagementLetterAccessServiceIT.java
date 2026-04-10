@@ -2,11 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.exceptions.NotFoundException;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.LegalProcedure;
-import es.upm.api.domain.model.PaymentMethod;
-import es.upm.api.domain.model.PublicAccessToken;
-import es.upm.api.domain.model.TokenPurpose;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;

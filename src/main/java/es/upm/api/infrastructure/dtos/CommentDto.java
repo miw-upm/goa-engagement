@@ -1,7 +1,6 @@
 package es.upm.api.infrastructure.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import es.upm.api.domain.model.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

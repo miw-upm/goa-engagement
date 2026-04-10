@@ -5,12 +5,7 @@ import es.upm.api.infrastructure.dtos.PublicEngagementLetterAcceptRequestDto;
 import es.upm.api.infrastructure.dtos.PublicEngagementLetterAcceptResponseDto;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS)

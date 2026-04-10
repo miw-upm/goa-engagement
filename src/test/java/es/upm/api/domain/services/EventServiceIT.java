@@ -1,11 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.Comment;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.Event;
-import es.upm.api.domain.model.EventType;
-import es.upm.api.domain.model.Status;
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,10 +13,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 
 @SpringBootTest

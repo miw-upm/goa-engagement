@@ -1,12 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.model.AcceptanceEngagement;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.EngagementLetterFindCriteria;
-import es.upm.api.domain.model.PublicAccessToken;
-import es.upm.api.domain.model.TokenPurpose;
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
