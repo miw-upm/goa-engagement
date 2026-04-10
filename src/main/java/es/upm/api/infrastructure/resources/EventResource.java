@@ -33,7 +33,7 @@ public class EventResource {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create event")
-    public EventResponseDto create(@Valid @RequestBody EventCreateDto eventCreateDto){
+    public EventResponseDto create(@Valid @RequestBody EventCreateDto eventCreateDto) {
         Event event = this.eventMapper.toEntity(eventCreateDto);
         Event createdEvent = this.eventService.create(event);
         return this.eventMapper.toDto(createdEvent);

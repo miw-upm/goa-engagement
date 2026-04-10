@@ -24,6 +24,7 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/jwks
+
 app:
   oauth2:
     token-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/token

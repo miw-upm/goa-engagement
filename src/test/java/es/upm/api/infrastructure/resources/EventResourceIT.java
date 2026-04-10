@@ -1,5 +1,6 @@
 package es.upm.api.infrastructure.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.model.UserDto;
@@ -7,18 +8,17 @@ import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.CommentCreateDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.mockito.BDDMockito;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.http.MediaType;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -79,8 +79,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.createdDate", notNullValue()))
@@ -109,8 +109,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", notNullValue()))
                 .andExpect(jsonPath("$.createdDate", notNullValue()))
@@ -137,8 +137,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isBadRequest());
     }
 
@@ -159,8 +159,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isBadRequest());
     }
 
@@ -181,8 +181,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isBadRequest());
     }
 
@@ -203,8 +203,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isBadRequest());
     }
 
@@ -224,8 +224,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -246,8 +246,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title", is("Event by Manager")))
                 .andExpect(jsonPath("$.status", is("COMPLETED")));
@@ -270,8 +270,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title", is("Event by Operator")));
     }
@@ -294,8 +294,8 @@ class EventResourceIT {
         // Act & Assert
         // When authenticated but with unauthorized role, Spring Security returns 401
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -316,8 +316,8 @@ class EventResourceIT {
 
         // Act & Assert
         mockMvc.perform(post(EventResource.EVENTS)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(eventJson))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.status", is("CANCELLED")));
     }
