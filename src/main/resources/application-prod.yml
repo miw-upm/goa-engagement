@@ -4,7 +4,9 @@ spring:
       uri: ${MONGODB_URI}
   security:
     oauth2:
-      jwk-uri: ${HOST}/api/goa-user/oauth2/jwks
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/jwks
       token-uri: ${HOST}/api/goa-user/oauth2/token
       api-client-id: ${API_CLIENT_ID}
       api-client-secret: ${API_CLIENT_SECRET}

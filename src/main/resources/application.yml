@@ -21,7 +21,9 @@ spring:
     default-property-inclusion: NON_NULL
   security:
     oauth2:
-      jwk-uri: http://localhost:8080/api/goa-user/oauth2/jwks
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/jwks
       token-uri: http://localhost:8080/api/goa-user/oauth2/token
       api-client-id: api-client-id
       api-client-secret: api-client-secret
