@@ -1,10 +1,17 @@
+server:
+  port: 8082
+
+info:
+  app:
+    artifact: "@project.artifactId@"
+    version: "@project.version@"
+    build: "@maven.build.timestamp@"
+
 spring:
   application:
     name: goa-engagement
   profiles:
-    # Profile ----------------------------------------
-    active: dev
-  # ------------------------------------------------
+    default: dev
   output:
     ansi:
       enabled: ALWAYS
@@ -19,14 +26,6 @@ spring:
       api-client-id: api-client-id
       api-client-secret: api-client-secret
 
-server:
-  port: 8082
-
-info:
-  app:
-    artifact: "@project.artifactId@"
-    version: "@project.version@"
-    build: "@maven.build.timestamp@"
 management:
   endpoints:
     web:
@@ -39,8 +38,7 @@ management:
 logging:
   level:
     root: WARN
-    es.upm: DEBUG
-    org.springframework.security: WARN
+    es.upm.api: DEBUG
 
 eureka:
   instance:
