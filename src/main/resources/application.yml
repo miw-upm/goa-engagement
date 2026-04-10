@@ -24,9 +24,11 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/jwks
-      token-uri: http://localhost:8080/api/goa-user/oauth2/token
-      api-client-id: api-client-id
-      api-client-secret: api-client-secret
+app:
+  oauth2:
+    token-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/token
+    api-client-id: ${API_CLIENT_ID:api-client-id}
+    api-client-secret: ${API_CLIENT_SECRET:api-client-secret}
 
 management:
   endpoints:

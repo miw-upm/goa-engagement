@@ -6,10 +6,13 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/jwks
-      token-uri: ${HOST}/api/goa-user/oauth2/token
-      api-client-id: ${API_CLIENT_ID}
-      api-client-secret: ${API_CLIENT_SECRET}
+          jwk-set-uri: ${BASE_URL}/api/goa-user/oauth2/jwks
+
+app:
+  oauth2:
+    token-uri: ${BASE_URL}/api/goa-user/oauth2/token
+    api-client-id: ${API_CLIENT_ID}
+    api-client-secret: ${API_CLIENT_SECRET}
 
 eureka:
   client:
