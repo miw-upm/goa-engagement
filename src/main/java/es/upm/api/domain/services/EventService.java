@@ -36,6 +36,11 @@ public class EventService {
         return event;
     }
 
+    public void delete (UUID id){
+        this.eventPersistence.delete(id);
+    }
+
+
     public Comment addComment(UUID eventId, String authenticatedUser, String content) {
         Comment comment = Comment.builder()
                 .authorId(this.userWebClient.readUserByMobile(authenticatedUser).getId())

@@ -358,5 +358,76 @@ class EventServiceIT {
                 "Comentario"
         )).hasMessageContaining("The Event ID doesn't exist");
     }
+
+    @Test
+    void testDeleteEvent() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to delete")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID eventId = createdEvent.getId();
+
+        // Verify event was created
+        Event retrievedEvent = eventPersistence.readById(eventId);
+        assertThat(retrievedEvent).isNotNull();
+        assertThat(retrievedEvent.getId()).isEqualTo(eventId);
+
+        // Act
+        eventService.delete(eventId);
+
+        // Assert - Event should no longer exist
+        assertThatThrownBy(() -> eventPersistence.readById(eventId))
+                .hasMessageContaining("The Event ID doesn't exist");
+    }
+
+    @Test
+    void testDeleteNonExistentEvent() {
+        // Arrange
+        UUID nonExistentId = UUID.randomUUID();
+
+        // Act & Assert - Should not throw exception (idempotent)
+        eventService.delete(nonExistentId);
+    }
+
+    @Test
+    void testDeleteEventWithComments() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event with comments to delete")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID eventId = createdEvent.getId();
+
+        // Add comments
+        UserDto authenticatedUser = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .firstName("Laura")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(authenticatedUser.getMobile()))
+                .thenReturn(authenticatedUser);
+        eventService.addComment(eventId, authenticatedUser.getMobile(), "Comment 1");
+        eventService.addComment(eventId, authenticatedUser.getMobile(), "Comment 2");
+
+        Event eventWithComments = eventPersistence.readById(eventId);
+        assertThat(eventWithComments.getComments()).hasSize(2);
+
+        // Act
+        eventService.delete(eventId);
+
+        // Assert - Event should no longer exist
+        assertThatThrownBy(() -> eventPersistence.readById(eventId))
+                .hasMessageContaining("The Event ID doesn't exist");
+    }
 }
 
