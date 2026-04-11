@@ -20,6 +20,7 @@ import java.util.UUID;
 @RequestMapping(EventResource.EVENTS)
 public class EventResource {
     public static final String EVENTS = "/events";
+    public static final String ID_ID = "/{id}";
     public static final String ID_COMMENTS = "/{eventId}/comments";
 
     private final EventService eventService;
@@ -37,6 +38,12 @@ public class EventResource {
         Event event = this.eventMapper.toEntity(eventCreateDto);
         Event createdEvent = this.eventService.create(event);
         return this.eventMapper.toDto(createdEvent);
+    }
+
+    @DeleteMapping(ID_ID)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable UUID id) {
+        this.eventService.delete(id);
     }
 
     @PostMapping(ID_COMMENTS)

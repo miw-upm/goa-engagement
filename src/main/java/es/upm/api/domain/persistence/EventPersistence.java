@@ -10,6 +10,8 @@ import java.util.UUID;
 public interface EventPersistence {
     void create(Event event);
 
+    void delete(UUID id);
+
     Event readById(UUID id);
 
     Comment addComment(UUID eventId, Comment comment);

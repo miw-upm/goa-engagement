@@ -31,6 +31,11 @@ public class EventPersistenceMongodb implements EventPersistence {
     }
 
     @Override
+    public void delete(UUID id) {
+        this.eventRepository.deleteById(id);
+    }
+
+    @Override
     public Event readById(UUID id) {
         return this.eventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("The Event ID doesn't exist: " + id))
