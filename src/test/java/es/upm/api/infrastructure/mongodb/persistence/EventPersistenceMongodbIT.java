@@ -522,5 +522,137 @@ class EventPersistenceMongodbIT {
         assertThat(savedEvent.get().getComments().getFirst().getContent()).isEqualTo("Comentario persistido");
         assertThat(savedEvent.get().getComments().getFirst().getAuthorId()).isEqualTo(comment.getAuthorId());
     }
+
+    @Test
+    void testDeleteEvent() {
+        // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to delete")
+                .description("Test Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        eventPersistence.create(event);
+
+        // Verify event was created
+        Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
+        assertThat(savedEvent).isPresent();
+
+        // Act
+        eventPersistence.delete(eventId);
+
+        // Assert
+        Optional<EventEntity> deletedEvent = eventRepository.findById(eventId);
+        assertThat(deletedEvent).isEmpty();
+    }
+
+    @Test
+    void testDeleteNonExistentEvent() {
+        // Arrange
+        UUID nonExistentId = UUID.randomUUID();
+
+        // Assert - Should not throw exception (MongoDB is idempotent)
+        eventPersistence.delete(nonExistentId);
+
+        // Verify nothing was deleted
+        assertThat(eventRepository.count()).isEqualTo(0);
+    }
+
+    @Test
+    void testDeleteEventWithComments() {
+        // Arrange
+        List<CommentEntity> commentEntities = new ArrayList<>();
+        commentEntities.add(CommentEntity.builder()
+                .authorId(authorId)
+                .createdDate(LocalDateTime.now())
+                .content("Comment 1")
+                .build());
+        commentEntities.add(CommentEntity.builder()
+                .authorId(authorId)
+                .createdDate(LocalDateTime.now())
+                .content("Comment 2")
+                .build());
+
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event with comments to delete")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        // Verify event with comments was created
+        Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
+        assertThat(savedEvent).isPresent();
+
+        // Act
+        eventPersistence.delete(eventId);
+
+        // Assert
+        Optional<EventEntity> deletedEvent = eventRepository.findById(eventId);
+        assertThat(deletedEvent).isEmpty();
+    }
+
+    @Test
+    void testDeleteMultipleEvents() {
+        // Arrange
+        UUID eventId1 = UUID.randomUUID();
+        UUID eventId2 = UUID.randomUUID();
+        UUID eventId3 = UUID.randomUUID();
+
+        Event event1 = Event.builder()
+                .id(eventId1)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        Event event2 = Event.builder()
+                .id(eventId2)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        Event event3 = Event.builder()
+                .id(eventId3)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        eventPersistence.create(event1);
+        eventPersistence.create(event2);
+        eventPersistence.create(event3);
+
+        assertThat(eventRepository.count()).isEqualTo(3);
+
+        // Act
+        eventPersistence.delete(eventId1);
+        eventPersistence.delete(eventId3);
+
+        // Assert
+        assertThat(eventRepository.count()).isEqualTo(1);
+        assertThat(eventRepository.findById(eventId1)).isEmpty();
+        assertThat(eventRepository.findById(eventId2)).isPresent();
+        assertThat(eventRepository.findById(eventId3)).isEmpty();
+    }
 }
 

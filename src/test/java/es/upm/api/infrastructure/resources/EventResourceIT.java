@@ -25,7 +25,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -394,6 +394,109 @@ class EventResourceIT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(commentCreateDto)))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testDeleteEventWithAdmin() throws Exception {
+        // Arrange
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to delete")
+                .description("Event Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isNoContent())
+                .andExpect(content().string(""));
+    }
+
+    @Test
+    @WithMockUser(username = "manager", authorities = {"ROLE_manager"})
+    void testDeleteEventWithManager() throws Exception {
+        // Arrange
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event to delete by manager")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "operator", authorities = {"ROLE_operator"})
+    void testDeleteEventWithOperator() throws Exception {
+        // Arrange
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.STANDARD_EVENT)
+                .title("Event to delete by operator")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void testDeleteEventWithoutAuthentication_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = {"ROLE_user"})
+    void testDeleteEventWithUnauthorizedRole_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testDeleteNonExistentEvent() throws Exception {
+        // Act & Assert - Should return 204 NO_CONTENT (idempotent)
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isNoContent());
     }
 }
 
