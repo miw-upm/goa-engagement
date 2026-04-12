@@ -1,6 +1,5 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;

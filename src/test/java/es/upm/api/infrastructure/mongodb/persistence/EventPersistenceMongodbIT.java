@@ -7,6 +7,7 @@ import es.upm.api.domain.model.Status;
 import es.upm.api.infrastructure.mongodb.entities.CommentEntity;
 import es.upm.api.infrastructure.mongodb.entities.EventEntity;
 import es.upm.api.infrastructure.mongodb.repositories.EventRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -569,6 +570,18 @@ class EventPersistenceMongodbIT {
     @Test
     void testDeleteEventWithComments() {
         // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event with comments to delete")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        // Add comments to event
         List<CommentEntity> commentEntities = new ArrayList<>();
         commentEntities.add(CommentEntity.builder()
                 .authorId(authorId)
@@ -581,20 +594,17 @@ class EventPersistenceMongodbIT {
                 .content("Comment 2")
                 .build());
 
-        Event event = Event.builder()
-                .id(eventId)
-                .createdDate(createdDate)
-                .eventDate(eventDate)
-                .type(EventType.PHASES)
-                .title("Event with comments to delete")
-                .status(Status.IN_PROGRESS)
-                .engagementLetterId(engagementLetterId)
-                .build();
-        eventPersistence.create(event);
+        EventEntity eventEntity = eventRepository.findById(eventId).isPresent()
+                ? eventRepository.findById(eventId).get()
+                : null;;
+        Assertions.assertNotNull(eventEntity);
+        eventEntity.setComments(commentEntities);
+        eventRepository.save(eventEntity);
 
         // Verify event with comments was created
         Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
         assertThat(savedEvent).isPresent();
+        assertThat(savedEvent.get().getComments()).hasSize(2);
 
         // Act
         eventPersistence.delete(eventId);
@@ -776,7 +786,11 @@ class EventPersistenceMongodbIT {
         eventPersistence.create(event);
 
         // Add comment manually
-        EventEntity eventEntity = eventRepository.findById(eventId).get();
+        EventEntity eventEntity = eventRepository.findById(eventId).isPresent()
+                ? eventRepository.findById(eventId).get()
+                : null;
+        Assertions.assertNotNull(eventEntity);
+
         List<CommentEntity> commentEntities = new ArrayList<>();
         commentEntities.add(CommentEntity.builder()
                 .authorId(authorId)
@@ -801,7 +815,7 @@ class EventPersistenceMongodbIT {
         Optional<EventEntity> retrievedEvent = eventRepository.findById(eventId);
         assertThat(retrievedEvent).isPresent();
         assertThat(retrievedEvent.get().getComments()).hasSize(1);
-        assertThat(retrievedEvent.get().getComments().get(0).getContent()).isEqualTo("Comment 1");
+        assertThat(retrievedEvent.get().getComments().getFirst().getContent()).isEqualTo("Comment 1");
     }
 
     @Test
