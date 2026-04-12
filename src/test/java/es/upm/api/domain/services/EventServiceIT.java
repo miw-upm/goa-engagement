@@ -3,6 +3,7 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -360,48 +361,124 @@ class EventServiceIT {
     }
 
     @Test
-    void testDeleteEvent() {
+    void testUpdateEventAllFields() {
         // Arrange
         Event event = Event.builder()
                 .eventDate(eventDate)
                 .type(EventType.MILESTONE)
-                .title("Event to delete")
+                .title("Original title")
+                .description("Original description")
                 .status(Status.PENDING)
                 .engagementLetterId(engagementLetterId)
                 .build();
         Event createdEvent = eventService.create(event);
         UUID eventId = createdEvent.getId();
 
-        // Verify event was created
-        Event retrievedEvent = eventPersistence.readById(eventId);
-        assertThat(retrievedEvent).isNotNull();
-        assertThat(retrievedEvent.getId()).isEqualTo(eventId);
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Updated title")
+                .description("Updated description")
+                .status(Status.IN_PROGRESS)
+                .build();
 
         // Act
-        eventService.delete(eventId);
+        Event updatedEvent = eventService.update(eventId, updateDto);
 
-        // Assert - Event should no longer exist
-        assertThatThrownBy(() -> eventPersistence.readById(eventId))
-                .hasMessageContaining("The Event ID doesn't exist");
+        // Assert
+        assertThat(updatedEvent.getId()).isEqualTo(eventId);
+        assertThat(updatedEvent.getType()).isEqualTo(EventType.PHASES);
+        assertThat(updatedEvent.getTitle()).isEqualTo("Updated title");
+        assertThat(updatedEvent.getDescription()).isEqualTo("Updated description");
+        assertThat(updatedEvent.getStatus()).isEqualTo(Status.IN_PROGRESS);
+        assertThat(updatedEvent.getEventDate()).isEqualTo(eventDate.plusDays(1));
     }
 
     @Test
-    void testDeleteNonExistentEvent() {
-        // Arrange
-        UUID nonExistentId = UUID.randomUUID();
-
-        // Act & Assert - Should not throw exception (idempotent)
-        eventService.delete(nonExistentId);
-    }
-
-    @Test
-    void testDeleteEventWithComments() {
+    void testUpdateEventPartial() {
         // Arrange
         Event event = Event.builder()
                 .eventDate(eventDate)
-                .type(EventType.PHASES)
-                .title("Event with comments to delete")
-                .status(Status.IN_PROGRESS)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .description("Original description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID eventId = createdEvent.getId();
+
+        // Update only title
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated title only")
+                .build();
+
+        // Act
+        Event updatedEvent = eventService.update(eventId, updateDto);
+
+        // Assert - Only title should change
+        assertThat(updatedEvent.getTitle()).isEqualTo("Updated title only");
+        assertThat(updatedEvent.getDescription()).isEqualTo("Original description");
+        assertThat(updatedEvent.getType()).isEqualTo(EventType.MILESTONE);
+        assertThat(updatedEvent.getStatus()).isEqualTo(Status.PENDING);
+    }
+
+    @Test
+    void testUpdateEventPreservesId() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID originalId = createdEvent.getId();
+
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated")
+                .build();
+
+        // Act
+        Event updatedEvent = eventService.update(originalId, updateDto);
+
+        // Assert - ID should not change
+        assertThat(updatedEvent.getId()).isEqualTo(originalId);
+    }
+
+    @Test
+    void testUpdateEventPreservesEngagementLetterId() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID eventId = createdEvent.getId();
+
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated title")
+                .build();
+
+        // Act
+        Event updatedEvent = eventService.update(eventId, updateDto);
+
+        // Assert - engagementLetterId should not change
+        assertThat(updatedEvent.getEngagementLetterId()).isEqualTo(engagementLetterId);
+    }
+
+    @Test
+    void testUpdateEventPreservesComments() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with comments")
+                .status(Status.PENDING)
                 .engagementLetterId(engagementLetterId)
                 .comments(new ArrayList<>())
                 .build();
@@ -419,15 +496,50 @@ class EventServiceIT {
         eventService.addComment(eventId, authenticatedUser.getMobile(), "Comment 1");
         eventService.addComment(eventId, authenticatedUser.getMobile(), "Comment 2");
 
-        Event eventWithComments = eventPersistence.readById(eventId);
-        assertThat(eventWithComments.getComments()).hasSize(2);
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated title")
+                .build();
 
         // Act
-        eventService.delete(eventId);
+        Event updatedEvent = eventService.update(eventId, updateDto);
 
-        // Assert - Event should no longer exist
-        assertThatThrownBy(() -> eventPersistence.readById(eventId))
+        // Assert - Comments should be preserved
+        assertThat(updatedEvent.getComments()).hasSize(2);
+    }
+
+    @Test
+    void testUpdateNonExistentEvent_ShouldFail() {
+        // Arrange
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated")
+                .build();
+
+        // Act & Assert
+        assertThatThrownBy(() -> eventService.update(UUID.randomUUID(), updateDto))
                 .hasMessageContaining("The Event ID doesn't exist");
+    }
+
+    @Test
+    void testUpdateEventWithEmptyDto() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID eventId = createdEvent.getId();
+
+        EventUpdateDto updateDto = EventUpdateDto.builder().build();
+
+        // Act
+        Event updatedEvent = eventService.update(eventId, updateDto);
+
+        // Assert - Nothing should change
+        assertThat(updatedEvent.getTitle()).isEqualTo("Original title");
+        assertThat(updatedEvent.getType()).isEqualTo(EventType.MILESTONE);
     }
 }
 
