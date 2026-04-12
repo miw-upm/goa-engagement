@@ -596,7 +596,7 @@ class EventPersistenceMongodbIT {
 
         EventEntity eventEntity = eventRepository.findById(eventId).isPresent()
                 ? eventRepository.findById(eventId).get()
-                : null;;
+                : null;
         Assertions.assertNotNull(eventEntity);
         eventEntity.setComments(commentEntities);
         eventRepository.save(eventEntity);
@@ -976,10 +976,10 @@ class EventPersistenceMongodbIT {
 
         // Assert - Each query should return only events for that specific letter
         assertThat(eventsForLetter1).hasSize(1);
-        assertThat(eventsForLetter1.get(0).getTitle()).isEqualTo("Event for Letter 1");
+        assertThat(eventsForLetter1.getFirst().getTitle()).isEqualTo("Event for Letter 1");
 
         assertThat(eventsForLetter2).hasSize(1);
-        assertThat(eventsForLetter2.get(0).getTitle()).isEqualTo("Event for Letter 2");
+        assertThat(eventsForLetter2.getFirst().getTitle()).isEqualTo("Event for Letter 2");
     }
 }
 

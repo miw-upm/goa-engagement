@@ -1,8 +1,6 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.Event;
-import es.upm.api.domain.model.EventType;
-import es.upm.api.domain.model.Status;
 import es.upm.api.domain.services.EventService;
 import es.upm.api.infrastructure.dtos.CommentCreateDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
