@@ -541,5 +541,109 @@ class EventServiceIT {
         assertThat(updatedEvent.getTitle()).isEqualTo("Original title");
         assertThat(updatedEvent.getType()).isEqualTo(EventType.MILESTONE);
     }
+
+    @Test
+    void testReadEventById() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to read")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event createdEvent = eventService.create(event);
+        UUID eventId = createdEvent.getId();
+
+        // Act
+        Event retrievedEvent = eventService.readById(eventId);
+
+        // Assert
+        assertThat(retrievedEvent).isNotNull();
+        assertThat(retrievedEvent.getId()).isEqualTo(eventId);
+        assertThat(retrievedEvent.getTitle()).isEqualTo("Event to read");
+        assertThat(retrievedEvent.getType()).isEqualTo(EventType.MILESTONE);
+    }
+
+    @Test
+    void testReadNonExistentEvent_ShouldFail() {
+        // Act & Assert
+        assertThatThrownBy(() -> eventService.readById(UUID.randomUUID()))
+                .hasMessageContaining("The Event ID doesn't exist");
+    }
+
+    @Test
+    void testFindEventsByEngagementLetterId() {
+        // Arrange
+        Event event1 = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+
+        // Act
+        var events = eventService.findByEngagementLetterId(engagementLetterId).toList();
+
+        // Assert
+        assertThat(events).hasSize(2);
+        assertThat(events.get(0).getTitle()).isEqualTo("Event 1");
+        assertThat(events.get(1).getTitle()).isEqualTo("Event 2");
+    }
+
+    @Test
+    void testFindEventsByEngagementLetterId_OrderedByDate() {
+        // Arrange
+        UUID randomEngagementLetterId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        // Create events with different dates
+        Event eventLater = Event.builder()
+                .eventDate(eventDate.plusDays(3))
+                .type(EventType.PHASES)
+                .title("Event Later")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(randomEngagementLetterId)
+                .build();
+        Event eventEarlier = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event Earlier")
+                .status(Status.PENDING)
+                .engagementLetterId(randomEngagementLetterId)
+                .build();
+
+        eventService.create(eventLater);
+        eventService.create(eventEarlier);
+
+        // Act
+        var events = eventService.findByEngagementLetterId(randomEngagementLetterId).toList();
+
+        // Assert - Should be ordered by eventDate ASC
+        assertThat(events).hasSize(2);
+        assertThat(events.get(0).getTitle()).isEqualTo("Event Earlier");
+        assertThat(events.get(1).getTitle()).isEqualTo("Event Later");
+    }
+
+    @Test
+    void testFindEventsByEngagementLetterId_Empty() {
+        // Act
+        var events = eventService.findByEngagementLetterId(UUID.randomUUID()).toList();
+
+        // Assert
+        assertThat(events).isEmpty();
+    }
 }
 
