@@ -690,6 +690,130 @@ class EventResourceIT {
                 .andExpect(jsonPath("$.type", is("MILESTONE")))
                 .andExpect(jsonPath("$.status", is("PENDING")));
     }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testReadEventById() throws Exception {
+        // Arrange
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to read")
+                .description("Event Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(eventId)))
+                .andExpect(jsonPath("$.type", is("MILESTONE")))
+                .andExpect(jsonPath("$.title", is("Event to read")))
+                .andExpect(jsonPath("$.description", is("Event Description")))
+                .andExpect(jsonPath("$.status", is("PENDING")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testReadNonExistentEvent_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testReadEventWithoutAuthentication_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testFindEventsByEngagementLetterId() throws Exception {
+        // Arrange - Create multiple events for the same engagement letter
+        EventCreateDto event1Dto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1Dto)))
+                .andExpect(status().isCreated());
+
+        EventCreateDto event2Dto = EventCreateDto.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2Dto)))
+                .andExpect(status().isCreated());
+
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Event 1")))
+                .andExpect(jsonPath("$[0].status", is("PENDING")))
+                .andExpect(jsonPath("$[1].title", is("Event 2")))
+                .andExpect(jsonPath("$[1].status", is("IN_PROGRESS")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testFindEventsByEngagementLetterId_Empty() throws Exception {
+        // Act & Assert - No events for random engagement letter ID
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, UUID.randomUUID()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(username = "manager", authorities = {"ROLE_manager"})
+    void testFindEventsByEngagementLetterIdWithManagerRole() throws Exception {
+        // Arrange - Create events
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.STANDARD_EVENT)
+                .title("Event for manager")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(eventCreateDto)))
+                .andExpect(status().isCreated());
+
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Event for manager")));
+    }
+
+    @Test
+    void testFindEventsByEngagementLetterIdWithoutAuthentication_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
+                .andExpect(status().isUnauthorized());
+    }
 }
 
 

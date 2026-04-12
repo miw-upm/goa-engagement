@@ -94,4 +94,11 @@ public class EventMapper {
         return existingEvent;
     }
 
+    public List<EventResponseDto> toDtoList(List<Event> events) {
+        return Optional.ofNullable(events)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }

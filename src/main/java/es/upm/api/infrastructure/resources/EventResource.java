@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -23,6 +24,7 @@ public class EventResource {
     public static final String EVENTS = "/events";
     public static final String ID_ID = "/{id}";
     public static final String ID_COMMENTS = "/{eventId}/comments";
+    public static final String ENGAGEMENT_LETTER_ID = "/engagement-letter/{engagementLetterId}";
 
     private final EventService eventService;
     private final EventMapper eventMapper;
@@ -39,6 +41,12 @@ public class EventResource {
         Event event = this.eventMapper.toEntity(eventCreateDto);
         Event createdEvent = this.eventService.create(event);
         return this.eventMapper.toDto(createdEvent);
+    }
+
+    @GetMapping(ID_ID)
+    public EventResponseDto read(@PathVariable UUID id) {
+        Event event = this.eventService.readById(id);
+        return this.eventMapper.toDto(event);
     }
 
     @PutMapping(ID_ID)
@@ -65,5 +73,13 @@ public class EventResource {
                 authentication.getName(),
                 commentCreateDto.getContent()
         );
+    }
+
+    @GetMapping(ENGAGEMENT_LETTER_ID)
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventResponseDto> findByEngagementLetterId(
+            @PathVariable UUID engagementLetterId) {
+        List<Event> events = this.eventService.findByEngagementLetterId(engagementLetterId).toList();
+        return this.eventMapper.toDtoList(events);
     }
 }

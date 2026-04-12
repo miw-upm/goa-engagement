@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public class EventPersistenceMongodb implements EventPersistence {
@@ -64,5 +65,11 @@ public class EventPersistenceMongodb implements EventPersistence {
         eventEntity.setComments(comments);
         this.eventRepository.save(eventEntity);
         return comment;
+    }
+
+    @Override
+    public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
+        return this.eventRepository.findByEngagementLetterIdOrderByEventDateAsc(engagementLetterId).stream()
+                .map(EventEntity::toEvent);
     }
 }
