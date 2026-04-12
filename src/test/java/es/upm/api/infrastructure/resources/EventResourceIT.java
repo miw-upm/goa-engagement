@@ -8,6 +8,7 @@ import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.CommentCreateDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
+import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -497,6 +498,321 @@ class EventResourceIT {
         // Act & Assert - Should return 204 NO_CONTENT (idempotent)
         mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testUpdateEventWithAllFields() throws Exception {
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .description("Original description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Update with all fields
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Updated title")
+                .description("Updated description")
+                .status(Status.IN_PROGRESS)
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(eventId)))
+                .andExpect(jsonPath("$.type", is("PHASES")))
+                .andExpect(jsonPath("$.title", is("Updated title")))
+                .andExpect(jsonPath("$.description", is("Updated description")))
+                .andExpect(jsonPath("$.status", is("IN_PROGRESS")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testUpdateEventPartial() throws Exception {
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .description("Original description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Update only title (partial update)
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated title only")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", is("Updated title only")))
+                .andExpect(jsonPath("$.description", is("Original description")))
+                .andExpect(jsonPath("$.type", is("MILESTONE")))
+                .andExpect(jsonPath("$.status", is("PENDING")));
+    }
+
+    @Test
+    @WithMockUser(username = "manager", authorities = {"ROLE_manager"})
+    void testUpdateEventWithManagerRole() throws Exception {
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.STANDARD_EVENT)
+                .title("Event title")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .status(Status.CANCELLED)
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+    }
+
+    @Test
+    void testUpdateEventWithoutAuthentication_ShouldFail() throws Exception {
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = {"ROLE_user"})
+    void testUpdateEventWithUnauthorizedRole_ShouldFail() throws Exception {
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testUpdateNonExistentEvent_ShouldFail() throws Exception {
+        EventUpdateDto updateDto = EventUpdateDto.builder()
+                .title("Updated")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testUpdateEventWithEmptyBody() throws Exception {
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event title")
+                .description("Event description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Update with empty DTO (no fields to update)
+        EventUpdateDto updateDto = EventUpdateDto.builder().build();
+
+        // Act & Assert - Should return 200 OK without changes
+        mockMvc.perform(put(EventResource.EVENTS + EventResource.ID_ID, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateDto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title", is("Event title")))
+                .andExpect(jsonPath("$.description", is("Event description")))
+                .andExpect(jsonPath("$.type", is("MILESTONE")))
+                .andExpect(jsonPath("$.status", is("PENDING")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testReadEventById() throws Exception {
+        // Arrange
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to read")
+                .description("Event Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(eventId)))
+                .andExpect(jsonPath("$.type", is("MILESTONE")))
+                .andExpect(jsonPath("$.title", is("Event to read")))
+                .andExpect(jsonPath("$.description", is("Event Description")))
+                .andExpect(jsonPath("$.status", is("PENDING")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testReadNonExistentEvent_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testReadEventWithoutAuthentication_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, UUID.randomUUID()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testFindEventsByEngagementLetterId() throws Exception {
+        // Arrange - Create multiple events for the same engagement letter
+        EventCreateDto event1Dto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1Dto)))
+                .andExpect(status().isCreated());
+
+        EventCreateDto event2Dto = EventCreateDto.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2Dto)))
+                .andExpect(status().isCreated());
+
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Event 1")))
+                .andExpect(jsonPath("$[0].status", is("PENDING")))
+                .andExpect(jsonPath("$[1].title", is("Event 2")))
+                .andExpect(jsonPath("$[1].status", is("IN_PROGRESS")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testFindEventsByEngagementLetterId_Empty() throws Exception {
+        // Act & Assert - No events for random engagement letter ID
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, UUID.randomUUID()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(username = "manager", authorities = {"ROLE_manager"})
+    void testFindEventsByEngagementLetterIdWithManagerRole() throws Exception {
+        // Arrange - Create events
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.STANDARD_EVENT)
+                .title("Event for manager")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(eventCreateDto)))
+                .andExpect(status().isCreated());
+
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Event for manager")));
+    }
+
+    @Test
+    void testFindEventsByEngagementLetterIdWithoutAuthentication_ShouldFail() throws Exception {
+        // Act & Assert
+        mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
+                .andExpect(status().isUnauthorized());
     }
 }
 

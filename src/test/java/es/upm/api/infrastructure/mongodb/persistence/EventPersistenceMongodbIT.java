@@ -7,6 +7,7 @@ import es.upm.api.domain.model.Status;
 import es.upm.api.infrastructure.mongodb.entities.CommentEntity;
 import es.upm.api.infrastructure.mongodb.entities.EventEntity;
 import es.upm.api.infrastructure.mongodb.repositories.EventRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +15,15 @@ import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.within;
 
 @DataMongoTest
 @ActiveProfiles("test")
@@ -566,6 +570,18 @@ class EventPersistenceMongodbIT {
     @Test
     void testDeleteEventWithComments() {
         // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event with comments to delete")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        // Add comments to event
         List<CommentEntity> commentEntities = new ArrayList<>();
         commentEntities.add(CommentEntity.builder()
                 .authorId(authorId)
@@ -578,20 +594,17 @@ class EventPersistenceMongodbIT {
                 .content("Comment 2")
                 .build());
 
-        Event event = Event.builder()
-                .id(eventId)
-                .createdDate(createdDate)
-                .eventDate(eventDate)
-                .type(EventType.PHASES)
-                .title("Event with comments to delete")
-                .status(Status.IN_PROGRESS)
-                .engagementLetterId(engagementLetterId)
-                .build();
-        eventPersistence.create(event);
+        EventEntity eventEntity = eventRepository.findById(eventId).isPresent()
+                ? eventRepository.findById(eventId).get()
+                : null;
+        Assertions.assertNotNull(eventEntity);
+        eventEntity.setComments(commentEntities);
+        eventRepository.save(eventEntity);
 
         // Verify event with comments was created
         Optional<EventEntity> savedEvent = eventRepository.findById(eventId);
         assertThat(savedEvent).isPresent();
+        assertThat(savedEvent.get().getComments()).hasSize(2);
 
         // Act
         eventPersistence.delete(eventId);
@@ -653,6 +666,320 @@ class EventPersistenceMongodbIT {
         assertThat(eventRepository.findById(eventId1)).isEmpty();
         assertThat(eventRepository.findById(eventId2)).isPresent();
         assertThat(eventRepository.findById(eventId3)).isEmpty();
+    }
+
+    @Test
+    void testUpdateEventAllFields() {
+        // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .description("Original description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        Event updatedEvent = Event.builder()
+                .id(eventId)
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Updated title")
+                .description("Updated description")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        // Act
+        eventPersistence.update(eventId, updatedEvent);
+
+        // Assert
+        Optional<EventEntity> retrievedEvent = eventRepository.findById(eventId);
+        assertThat(retrievedEvent).isPresent();
+        assertThat(retrievedEvent.get().getType()).isEqualTo(EventType.PHASES);
+        assertThat(retrievedEvent.get().getTitle()).isEqualTo("Updated title");
+        assertThat(retrievedEvent.get().getDescription()).isEqualTo("Updated description");
+        assertThat(retrievedEvent.get().getStatus()).isEqualTo(Status.IN_PROGRESS);
+    }
+
+    @Test
+    void testUpdateEventPreservesCreatedDate() {
+        // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        Event updatedEvent = Event.builder()
+                .id(eventId)
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Updated title")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        // Act
+        eventPersistence.update(eventId, updatedEvent);
+
+        // Assert - createdDate should be preserved (use isCloseTo due to MongoDB precision loss)
+        Optional<EventEntity> retrievedEvent = eventRepository.findById(eventId);
+        assertThat(retrievedEvent).isPresent();
+        assertThat(retrievedEvent.get().getCreatedDate())
+                .isCloseTo(createdDate, within(1, ChronoUnit.MILLIS));
+    }
+
+    @Test
+    void testUpdateEventPreservesEngagementLetterId() {
+        // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Original title")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        UUID differentId = UUID.randomUUID();
+        Event updatedEvent = Event.builder()
+                .id(eventId)
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Updated title")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(differentId)
+                .build();
+
+        // Act
+        eventPersistence.update(eventId, updatedEvent);
+
+        // Assert - engagementLetterId should be preserved from original
+        Optional<EventEntity> retrievedEvent = eventRepository.findById(eventId);
+        assertThat(retrievedEvent).isPresent();
+        assertThat(retrievedEvent.get().getEngagementLetterId()).isEqualTo(engagementLetterId);
+    }
+
+    @Test
+    void testUpdateEventPreservesComments() {
+        // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with comment")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        // Add comment manually
+        EventEntity eventEntity = eventRepository.findById(eventId).isPresent()
+                ? eventRepository.findById(eventId).get()
+                : null;
+        Assertions.assertNotNull(eventEntity);
+
+        List<CommentEntity> commentEntities = new ArrayList<>();
+        commentEntities.add(CommentEntity.builder()
+                .authorId(authorId)
+                .createdDate(LocalDateTime.now())
+                .content("Comment 1")
+                .build());
+        eventEntity.setComments(commentEntities);
+        eventRepository.save(eventEntity);
+
+        Event updatedEvent = Event.builder()
+                .id(eventId)
+                .type(EventType.PHASES)
+                .title("Updated title")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        // Act
+        eventPersistence.update(eventId, updatedEvent);
+
+        // Assert - Comments should be preserved
+        Optional<EventEntity> retrievedEvent = eventRepository.findById(eventId);
+        assertThat(retrievedEvent).isPresent();
+        assertThat(retrievedEvent.get().getComments()).hasSize(1);
+        assertThat(retrievedEvent.get().getComments().getFirst().getContent()).isEqualTo("Comment 1");
+    }
+
+    @Test
+    void testUpdateNonExistentEvent_ShouldFail() {
+        // Arrange
+        Event event = Event.builder()
+                .id(UUID.randomUUID())
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        // Act & Assert
+        assertThatThrownBy(() -> eventPersistence.update(event.getId(), event))
+                .hasMessageContaining("The Event ID doesn't exist");
+    }
+
+    @Test
+    void testReadEventById() {
+        // Arrange
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event to read")
+                .description("Test Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        eventPersistence.create(event);
+
+        // Act
+        Event retrievedEvent = eventPersistence.readById(eventId);
+
+        // Assert
+        assertThat(retrievedEvent).isNotNull();
+        assertThat(retrievedEvent.getId()).isEqualTo(eventId);
+        assertThat(retrievedEvent.getTitle()).isEqualTo("Event to read");
+        assertThat(retrievedEvent.getType()).isEqualTo(EventType.MILESTONE);
+    }
+
+    @Test
+    void testReadNonExistentEvent_ShouldFail() {
+        // Act & Assert
+        assertThatThrownBy(() -> eventPersistence.readById(UUID.randomUUID()))
+                .hasMessageContaining("The Event ID doesn't exist");
+    }
+
+    @Test
+    void testFindByEngagementLetterId() {
+        // Arrange
+        Event event1 = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event event2 = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(createdDate)
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        eventPersistence.create(event1);
+        eventPersistence.create(event2);
+
+        // Act
+        var events = eventPersistence.findByEngagementLetterId(engagementLetterId).toList();
+
+        // Assert
+        assertThat(events).hasSize(2);
+        assertThat(events.get(0).getTitle()).isEqualTo("Event 1");
+        assertThat(events.get(1).getTitle()).isEqualTo("Event 2");
+    }
+
+    @Test
+    void testFindByEngagementLetterId_OrderedByDate() {
+        // Arrange - Create events with different dates
+        Event eventLater = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(createdDate)
+                .eventDate(eventDate.plusDays(3))
+                .type(EventType.PHASES)
+                .title("Event Later")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event eventEarlier = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(createdDate)
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event Earlier")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        eventPersistence.create(eventLater);
+        eventPersistence.create(eventEarlier);
+
+        // Act
+        var events = eventPersistence.findByEngagementLetterId(engagementLetterId).toList();
+
+        // Assert - Should be ordered by eventDate ASC
+        assertThat(events).hasSize(2);
+        assertThat(events.get(0).getTitle()).isEqualTo("Event Earlier");
+        assertThat(events.get(1).getTitle()).isEqualTo("Event Later");
+    }
+
+    @Test
+    void testFindByEngagementLetterId_Empty() {
+        // Act
+        var events = eventPersistence.findByEngagementLetterId(UUID.randomUUID()).toList();
+
+        // Assert
+        assertThat(events).isEmpty();
+    }
+
+    @Test
+    void testFindByEngagementLetterId_MultipleLetterdIds() {
+        // Arrange
+        UUID anotherEngagementLetterId = UUID.randomUUID();
+
+        Event eventForLetter1 = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event for Letter 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        Event eventForLetter2 = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event for Letter 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(anotherEngagementLetterId)
+                .build();
+
+        eventPersistence.create(eventForLetter1);
+        eventPersistence.create(eventForLetter2);
+
+        // Act
+        var eventsForLetter1 = eventPersistence.findByEngagementLetterId(engagementLetterId).toList();
+        var eventsForLetter2 = eventPersistence.findByEngagementLetterId(anotherEngagementLetterId).toList();
+
+        // Assert - Each query should return only events for that specific letter
+        assertThat(eventsForLetter1).hasSize(1);
+        assertThat(eventsForLetter1.getFirst().getTitle()).isEqualTo("Event for Letter 1");
+
+        assertThat(eventsForLetter2).hasSize(1);
+        assertThat(eventsForLetter2.getFirst().getTitle()).isEqualTo("Event for Letter 2");
     }
 }
 

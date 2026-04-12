@@ -5,6 +5,7 @@ import es.upm.api.domain.model.Event;
 import es.upm.api.infrastructure.dtos.CommentDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventResponseDto;
+import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -69,4 +70,35 @@ public class EventMapper {
                 .build();
     }
 
+    public Event updateEntity(Event existingEvent, EventUpdateDto dto) {
+        if (dto == null || existingEvent == null) {
+            return existingEvent;
+        }
+
+        if (dto.getType() != null) {
+            existingEvent.setType(dto.getType());
+        }
+        if (dto.getTitle() != null) {
+            existingEvent.setTitle(dto.getTitle());
+        }
+        if (dto.getDescription() != null) {
+            existingEvent.setDescription(dto.getDescription());
+        }
+        if (dto.getEventDate() != null) {
+            existingEvent.setEventDate(dto.getEventDate());
+        }
+        if (dto.getStatus() != null) {
+            existingEvent.setStatus(dto.getStatus());
+        }
+
+        return existingEvent;
+    }
+
+    public List<EventResponseDto> toDtoList(List<Event> events) {
+        return Optional.ofNullable(events)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+    }
 }

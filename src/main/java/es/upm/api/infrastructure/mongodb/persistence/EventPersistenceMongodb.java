@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public class EventPersistenceMongodb implements EventPersistence {
@@ -36,6 +37,17 @@ public class EventPersistenceMongodb implements EventPersistence {
     }
 
     @Override
+    public void update(UUID id, Event event) {
+        Event eventBd = this.readById(id);
+        event.setId(id);
+        event.setCreatedDate(eventBd.getCreatedDate());
+        event.setComments(eventBd.getComments());
+        event.setEngagementLetterId(eventBd.getEngagementLetterId());
+        this.eventRepository.save(new EventEntity(event));
+    }
+
+
+    @Override
     public Event readById(UUID id) {
         return this.eventRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("The Event ID doesn't exist: " + id))
@@ -53,5 +65,11 @@ public class EventPersistenceMongodb implements EventPersistence {
         eventEntity.setComments(comments);
         this.eventRepository.save(eventEntity);
         return comment;
+    }
+
+    @Override
+    public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
+        return this.eventRepository.findByEngagementLetterIdOrderByEventDateAsc(engagementLetterId).stream()
+                .map(EventEntity::toEvent);
     }
 }

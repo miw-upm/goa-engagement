@@ -4,11 +4,14 @@ import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 
 @Service
@@ -16,13 +19,20 @@ public class EventService {
     private final EventPersistence eventPersistence;
     private final EngagementLetterService engagementLetterService;
     private final UserWebClient userWebClient;
+    private final EventMapper eventMapper;
 
     public EventService(EventPersistence eventPersistence,
                         EngagementLetterService engagementLetterService,
-                        UserWebClient userWebClient) {
+                        UserWebClient userWebClient,
+                        EventMapper eventMapper) {
         this.eventPersistence = eventPersistence;
         this.engagementLetterService = engagementLetterService;
         this.userWebClient = userWebClient;
+        this.eventMapper = eventMapper;
+    }
+
+    public Event readById(UUID id) {
+        return this.eventPersistence.readById(id);
     }
 
     public Event create(Event event) {
@@ -40,6 +50,13 @@ public class EventService {
         this.eventPersistence.delete(id);
     }
 
+    public Event update(UUID id, EventUpdateDto eventUpdateDto) {
+        Event existingEvent = this.eventPersistence.readById(id);
+        Event updatedEvent = this.eventMapper.updateEntity(existingEvent, eventUpdateDto);
+        this.eventPersistence.update(id, updatedEvent);
+        return updatedEvent;
+    }
+
 
     public Comment addComment(UUID eventId, String authenticatedUser, String content) {
         Comment comment = Comment.builder()
@@ -50,4 +67,7 @@ public class EventService {
         return this.eventPersistence.addComment(eventId, comment);
     }
 
+    public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
+        return this.eventPersistence.findByEngagementLetterId(engagementLetterId);
+    }
 }
