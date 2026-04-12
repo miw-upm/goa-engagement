@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 
 @Service
@@ -28,6 +29,10 @@ public class EventService {
         this.engagementLetterService = engagementLetterService;
         this.userWebClient = userWebClient;
         this.eventMapper = eventMapper;
+    }
+
+    public Event readById(UUID id) {
+        return this.eventPersistence.readById(id);
     }
 
     public Event create(Event event) {
@@ -62,4 +67,7 @@ public class EventService {
         return this.eventPersistence.addComment(eventId, comment);
     }
 
+    public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
+        return this.eventPersistence.findByEngagementLetterId(engagementLetterId);
+    }
 }

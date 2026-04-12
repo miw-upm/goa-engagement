@@ -5,6 +5,7 @@ import es.upm.api.domain.model.Event;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 public interface EventPersistence {
@@ -17,4 +18,6 @@ public interface EventPersistence {
     Event readById(UUID id);
 
     Comment addComment(UUID eventId, Comment comment);
+
+    Stream<Event> findByEngagementLetterId(UUID engagementLetterId);
 }
