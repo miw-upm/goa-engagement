@@ -12,6 +12,8 @@ public interface EventPersistence {
 
     void delete(UUID id);
 
+    void update(UUID id, Event event);
+
     Event readById(UUID id);
 
     Comment addComment(UUID eventId, Comment comment);

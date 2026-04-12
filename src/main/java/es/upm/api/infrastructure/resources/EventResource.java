@@ -5,6 +5,7 @@ import es.upm.api.domain.services.EventService;
 import es.upm.api.infrastructure.dtos.CommentCreateDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventResponseDto;
+import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -38,6 +39,13 @@ public class EventResource {
         Event event = this.eventMapper.toEntity(eventCreateDto);
         Event createdEvent = this.eventService.create(event);
         return this.eventMapper.toDto(createdEvent);
+    }
+
+    @PutMapping(ID_ID)
+    @ResponseStatus(HttpStatus.OK)
+    public EventResponseDto update(@PathVariable UUID id, @Valid @RequestBody EventUpdateDto eventUpdateDto) {
+        Event updatedEvent = this.eventService.update(id, eventUpdateDto);
+        return this.eventMapper.toDto(updatedEvent);
     }
 
     @DeleteMapping(ID_ID)
