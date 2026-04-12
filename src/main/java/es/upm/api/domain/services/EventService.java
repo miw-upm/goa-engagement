@@ -1,9 +1,12 @@
 package es.upm.api.domain.services;
 
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,13 +19,16 @@ public class EventService {
     private final EventPersistence eventPersistence;
     private final EngagementLetterService engagementLetterService;
     private final UserWebClient userWebClient;
+    private final EventMapper eventMapper;
 
     public EventService(EventPersistence eventPersistence,
                         EngagementLetterService engagementLetterService,
-                        UserWebClient userWebClient) {
+                        UserWebClient userWebClient,
+                        EventMapper eventMapper) {
         this.eventPersistence = eventPersistence;
         this.engagementLetterService = engagementLetterService;
         this.userWebClient = userWebClient;
+        this.eventMapper = eventMapper;
     }
 
     public Event create(Event event) {
@@ -38,6 +44,13 @@ public class EventService {
 
     public void delete (UUID id){
         this.eventPersistence.delete(id);
+    }
+
+    public Event update(UUID id, EventUpdateDto eventUpdateDto) {
+        Event existingEvent = this.eventPersistence.readById(id);
+        Event updatedEvent = this.eventMapper.updateEntity(existingEvent, eventUpdateDto);
+        this.eventPersistence.update(id, updatedEvent);
+        return updatedEvent;
     }
 
 
