@@ -232,7 +232,7 @@ class EventMapperIT {
         // Assert
         assertThat(dto).isNotNull();
         assertThat(dto.getComments()).hasSize(2);
-        assertThat(dto.getComments().get(0).getAuthorId()).isEqualTo(authorId);
+        assertThat(dto.getComments().getFirst().getAuthorId()).isEqualTo(authorId);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("First comment");
         assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(commentDate);
         assertThat(dto.getComments().get(1).getAuthorId()).isEqualTo(authorId);
@@ -431,6 +431,264 @@ class EventMapperIT {
         assertThat(responseDto.getEngagementLetterId()).isEqualTo(engagementLetterId);
         assertThat(responseDto.getComments()).isEmpty();
     }
+
+    @Test
+    void testToDto_FromEvent_WithSingleComment() {
+        // Arrange
+        UUID eventId = UUID.randomUUID();
+        LocalDateTime createdDate = LocalDateTime.now();
+        LocalDateTime commentDate = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(Comment.builder()
+                .authorId(authorId)
+                .createdDate(commentDate)
+                .content("Test comment")
+                .build());
+
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with Comment")
+                .description("Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments)
+                .build();
+
+        // Act
+        EventResponseDto dto = eventMapper.toDto(event);
+
+        // Assert
+        assertThat(dto).isNotNull();
+        assertThat(dto.getComments()).hasSize(1);
+        assertThat(dto.getComments().getFirst().getAuthorId()).isEqualTo(authorId);
+        assertThat(dto.getComments().getFirst().getCreatedDate()).isEqualTo(commentDate);
+        assertThat(dto.getComments().getFirst().getContent()).isEqualTo("Test comment");
+    }
+
+    @Test
+    void testToDto_FromEvent_WithMultipleCommentsDifferentAuthors() {
+        // Arrange
+        UUID eventId = UUID.randomUUID();
+        LocalDateTime createdDate = LocalDateTime.now();
+        UUID authorId1 = UUID.randomUUID();
+        UUID authorId2 = UUID.randomUUID();
+        LocalDateTime commentDate1 = LocalDateTime.of(2025, 1, 15, 10, 30, 0);
+        LocalDateTime commentDate2 = LocalDateTime.of(2025, 1, 15, 10, 31, 0);
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(Comment.builder()
+                .authorId(authorId1)
+                .createdDate(commentDate1)
+                .content("Comment by user 1")
+                .build());
+        comments.add(Comment.builder()
+                .authorId(authorId2)
+                .createdDate(commentDate2)
+                .content("Comment by user 2")
+                .build());
+
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with Multiple Comments")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments)
+                .build();
+
+        // Act
+        EventResponseDto dto = eventMapper.toDto(event);
+
+        // Assert
+        assertThat(dto).isNotNull();
+        assertThat(dto.getComments()).hasSize(2);
+        assertThat(dto.getComments().getFirst().getAuthorId()).isEqualTo(authorId1);
+        assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(commentDate1);
+        assertThat(dto.getComments().get(0).getContent()).isEqualTo("Comment by user 1");
+        assertThat(dto.getComments().get(1).getAuthorId()).isEqualTo(authorId2);
+        assertThat(dto.getComments().get(1).getCreatedDate()).isEqualTo(commentDate2);
+        assertThat(dto.getComments().get(1).getContent()).isEqualTo("Comment by user 2");
+    }
+
+    @Test
+    void testToDto_CommentPreservesExactTimestamp() {
+        // Arrange - Use specific timestamp to ensure precision is preserved
+        LocalDateTime preciseTimestamp = LocalDateTime.of(2025, 12, 31, 23, 59, 59);
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(Comment.builder()
+                .authorId(authorId)
+                .createdDate(preciseTimestamp)
+                .content("Comment with precise timestamp")
+                .build());
+
+        Event event = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments)
+                .build();
+
+        // Act
+        EventResponseDto dto = eventMapper.toDto(event);
+
+        // Assert - Timestamp should be preserved exactly
+        assertThat(dto.getComments()).hasSize(1);
+        assertThat(dto.getComments().getFirst().getCreatedDate()).isEqualTo(preciseTimestamp);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getYear()).isEqualTo(2025);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getMonthValue()).isEqualTo(12);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getDayOfMonth()).isEqualTo(31);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getHour()).isEqualTo(23);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getMinute()).isEqualTo(59);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getSecond()).isEqualTo(59);
+    }
+
+    @Test
+    void testToDto_CommentWithSpecialCharacters() {
+        // Arrange
+        String contentWithSpecialChars = "Comentario con caracteres especiales: ñ, á, é, í, ó, ú, ü, ¡, ¿";
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(Comment.builder()
+                .authorId(authorId)
+                .createdDate(LocalDateTime.now())
+                .content(contentWithSpecialChars)
+                .build());
+
+        Event event = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments)
+                .build();
+
+        // Act
+        EventResponseDto dto = eventMapper.toDto(event);
+
+        // Assert
+        assertThat(dto.getComments()).hasSize(1);
+        assertThat(dto.getComments().getFirst().getContent()).isEqualTo(contentWithSpecialChars);
+    }
+
+    @Test
+    void testToDto_CommentWithLongContent() {
+        // Arrange
+        String longContent = "A".repeat(1000); // 1000 character comment
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(Comment.builder()
+                .authorId(authorId)
+                .createdDate(LocalDateTime.now())
+                .content(longContent)
+                .build());
+
+        Event event = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments)
+                .build();
+
+        // Act
+        EventResponseDto dto = eventMapper.toDto(event);
+
+        // Assert
+        assertThat(dto.getComments()).hasSize(1);
+        assertThat(dto.getComments().getFirst().getContent()).hasSize(1000);
+        assertThat(dto.getComments().getFirst().getContent()).isEqualTo(longContent);
+    }
+
+    @Test
+    void testToDtoList_WithEventsContainingComments() {
+        // Arrange
+        UUID authorId1 = UUID.randomUUID();
+        UUID authorId2 = UUID.randomUUID();
+
+        List<Comment> comments1 = new ArrayList<>();
+        comments1.add(Comment.builder()
+                .authorId(authorId1)
+                .createdDate(LocalDateTime.now())
+                .content("Comment on event 1")
+                .build());
+
+        List<Comment> comments2 = new ArrayList<>();
+        comments2.add(Comment.builder()
+                .authorId(authorId2)
+                .createdDate(LocalDateTime.now())
+                .content("Comment on event 2")
+                .build());
+
+        Event event1 = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments1)
+                .build();
+
+        Event event2 = Event.builder()
+                .id(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments2)
+                .build();
+
+        List<Event> events = List.of(event1, event2);
+
+        // Act
+        List<EventResponseDto> dtos = eventMapper.toDtoList(events);
+
+        // Assert
+        assertThat(dtos).hasSize(2);
+        assertThat(dtos.get(0).getComments()).hasSize(1);
+        assertThat(dtos.get(0).getComments().getFirst().getContent()).isEqualTo("Comment on event 1");
+        assertThat(dtos.get(1).getComments()).hasSize(1);
+        assertThat(dtos.get(1).getComments().getFirst().getContent()).isEqualTo("Comment on event 2");
+    }
+
+    @Test
+    void testToDtoList_EmptyList() {
+        // Act
+        List<EventResponseDto> dtos = eventMapper.toDtoList(new ArrayList<>());
+
+        // Assert
+        assertThat(dtos).isEmpty();
+    }
+
+    @Test
+    void testToDtoList_NullList() {
+        // Act
+        List<EventResponseDto> dtos = eventMapper.toDtoList(null);
+
+        // Assert
+        assertThat(dtos).isEmpty();
+    }
+
 }
 
 
