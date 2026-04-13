@@ -11,6 +11,7 @@ import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -70,17 +71,22 @@ public class EventService {
     }
 
     public void deleteComment(UUID eventId, UUID commentAuthorId, LocalDateTime commentCreatedDate, String commentContent, String authenticatedUser) {
+
         Event event = this.eventPersistence.readById(eventId);
 
         UUID currentUserId = this.userWebClient.readUserByMobile(authenticatedUser).getId();
 
         Comment commentToDelete = event.getComments() != null ?
                 event.getComments().stream()
-                        .filter(comment -> comment.getAuthorId().equals(commentAuthorId) &&
-                                comment.getCreatedDate().equals(commentCreatedDate) &&
-                                comment.getContent().equals(commentContent))
+                        .filter(comment ->
+                                comment.getAuthorId().equals(commentAuthorId) &&
+                                        comment.getContent().equals(commentContent) &&
+                                        comment.getCreatedDate().truncatedTo(ChronoUnit.SECONDS)
+                                                .equals(commentCreatedDate.truncatedTo(ChronoUnit.SECONDS))
+                        )
                         .findFirst()
-                        .orElse(null) : null;
+                        .orElse(null)
+                : null;
 
         if (commentToDelete == null) {
             throw new NotFoundException("The comment doesn't exist in the event");
