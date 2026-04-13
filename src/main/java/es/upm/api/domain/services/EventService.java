@@ -7,12 +7,15 @@ import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.dtos.TimelineEventDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -101,5 +104,22 @@ public class EventService {
 
     public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
         return this.eventPersistence.findByEngagementLetterId(engagementLetterId);
+    }
+
+    public List<Event> findTimelineEventsByEngagementLetterId(
+            UUID engagementId,
+            Boolean ascending) {
+
+        List<Event> events = eventPersistence.findByEngagementLetterId(engagementId).toList();
+
+        Comparator<Event> comparator = Comparator.comparing(Event::getEventDate);
+
+        if (!ascending) {
+            comparator = comparator.reversed();
+        }
+
+        return events.stream()
+                .sorted(comparator)
+                .toList();
     }
 }
