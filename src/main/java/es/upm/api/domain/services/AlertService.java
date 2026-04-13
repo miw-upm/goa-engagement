@@ -1,5 +1,6 @@
 package es.upm.api.domain.services;
 
+import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.Status;
@@ -48,6 +49,31 @@ public class AlertService {
         return alert;
     }
 
+    public Alert update(UUID alertId, Alert alertUpdatedData, String authenticatedUser) {
+        Alert existingAlert = this.alertPersistence.readById(alertId);
+
+        if (Status.CANCELLED.equals(existingAlert.getStatus())) {
+            throw new BadRequestException("Cancelled alerts cannot be edited");
+        }
+
+        boolean dueDateChanged = !existingAlert.getDueDate().equals(alertUpdatedData.getDueDate());
+        LocalDateTime now = LocalDateTime.now();
+
+        existingAlert.setTitle(alertUpdatedData.getTitle());
+        existingAlert.setDescription(alertUpdatedData.getDescription());
+        existingAlert.setDueDate(alertUpdatedData.getDueDate());
+        existingAlert.setUpdatedAt(now);
+        existingAlert.setUpdatedBy(authenticatedUser);
+
+        if (dueDateChanged && existingAlert.getNotifications() != null) {
+            existingAlert.setNotifications(existingAlert.getNotifications().stream()
+                    .map(notification -> this.recalculateNotificationTrigger(notification, existingAlert.getDueDate(), now))
+                    .toList());
+        }
+
+        this.alertPersistence.update(existingAlert);
+        return existingAlert;
+    }
     private AlertNotification buildNotification(Alert alert, Integer offsetMinutes, LocalDateTime now) {
         return AlertNotification.builder()
                 .id(UUID.randomUUID())
@@ -64,6 +90,12 @@ public class AlertService {
         notification.setTriggerAt(alert.getDueDate().plusMinutes(notification.getOffsetMinutes()));
         notification.setStatus(Status.PENDING);
         notification.setCreatedAt(now);
+        notification.setUpdatedAt(now);
+        return notification;
+    }
+
+    private AlertNotification recalculateNotificationTrigger(AlertNotification notification,LocalDateTime newDueDate, LocalDateTime now) {
+        notification.setTriggerAt(newDueDate.plusMinutes(notification.getOffsetMinutes()));
         notification.setUpdatedAt(now);
         return notification;
     }
