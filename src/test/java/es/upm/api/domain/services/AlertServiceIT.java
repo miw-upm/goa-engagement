@@ -1,0 +1,205 @@
+package es.upm.api.domain.services;
+
+import es.upm.api.domain.exceptions.BadRequestException;
+import es.upm.api.domain.exceptions.NotFoundException;
+import es.upm.api.domain.model.Alert;
+import es.upm.api.domain.model.AlertNotification;
+import es.upm.api.domain.model.Status;
+import es.upm.api.domain.persistence.AlertPersistence;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.BDDMockito;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+
+@SpringBootTest
+@ActiveProfiles("test")
+class AlertServiceIT {
+
+    @Autowired
+    private AlertService alertService;
+
+    @MockitoBean
+    private AlertPersistence alertPersistence;
+
+    @Test
+    void testUpdateSuccessWhenDueDateChanges() {
+        UUID alertId = UUID.randomUUID();
+        LocalDateTime oldDueDate = LocalDateTime.of(2026, 4, 20, 10, 0);
+        LocalDateTime newDueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(oldDueDate.plusMinutes(-1440))
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(oldDueDate.plusMinutes(-120))
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Old title")
+                .description("Old description")
+                .dueDate(oldDueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        Alert alertRequest = Alert.builder()
+                .title("New title")
+                .description("New description")
+                .dueDate(newDueDate)
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+        BDDMockito.willDoNothing().given(this.alertPersistence).update(any(Alert.class));
+
+        Alert updatedAlert = this.alertService.update(alertId, alertRequest, "admin");
+
+        assertThat(updatedAlert).isNotNull();
+        assertThat(updatedAlert.getTitle()).isEqualTo("New title");
+        assertThat(updatedAlert.getDescription()).isEqualTo("New description");
+        assertThat(updatedAlert.getDueDate()).isEqualTo(newDueDate);
+        assertThat(updatedAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(updatedAlert.getUpdatedAt()).isNotNull();
+        assertThat(updatedAlert.getNotifications()).hasSize(2);
+        assertThat(updatedAlert.getNotifications().get(0).getTriggerAt())
+                .isEqualTo(newDueDate.plusMinutes(-1440));
+        assertThat(updatedAlert.getNotifications().get(1).getTriggerAt())
+                .isEqualTo(newDueDate.plusMinutes(-120));
+
+        ArgumentCaptor<Alert> captor = ArgumentCaptor.forClass(Alert.class);
+        verify(this.alertPersistence).update(captor.capture());
+
+        Alert persistedAlert = captor.getValue();
+        assertThat(persistedAlert.getTitle()).isEqualTo("New title");
+        assertThat(persistedAlert.getDescription()).isEqualTo("New description");
+        assertThat(persistedAlert.getDueDate()).isEqualTo(newDueDate);
+        assertThat(persistedAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(persistedAlert.getNotifications().get(0).getTriggerAt())
+                .isEqualTo(newDueDate.plusMinutes(-1440));
+        assertThat(persistedAlert.getNotifications().get(1).getTriggerAt())
+                .isEqualTo(newDueDate.plusMinutes(-120));
+    }
+
+    @Test
+    void testUpdateSuccessWhenDueDateDoesNotChange() {
+        UUID alertId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 20, 10, 0);
+        LocalDateTime originalTriggerAt = dueDate.plusMinutes(-120);
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(originalTriggerAt)
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Old title")
+                .description("Old description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification))
+                .build();
+
+        Alert alertRequest = Alert.builder()
+                .title("Updated title")
+                .description("Updated description")
+                .dueDate(dueDate)
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+        BDDMockito.willDoNothing().given(this.alertPersistence).update(any(Alert.class));
+
+        Alert updatedAlert = this.alertService.update(alertId, alertRequest, "manager");
+
+        assertThat(updatedAlert.getTitle()).isEqualTo("Updated title");
+        assertThat(updatedAlert.getDescription()).isEqualTo("Updated description");
+        assertThat(updatedAlert.getDueDate()).isEqualTo(dueDate);
+        assertThat(updatedAlert.getUpdatedBy()).isEqualTo("manager");
+        assertThat(updatedAlert.getNotifications().getFirst().getTriggerAt()).isEqualTo(originalTriggerAt);
+    }
+
+    @Test
+    void testUpdateWhenAlertIsCancelled() {
+        UUID alertId = UUID.randomUUID();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Old title")
+                .description("Old description")
+                .dueDate(LocalDateTime.now().plusDays(3))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.CANCELLED)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .build();
+
+        Alert alertRequest = Alert.builder()
+                .title("New title")
+                .description("New description")
+                .dueDate(LocalDateTime.now().plusDays(10))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+
+        assertThatThrownBy(() -> this.alertService.update(alertId, alertRequest, "admin"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Cancelled alerts cannot be edited");
+    }
+
+    @Test
+    void testUpdateWhenAlertDoesNotExist() {
+        UUID alertId = UUID.randomUUID();
+
+        Alert alertRequest = Alert.builder()
+                .title("New title")
+                .description("New description")
+                .dueDate(LocalDateTime.now().plusDays(10))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId))
+                .willThrow(new NotFoundException("The Alert ID doesn't exist: " + alertId));
+
+        assertThatThrownBy(() -> this.alertService.update(alertId, alertRequest, "admin"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(alertId.toString());
+    }
+}

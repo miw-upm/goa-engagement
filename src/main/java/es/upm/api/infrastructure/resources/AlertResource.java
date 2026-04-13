@@ -4,6 +4,7 @@ import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.services.AlertService;
 import es.upm.api.infrastructure.dtos.AlertCreateDto;
 import es.upm.api.infrastructure.dtos.AlertResponseDto;
+import es.upm.api.infrastructure.dtos.AlertUpdateDto;
 import es.upm.api.infrastructure.mappers.AlertMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -11,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
@@ -34,5 +37,16 @@ public class AlertResource {
         Alert alert = this.alertMapper.toEntity(alertCreateDto);
         Alert createdAlert = this.alertService.create(alert, authentication.getName());
         return this.alertMapper.toDto(createdAlert);
+    }
+
+    @PutMapping("/{alertId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Update alert")
+    public AlertResponseDto update(@PathVariable UUID alertId,
+                                   @Valid @RequestBody AlertUpdateDto alertUpdateDto,
+                                   Authentication authentication) {
+        Alert alert = this.alertMapper.toEntity(alertUpdateDto);
+        Alert updatedAlert = this.alertService.update(alertId, alert, authentication.getName());
+        return this.alertMapper.toDto(updatedAlert);
     }
 }
