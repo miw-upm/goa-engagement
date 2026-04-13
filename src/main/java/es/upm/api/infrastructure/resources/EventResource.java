@@ -2,10 +2,7 @@ package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.services.EventService;
-import es.upm.api.infrastructure.dtos.CommentCreateDto;
-import es.upm.api.infrastructure.dtos.EventCreateDto;
-import es.upm.api.infrastructure.dtos.EventResponseDto;
-import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.EventMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -72,6 +69,21 @@ public class EventResource {
                 eventId,
                 authentication.getName(),
                 commentCreateDto.getContent()
+        );
+    }
+
+    @DeleteMapping(ID_COMMENTS)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete comment from event")
+    public void deleteComment(@PathVariable UUID eventId,
+                              @Valid @RequestBody CommentDeleteDto commentDeleteDto,
+                              Authentication authentication) {
+        this.eventService.deleteComment(
+                eventId,
+                commentDeleteDto.getAuthorId(),
+                commentDeleteDto.getCreatedDate(),
+                commentDeleteDto.getContent(),
+                authentication.getName()
         );
     }
 
