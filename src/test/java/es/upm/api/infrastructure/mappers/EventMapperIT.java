@@ -232,7 +232,7 @@ class EventMapperIT {
         // Assert
         assertThat(dto).isNotNull();
         assertThat(dto.getComments()).hasSize(2);
-        assertThat(dto.getComments().get(0).getAuthorId()).isEqualTo(authorId);
+        assertThat(dto.getComments().getFirst().getAuthorId()).isEqualTo(authorId);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("First comment");
         assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(commentDate);
         assertThat(dto.getComments().get(1).getAuthorId()).isEqualTo(authorId);
@@ -464,9 +464,9 @@ class EventMapperIT {
         // Assert
         assertThat(dto).isNotNull();
         assertThat(dto.getComments()).hasSize(1);
-        assertThat(dto.getComments().get(0).getAuthorId()).isEqualTo(authorId);
-        assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(commentDate);
-        assertThat(dto.getComments().get(0).getContent()).isEqualTo("Test comment");
+        assertThat(dto.getComments().getFirst().getAuthorId()).isEqualTo(authorId);
+        assertThat(dto.getComments().getFirst().getCreatedDate()).isEqualTo(commentDate);
+        assertThat(dto.getComments().getFirst().getContent()).isEqualTo("Test comment");
     }
 
     @Test
@@ -508,7 +508,7 @@ class EventMapperIT {
         // Assert
         assertThat(dto).isNotNull();
         assertThat(dto.getComments()).hasSize(2);
-        assertThat(dto.getComments().get(0).getAuthorId()).isEqualTo(authorId1);
+        assertThat(dto.getComments().getFirst().getAuthorId()).isEqualTo(authorId1);
         assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(commentDate1);
         assertThat(dto.getComments().get(0).getContent()).isEqualTo("Comment by user 1");
         assertThat(dto.getComments().get(1).getAuthorId()).isEqualTo(authorId2);
@@ -544,13 +544,13 @@ class EventMapperIT {
 
         // Assert - Timestamp should be preserved exactly
         assertThat(dto.getComments()).hasSize(1);
-        assertThat(dto.getComments().get(0).getCreatedDate()).isEqualTo(preciseTimestamp);
-        assertThat(dto.getComments().get(0).getCreatedDate().getYear()).isEqualTo(2025);
-        assertThat(dto.getComments().get(0).getCreatedDate().getMonthValue()).isEqualTo(12);
-        assertThat(dto.getComments().get(0).getCreatedDate().getDayOfMonth()).isEqualTo(31);
-        assertThat(dto.getComments().get(0).getCreatedDate().getHour()).isEqualTo(23);
-        assertThat(dto.getComments().get(0).getCreatedDate().getMinute()).isEqualTo(59);
-        assertThat(dto.getComments().get(0).getCreatedDate().getSecond()).isEqualTo(59);
+        assertThat(dto.getComments().getFirst().getCreatedDate()).isEqualTo(preciseTimestamp);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getYear()).isEqualTo(2025);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getMonthValue()).isEqualTo(12);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getDayOfMonth()).isEqualTo(31);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getHour()).isEqualTo(23);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getMinute()).isEqualTo(59);
+        assertThat(dto.getComments().getFirst().getCreatedDate().getSecond()).isEqualTo(59);
     }
 
     @Test
@@ -581,7 +581,7 @@ class EventMapperIT {
 
         // Assert
         assertThat(dto.getComments()).hasSize(1);
-        assertThat(dto.getComments().get(0).getContent()).isEqualTo(contentWithSpecialChars);
+        assertThat(dto.getComments().getFirst().getContent()).isEqualTo(contentWithSpecialChars);
     }
 
     @Test
@@ -612,8 +612,8 @@ class EventMapperIT {
 
         // Assert
         assertThat(dto.getComments()).hasSize(1);
-        assertThat(dto.getComments().get(0).getContent()).hasSize(1000);
-        assertThat(dto.getComments().get(0).getContent()).isEqualTo(longContent);
+        assertThat(dto.getComments().getFirst().getContent()).hasSize(1000);
+        assertThat(dto.getComments().getFirst().getContent()).isEqualTo(longContent);
     }
 
     @Test
@@ -666,9 +666,9 @@ class EventMapperIT {
         // Assert
         assertThat(dtos).hasSize(2);
         assertThat(dtos.get(0).getComments()).hasSize(1);
-        assertThat(dtos.get(0).getComments().get(0).getContent()).isEqualTo("Comment on event 1");
+        assertThat(dtos.get(0).getComments().getFirst().getContent()).isEqualTo("Comment on event 1");
         assertThat(dtos.get(1).getComments()).hasSize(1);
-        assertThat(dtos.get(1).getComments().get(0).getContent()).isEqualTo("Comment on event 2");
+        assertThat(dtos.get(1).getComments().getFirst().getContent()).isEqualTo("Comment on event 2");
     }
 
     @Test

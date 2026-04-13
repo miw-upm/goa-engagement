@@ -684,7 +684,7 @@ class EventServiceIT {
         assertThat(eventWithComments.getComments()).hasSize(2);
 
         // Get the first comment details for deletion
-        Comment firstComment = eventWithComments.getComments().get(0);
+        Comment firstComment = eventWithComments.getComments().getFirst();
 
         // Act - Delete first comment as the author
         eventService.deleteComment(
