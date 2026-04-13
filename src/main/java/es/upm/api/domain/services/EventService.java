@@ -7,7 +7,6 @@ import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
-import es.upm.api.infrastructure.dtos.TimelineEventDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
 
