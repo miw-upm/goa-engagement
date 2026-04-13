@@ -10,4 +10,6 @@ public interface AlertPersistence {
     void create(Alert alert);
 
     Alert readById(UUID id);
+
+    void update(Alert alert);
 }

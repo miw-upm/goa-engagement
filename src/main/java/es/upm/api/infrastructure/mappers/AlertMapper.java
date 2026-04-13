@@ -5,6 +5,7 @@ import es.upm.api.infrastructure.dtos.AlertCreateDto;
 import es.upm.api.infrastructure.dtos.AlertResponseDto;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.infrastructure.dtos.AlertNotificationDto;
+import es.upm.api.infrastructure.dtos.AlertUpdateDto;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -68,6 +69,15 @@ public class AlertMapper {
                 .shownAt(notification.getShownAt())
                 .createdAt(notification.getCreatedAt())
                 .updatedAt(notification.getUpdatedAt())
+                .build();
+    }
+
+    public Alert toEntity(AlertUpdateDto dto) {
+        if (dto == null) return null;
+        return Alert.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .dueDate(dto.getDueDate())
                 .build();
     }
 }
