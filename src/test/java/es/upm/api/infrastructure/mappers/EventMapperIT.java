@@ -926,7 +926,7 @@ class EventMapperIT {
         List<TimelineEventDto> timelineDtos = eventMapper.toTimelineDtoList(events);
 
         assertThat(timelineDtos).hasSize(1);
-        TimelineEventDto dto = timelineDtos.get(0);
+        TimelineEventDto dto = timelineDtos.getFirst();
 
         assertThat(dto.getId()).isEqualTo(eventId);
         assertThat(dto.getDate()).isEqualTo(eventDate);

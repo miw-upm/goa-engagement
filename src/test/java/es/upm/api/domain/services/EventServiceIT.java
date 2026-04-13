@@ -1137,7 +1137,7 @@ class EventServiceIT {
         List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
 
         assertThat(timelineEvents).hasSize(1);
-        assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Single Event");
+        assertThat(timelineEvents.getFirst().getTitle()).isEqualTo("Single Event");
     }
 
     @Test
