@@ -128,6 +128,19 @@ public class DatabaseSeederDev {
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
                                 .signatureDate(LocalDateTime.now()).build())
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2])).build(),
+                EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
+                        .discount(15)
+                        .creationDate(LocalDate.now())
+                        .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006"))
+                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007"))
+                        .paymentMethodEntity(PaymentMethodEntity.builder()
+                                .description("A la firma de la carta de encargo")
+                                .percentage(50).build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder()
+                                .description("A la finalización del procedimiento")
+                                .percentage(50).build())
+                        .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
+                        .build(),
         };
         this.engagementLetterRepository.saveAll(List.of(encargos));
         log.warn("        ------- Hojas de encargo ------------------------------------------------------------------");
