@@ -1192,6 +1192,234 @@ class EventResourceIT {
                         .content(invalidJson))
                 .andExpect(status().isBadRequest());
     }
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsDescendingOrder() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 10, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("First Event")
+                .description("Description 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 20, 14, 30, 0))
+                .type(EventType.PHASES)
+                .title("Second Event")
+                .description("Description 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event3 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 18, 9, 15, 0))
+                .type(EventType.STANDARD_EVENT)
+                .title("Third Event")
+                .description("Description 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String event1Json = objectMapper.writeValueAsString(event1);
+        String event2Json = objectMapper.writeValueAsString(event2);
+        String event3Json = objectMapper.writeValueAsString(event3);
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event1Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event2Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event3Json))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .param("ascending", "false")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].title", is("Second Event")))
+                .andExpect(jsonPath("$[0].date", is("2026-04-20T14:30:00")))
+                .andExpect(jsonPath("$[0].type", is("PHASES")))
+                .andExpect(jsonPath("$[0].status", is("IN_PROGRESS")))
+                .andExpect(jsonPath("$[1].title", is("Third Event")))
+                .andExpect(jsonPath("$[1].date", is("2026-04-18T09:15:00")))
+                .andExpect(jsonPath("$[2].title", is("First Event")))
+                .andExpect(jsonPath("$[2].date", is("2026-04-15T10:00:00")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsAscendingOrder() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 25, 11, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Later Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                .type(EventType.PHASES)
+                .title("Earlier Event")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String event1Json = objectMapper.writeValueAsString(event1);
+        String event2Json = objectMapper.writeValueAsString(event2);
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event1Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event2Json))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .param("ascending", "true")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Earlier Event")))
+                .andExpect(jsonPath("$[0].date", is("2026-04-10T09:00:00")))
+                .andExpect(jsonPath("$[1].title", is("Later Event")))
+                .andExpect(jsonPath("$[1].date", is("2026-04-25T11:00:00")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsDefaultOrderIsDescending() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 10, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Older Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 20, 14, 0, 0))
+                .type(EventType.PHASES)
+                .title("Newer Event")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String event1Json = objectMapper.writeValueAsString(event1);
+        String event2Json = objectMapper.writeValueAsString(event2);
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event1Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event2Json))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Newer Event")))
+                .andExpect(jsonPath("$[1].title", is("Older Event")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsEmptyList() throws Exception {
+        UUID nonExistentId = UUID.randomUUID();
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + nonExistentId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsReturnsOnlyRequiredFields() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 10, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Timeline Event")
+                .description("Timeline Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String eventJson = objectMapper.writeValueAsString(event);
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", notNullValue()))
+                .andExpect(jsonPath("$[0].date", is("2026-04-15T10:00:00")))
+                .andExpect(jsonPath("$[0].type", is("MILESTONE")))
+                .andExpect(jsonPath("$[0].title", is("Timeline Event")))
+                .andExpect(jsonPath("$[0].description", is("Timeline Description")))
+                .andExpect(jsonPath("$[0].status", is("PENDING")))
+                .andExpect(jsonPath("$[0].createdDate").doesNotExist())
+                .andExpect(jsonPath("$[0].engagementLetterId").doesNotExist())
+                .andExpect(jsonPath("$[0].comments").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = {"ROLE_user"})
+    void testGetTimelineEventsUnauthorizedForNonAdmin() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+
 
 }
 
