@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -93,5 +94,70 @@ class AlertResourceIT {
                 .andExpect(jsonPath("$.updatedBy").value("admin"))
                 .andExpect(jsonPath("$.notifications[0].offsetMinutes").value(-120))
                 .andExpect(jsonPath("$.notifications[0].triggerAt").value("2026-04-25T16:00:00"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldReadAlertById() throws Exception {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 12, 10, 30);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(LocalDateTime.of(2026, 4, 24, 18, 0))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .createdBy("creator")
+                .updatedBy("updater")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        BDDMockito.given(this.alertService.readById(alertId)).willReturn(alert);
+
+        this.mockMvc.perform(get(AlertResource.ALERTS + "/{alertId}", alertId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(alertId.toString()))
+                .andExpect(jsonPath("$.title").value("Alert title"))
+                .andExpect(jsonPath("$.description").value("Alert description"))
+                .andExpect(jsonPath("$.dueDate").value("2026-04-25T18:00:00"))
+                .andExpect(jsonPath("$.engagementLetterId").value(engagementLetterId.toString()))
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.createdAt").value("2026-04-10T09:00:00"))
+                .andExpect(jsonPath("$.updatedAt").value("2026-04-12T10:30:00"))
+                .andExpect(jsonPath("$.createdBy").value("creator"))
+                .andExpect(jsonPath("$.updatedBy").value("updater"))
+                .andExpect(jsonPath("$.notifications[0].offsetMinutes").value(-1440))
+                .andExpect(jsonPath("$.notifications[0].triggerAt").value("2026-04-24T18:00:00"))
+                .andExpect(jsonPath("$.notifications[0].status").value("PENDING"))
+                .andExpect(jsonPath("$.notifications[1].offsetMinutes").value(-120))
+                .andExpect(jsonPath("$.notifications[1].triggerAt").value("2026-04-25T16:00:00"))
+                .andExpect(jsonPath("$.notifications[1].status").value("PENDING"));
     }
 }
