@@ -166,4 +166,57 @@ class AlertPersistenceMongodbIT {
         assertThat(result.getNotifications().get(1).getTriggerAt())
                 .isEqualTo(LocalDateTime.of(2026, 4, 25, 16, 0));
     }
+
+    @Test
+    void testFindByEngagementLetterId() {
+        UUID engagementLetterId1 = UUID.randomUUID();
+        UUID engagementLetterId2 = UUID.randomUUID();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId1)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .dueDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+                .status(Status.CANCELLED)
+                .engagementLetterId(engagementLetterId1)
+                .build();
+
+        Alert alert3 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 3")
+                .dueDate(LocalDateTime.of(2026, 5, 1, 12, 0))
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId2)
+                .build();
+
+        this.alertPersistence.create(alert1);
+        this.alertPersistence.create(alert2);
+        this.alertPersistence.create(alert3);
+
+        List<Alert> result = this.alertPersistence.findByEngagementLetterId(engagementLetterId1);
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Alert::getTitle)
+                .containsExactlyInAnyOrder("Alert 1", "Alert 2");
+        assertThat(result)
+                .extracting(Alert::getEngagementLetterId)
+                .containsOnly(engagementLetterId1);
+    }
+
+    @Test
+    void testFindByEngagementLetterIdEmpty() {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        List<Alert> result = this.alertPersistence.findByEngagementLetterId(engagementLetterId);
+
+        assertThat(result).isEmpty();
+    }
 }

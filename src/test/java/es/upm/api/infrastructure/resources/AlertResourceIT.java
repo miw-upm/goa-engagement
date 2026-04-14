@@ -25,8 +25,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -159,5 +158,60 @@ class AlertResourceIT {
                 .andExpect(jsonPath("$.notifications[1].offsetMinutes").value(-120))
                 .andExpect(jsonPath("$.notifications[1].triggerAt").value("2026-04-25T16:00:00"))
                 .andExpect(jsonPath("$.notifications[1].status").value("PENDING"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldListAlertsByEngagementLetterId() throws Exception {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .dueDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+                .status(Status.CANCELLED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        BDDMockito.given(this.alertService.findByEngagementLetterId(engagementLetterId))
+                .willReturn(List.of(alert1, alert2));
+
+        this.mockMvc.perform(get(AlertResource.ALERTS)
+                        .param("engagementLetterId", engagementLetterId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].id").value(alert1.getId().toString()))
+                .andExpect(jsonPath("$[0].title").value("Alert 1"))
+                .andExpect(jsonPath("$[0].dueDate").value("2026-04-25T18:00:00"))
+                .andExpect(jsonPath("$[0].status").value("PENDING"))
+                .andExpect(jsonPath("$[0].notifications").doesNotExist())
+                .andExpect(jsonPath("$[1].id").value(alert2.getId().toString()))
+                .andExpect(jsonPath("$[1].title").value("Alert 2"))
+                .andExpect(jsonPath("$[1].dueDate").value("2026-04-28T10:30:00"))
+                .andExpect(jsonPath("$[1].status").value("CANCELLED"))
+                .andExpect(jsonPath("$[1].notifications").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldReturnEmptyListWhenNoAlertsExist() throws Exception {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        BDDMockito.given(this.alertService.findByEngagementLetterId(engagementLetterId))
+                .willReturn(List.of());
+
+        this.mockMvc.perform(get(AlertResource.ALERTS)
+                        .param("engagementLetterId", engagementLetterId.toString()))
+                .andExpect(status().isOk())
+                .andExpect(content().json("[]"));
     }
 }

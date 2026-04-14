@@ -4,6 +4,7 @@ import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.services.AlertService;
 import es.upm.api.infrastructure.dtos.AlertCreateDto;
 import es.upm.api.infrastructure.dtos.AlertResponseDto;
+import es.upm.api.infrastructure.dtos.AlertSummaryDto;
 import es.upm.api.infrastructure.dtos.AlertUpdateDto;
 import es.upm.api.infrastructure.mappers.AlertMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -13,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -56,5 +58,13 @@ public class AlertResource {
     public AlertResponseDto readById(@PathVariable UUID alertId) {
         Alert alert = this.alertService.readById(alertId);
         return this.alertMapper.toDto(alert);
+    }
+
+    @GetMapping
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "List alerts by engagement letter id")
+    public List<AlertSummaryDto> findByEngagementLetterId(@RequestParam UUID engagementLetterId) {
+        List<Alert> alerts = this.alertService.findByEngagementLetterId(engagementLetterId);
+        return this.alertMapper.toSummaryDtoList(alerts);
     }
 }
