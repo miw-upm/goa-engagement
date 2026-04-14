@@ -20,22 +20,22 @@ fases y vías, para facilitar la adaptación del presupuesto al desarrollo real 
 Los honorarios pactados en la presente hoja de encargo profesional incluyen las consultas relacionadas con el encargo
 que tengan lugar durante los dos meses posteriores a la resolución o documento que ponga fin al procedimiento.
 Transcurrido dicho tiempo, las consultas que surjan relacionadas con el encargo y la aplicación de la resolución tendrán
-un coste de 150,00 € + IVA, que será abonado en el momento de efectuar la consulta.
+un coste de 150,00 € + IVA, que serán abonadas en el momento de efectuar la consulta.
 
 Los honorarios de Letrado objeto de la presente se presupuestan al margen de incidencias y recursos que puedan
 plantearse y sin incluir los honorarios de otros profesionales que puedan o deban intervenir, como procuradores o peritos.
-El pago de las tasas y depósitos judiciales que pudieran existir será de cuenta del cliente y no se encuentra incluido
+El pago de las tasas y depósitos judiciales que pudieran existir, serán de cuenta del cliente y no se encuentran incluidos
 en los honorarios descritos.
 
 Los honorarios pactados únicamente cubrirán las actuaciones realizadas en la Comunidad de Madrid. De igual modo, cualquier
 servicio jurídico que no esté incluido en el presente contrato se realizará previo presupuesto y aceptación por ambas
 partes.
 
-La minuta de honorarios definitiva estará sujeta al régimen fiscal de retenciones e IVA procedentes que serán abonados
+La minuta de honorarios definitiva estará sujeta al régimen fiscal de retenciones e IVA procedentes que serán abonadas
 por el cliente.
 
 #nota_solidaridad
-Nota: de ser varias las personas que realizan el encargo, dicha obligación será asumida con carácter solidario por todas
+Nota: de ser varias las personas que realizan el encargo, esa obligación será asumida con carácter solidario por todas
 ellas.
 
 #desavenencias
@@ -57,34 +57,15 @@ El cliente autoriza a entregar copia de la documentación facilitada a terceros 
 #advertencia_4
 La Letrada podrá delegar tareas en los Abogados colaboradores de su despacho.
 
-#advertencia_5
-El cliente se compromete a facilitar información veraz y actualizada, así como a comunicar cualquier cambio relevante
-para el desarrollo del encargo.
-
-#seguro_rc
-La Letrada dispone de seguro de responsabilidad civil profesional conforme a la normativa vigente del Ilustre Colegio
-de Abogados de Madrid.
-
-#comunicaciones
-Las partes acuerdan que las comunicaciones relativas al presente encargo podrán realizarse por correo electrónico a las
-direcciones facilitadas, considerándose válidas a todos los efectos.
-
-#proteccion_datos
-Los datos personales facilitados serán tratados por Nuria Ocaña Pérez, con NIF 46.882.956-D, con la finalidad de gestionar
-el presente encargo profesional. La base jurídica del tratamiento es la ejecución del contrato. Los datos se conservarán
-durante la relación contractual y posteriormente durante los plazos legales aplicables. No se cederán datos a terceros
-salvo obligación legal o para la ejecución del encargo. Puede ejercer sus derechos de acceso, rectificación, supresión,
-oposición, limitación y portabilidad en derecho@ocanabogados.es. Más información en nuestra Política de Privacidad.
-
 #jurisdiccion
 Las partes se someten expresamente a la legislación española, sometiéndose a la jurisdicción de los Juzgados y Tribunales
 de Madrid.
 
 #aviso_importante
 La validez de la presente hoja de encargo profesional es de 30 días naturales a contar desde su emisión. Cualquier
-modificación sustancial en las actuaciones del procedimiento será tenida en cuenta para una valoración de liquidación
-final, así como la existencia de nuevas actuaciones o procedimientos judiciales no contemplados en el presente presupuesto
-será origen de solicitud por parte del despacho de una nueva provisión de fondos.
+modificación sustancial en las actuaciones del procedimiento serán tenidas en cuenta para una valoración de liquidación
+final, así como la existencia de nuevas actuaciones o procedimientos judiciales no contempladas en el presente presupuesto
+serán origen de solicitud por parte del despacho de una nueva provisión de fondos.
 
 #firma
 En virtud de lo expuesto y en prueba de conformidad, se firma el presente encargo por duplicado y a un solo efecto, en

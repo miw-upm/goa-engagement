@@ -8,7 +8,7 @@ import org.openpdf.text.List;
 import org.openpdf.text.Rectangle;
 import org.openpdf.text.pdf.*;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -273,6 +273,7 @@ public class PdfBuilder {
         }
         return this;
     }
+
     // === Build ===
     public byte[] build() {
         document.close();
@@ -346,7 +347,8 @@ public class PdfBuilder {
                 logo.scaleToFit(80, 80);
                 cell.addElement(logo);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return cell;
     }
 
@@ -437,19 +439,53 @@ public class PdfBuilder {
 
     // === PageFooterEvent ===
     private static class PageFooterEvent extends PdfPageEventHelper {
+
+        private PdfTemplate totalPages;
+        private BaseFont baseFont;
+
+        @Override
+        public void onOpenDocument(PdfWriter writer, Document document) {
+            totalPages = writer.getDirectContent().createTemplate(30, 12);
+            try {
+                baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+            } catch (Exception e) {
+                baseFont = null;
+            }
+        }
+
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             PdfContentByte cb = writer.getDirectContent();
             float y = document.bottomMargin() - 10;
 
+            // Línea
             cb.setLineWidth(0.5f);
             cb.moveTo(document.leftMargin(), y + 15);
             cb.lineTo(document.right(), y + 15);
             cb.stroke();
 
-            Phrase footer = new Phrase(COMPANY_EMAIL + "    |    " + COMPANY_PHONE, FONT_SMALL);
+            // Contacto centrado
+            Phrase footer = new Phrase(COMPANY_EMAIL + "  |  " + COMPANY_PHONE, FONT_SMALL);
             ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, footer,
                     (document.right() + document.leftMargin()) / 2, y, 0);
+
+            // Número de página a la derecha
+            String pageText = "Página " + writer.getPageNumber() + " de ";
+            float pageTextWidth = baseFont.getWidthPoint(pageText, 8);
+            cb.beginText();
+            cb.setFontAndSize(baseFont, 8);
+            cb.setTextMatrix(document.right() - pageTextWidth - 20, y);
+            cb.showText(pageText);
+            cb.endText();
+            cb.addTemplate(totalPages, document.right() - 20, y);
+        }
+
+        @Override
+        public void onCloseDocument(PdfWriter writer, Document document) {
+            totalPages.beginText();
+            totalPages.setFontAndSize(baseFont, 8);
+            totalPages.showText(String.valueOf(writer.getPageNumber()));
+            totalPages.endText();
         }
     }
 }

@@ -10,7 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -242,9 +243,18 @@ public class EngagementLetterService {
                         texts.get("advertencia_1"),
                         texts.get("advertencia_2"),
                         texts.get("advertencia_3"),
-                        texts.get("advertencia_4")
+                        texts.get("advertencia_4"),
+                        texts.get("advertencia_5")
                 ));
 
+        pdf.section("Seguro de Responsabilidad Civil")
+                .paragraph(texts.get("seguro_rc"));
+
+        pdf.section("Comunicaciones")
+                .paragraph(texts.get("comunicaciones"));
+
+        pdf.section("Protección de Datos")
+                .paragraph(texts.get("proteccion_datos"));
         pdf.section("Jurisdicción")
                 .paragraph(texts.get("jurisdiccion"));
 
@@ -270,5 +280,9 @@ public class EngagementLetterService {
 
     private String formatBudget(BigDecimal budget) {
         if (budget == null) return "-";
-        return String.format("%.2f EUR", budget);
-    }}
+        DecimalFormat df = new DecimalFormat("#,##0.00");
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("es", "ES"));
+        df.setDecimalFormatSymbols(symbols);
+        return df.format(budget) + " EUR";
+    }
+}
