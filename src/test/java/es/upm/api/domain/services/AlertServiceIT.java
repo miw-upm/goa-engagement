@@ -329,4 +329,120 @@ class AlertServiceIT {
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining(engagementLetterId.toString());
     }
+
+    @Test
+    void testCancelSuccess() {
+        UUID alertId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(dueDate.plusMinutes(-1440))
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+        BDDMockito.willDoNothing().given(this.alertPersistence).update(any(Alert.class));
+
+        Alert cancelledAlert = this.alertService.cancel(alertId, "admin");
+
+        assertThat(cancelledAlert).isNotNull();
+        assertThat(cancelledAlert.getStatus()).isEqualTo(Status.CANCELLED);
+        assertThat(cancelledAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(cancelledAlert.getUpdatedAt()).isNotNull();
+        assertThat(cancelledAlert.getNotifications()).hasSize(2);
+        assertThat(cancelledAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.CANCELLED);
+        assertThat(cancelledAlert.getNotifications())
+                .extracting(AlertNotification::getUpdatedAt)
+                .doesNotContainNull();
+
+        ArgumentCaptor<Alert> captor = ArgumentCaptor.forClass(Alert.class);
+        verify(this.alertPersistence).update(captor.capture());
+
+        Alert persistedAlert = captor.getValue();
+        assertThat(persistedAlert.getStatus()).isEqualTo(Status.CANCELLED);
+        assertThat(persistedAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.CANCELLED);
+    }
+
+    @Test
+    void testCancelWhenAlreadyCancelled() {
+        UUID alertId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.CANCELLED)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.CANCELLED)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+        BDDMockito.willDoNothing().given(this.alertPersistence).update(any(Alert.class));
+
+        Alert cancelledAlert = this.alertService.cancel(alertId, "admin");
+
+        assertThat(cancelledAlert.getStatus()).isEqualTo(Status.CANCELLED);
+        assertThat(cancelledAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(cancelledAlert.getNotifications()).hasSize(1);
+        assertThat(cancelledAlert.getNotifications().getFirst().getStatus()).isEqualTo(Status.CANCELLED);
+    }
+
+    @Test
+    void testCancelWhenAlertDoesNotExist() {
+        UUID alertId = UUID.randomUUID();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId))
+                .willThrow(new NotFoundException("The Alert ID doesn't exist: " + alertId));
+
+        assertThatThrownBy(() -> this.alertService.cancel(alertId, "admin"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(alertId.toString());
+    }
 }

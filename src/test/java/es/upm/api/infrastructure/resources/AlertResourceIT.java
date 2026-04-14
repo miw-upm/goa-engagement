@@ -23,8 +23,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -213,5 +212,66 @@ class AlertResourceIT {
                         .param("engagementLetterId", engagementLetterId.toString()))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldCancelAlert() throws Exception {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 12, 10, 30);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(LocalDateTime.of(2026, 4, 24, 18, 0))
+                .status(Status.CANCELLED)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0))
+                .status(Status.CANCELLED)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.CANCELLED)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .createdBy("creator")
+                .updatedBy("admin")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        BDDMockito.given(this.alertService.cancel(alertId, "admin")).willReturn(alert);
+
+        this.mockMvc.perform(patch(AlertResource.ALERTS + "/{alertId}/cancel", alertId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(alertId.toString()))
+                .andExpect(jsonPath("$.title").value("Alert title"))
+                .andExpect(jsonPath("$.description").value("Alert description"))
+                .andExpect(jsonPath("$.dueDate").value("2026-04-25T18:00:00"))
+                .andExpect(jsonPath("$.engagementLetterId").value(engagementLetterId.toString()))
+                .andExpect(jsonPath("$.status").value("CANCELLED"))
+                .andExpect(jsonPath("$.createdAt").value("2026-04-10T09:00:00"))
+                .andExpect(jsonPath("$.updatedAt").value("2026-04-12T10:30:00"))
+                .andExpect(jsonPath("$.createdBy").value("creator"))
+                .andExpect(jsonPath("$.updatedBy").value("admin"))
+                .andExpect(jsonPath("$.notifications[0].status").value("CANCELLED"))
+                .andExpect(jsonPath("$.notifications[1].status").value("CANCELLED"));
     }
 }
