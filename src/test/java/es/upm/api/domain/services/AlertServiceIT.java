@@ -33,6 +33,9 @@ class AlertServiceIT {
     @MockitoBean
     private AlertPersistence alertPersistence;
 
+    @MockitoBean
+    private EngagementLetterService engagementLetterService;
+
     @Test
     void testUpdateSuccessWhenDueDateChanges() {
         UUID alertId = UUID.randomUUID();
@@ -262,5 +265,68 @@ class AlertServiceIT {
         assertThatThrownBy(() -> this.alertService.readById(alertId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining(alertId.toString());
+    }
+
+    @Test
+    void testFindByEngagementLetterIdSuccess() {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .dueDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+                .status(Status.CANCELLED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        BDDMockito.given(this.engagementLetterService.readById(engagementLetterId))
+                .willReturn(null);
+        BDDMockito.given(this.alertPersistence.findByEngagementLetterId(engagementLetterId))
+                .willReturn(List.of(alert1, alert2));
+
+        List<Alert> result = this.alertService.findByEngagementLetterId(engagementLetterId);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.getFirst().getTitle()).isEqualTo("Alert 1");
+        assertThat(result.getFirst().getDueDate()).isEqualTo(LocalDateTime.of(2026, 4, 25, 18, 0));
+        assertThat(result.getFirst().getStatus()).isEqualTo(Status.PENDING);
+
+        assertThat(result.get(1).getTitle()).isEqualTo("Alert 2");
+        assertThat(result.get(1).getDueDate()).isEqualTo(LocalDateTime.of(2026, 4, 28, 10, 30));
+        assertThat(result.get(1).getStatus()).isEqualTo(Status.CANCELLED);
+    }
+
+    @Test
+    void testFindByEngagementLetterIdEmptyList() {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        BDDMockito.given(this.engagementLetterService.readById(engagementLetterId))
+                .willReturn(null);
+        BDDMockito.given(this.alertPersistence.findByEngagementLetterId(engagementLetterId))
+                .willReturn(List.of());
+
+        List<Alert> result = this.alertService.findByEngagementLetterId(engagementLetterId);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testFindByEngagementLetterIdWhenEngagementLetterDoesNotExist() {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        BDDMockito.given(this.engagementLetterService.readById(engagementLetterId))
+                .willThrow(new NotFoundException("The EngagementLetter ID doesn't exist: " + engagementLetterId));
+
+        assertThatThrownBy(() -> this.alertService.findByEngagementLetterId(engagementLetterId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(engagementLetterId.toString());
     }
 }
