@@ -19,5 +19,7 @@ public interface EventPersistence {
 
     Comment addComment(UUID eventId, Comment comment);
 
+    void deleteComment(UUID eventId, Comment comment);
+
     Stream<Event> findByEngagementLetterId(UUID engagementLetterId);
 }

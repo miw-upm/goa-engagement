@@ -1,5 +1,6 @@
 package es.upm.api.domain.services;
 
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
@@ -14,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -645,5 +647,545 @@ class EventServiceIT {
         // Assert
         assertThat(events).isEmpty();
     }
+    @Test
+    void testDeleteCommentSuccessfully() {
+        // Arrange - Create event with comments
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with comments")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto author = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .firstName("Laura")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(author.getMobile()))
+                .thenReturn(author);
+
+        // Add two comments
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "First comment");
+
+        // Wait a bit to ensure different timestamps
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Second comment");
+
+        // Verify initial state
+        Event eventWithComments = eventPersistence.readById(createdEvent.getId());
+        assertThat(eventWithComments.getComments()).hasSize(2);
+
+        // Get the first comment details for deletion
+        Comment firstComment = eventWithComments.getComments().getFirst();
+
+        // Act - Delete first comment as the author
+        eventService.deleteComment(
+                createdEvent.getId(),
+                firstComment.getAuthorId(),
+                firstComment.getCreatedDate(),
+                firstComment.getContent(),
+                author.getMobile()
+        );
+
+        // Assert - Comment should be deleted
+        Event eventAfterDeletion = eventPersistence.readById(createdEvent.getId());
+        assertThat(eventAfterDeletion.getComments()).hasSize(1);
+        assertThat(eventAfterDeletion.getComments().getFirst().getContent()).isEqualTo("Second comment");
+    }
+
+    @Test
+    void testDeleteCommentByAuthorOnly() {
+        // Arrange - Create event with comment from user1
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto user1 = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .firstName("User1")
+                .build();
+        UserDto user2 = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000002")
+                .firstName("User2")
+                .build();
+
+        Mockito.when(userWebClient.readUserByMobile(user1.getMobile())).thenReturn(user1);
+        Mockito.when(userWebClient.readUserByMobile(user2.getMobile())).thenReturn(user2);
+
+        // Add comment as user1
+        eventService.addComment(createdEvent.getId(), user1.getMobile(), "Comment by user1");
+
+        // Read the event to get the actual comment with its generated date
+        Event eventWithComment = eventPersistence.readById(createdEvent.getId());
+        Comment actualComment = eventWithComment.getComments().getFirst();
+
+        // Act & Assert - user2 tries to delete user1's comment should fail
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        createdEvent.getId(),
+                        actualComment.getAuthorId(),
+                        actualComment.getCreatedDate(),
+                        actualComment.getContent(),
+                        user2.getMobile()
+                )
+        ).isInstanceOf(es.upm.api.domain.exceptions.ForbiddenException.class)
+                .hasMessageContaining("You can only delete your own comments");
+    }
+
+    @Test
+    void testDeleteNonExistentCommentShouldFail() {
+        // Arrange - Create event without comments
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event without comments")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto user = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(user.getMobile())).thenReturn(user);
+
+        // Act & Assert - Try to delete non-existent comment
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        createdEvent.getId(),
+                        user.getId(),
+                        LocalDateTime.now(),
+                        "Non-existent comment",
+                        user.getMobile()
+                )
+        ).isInstanceOf(es.upm.api.domain.exceptions.NotFoundException.class)
+                .hasMessageContaining("The comment doesn't exist in the event");
+    }
+
+    @Test
+    void testDeleteCommentFromNonExistentEventShouldFail() {
+        // Arrange
+        UserDto user = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(user.getMobile())).thenReturn(user);
+
+        // Act & Assert
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        UUID.randomUUID(),
+                        user.getId(),
+                        LocalDateTime.now(),
+                        "Some comment",
+                        user.getMobile()
+                )
+        ).hasMessageContaining("The Event ID doesn't exist");
+    }
+
+    @Test
+    void testDeleteCommentWithExactMatch() {
+        // Arrange - Create event with similar comments
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto author = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(author.getMobile())).thenReturn(author);
+
+        // Add two comments with same content but different dates
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Same content");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Same content");
+
+        Event eventWithComments = eventPersistence.readById(createdEvent.getId());
+        assertThat(eventWithComments.getComments()).hasSize(2);
+
+        // Act - Delete only the first comment (exact match on all fields)
+        Comment firstComment = eventWithComments.getComments().getFirst();
+        eventService.deleteComment(
+                createdEvent.getId(),
+                firstComment.getAuthorId(),
+                firstComment.getCreatedDate(),
+                firstComment.getContent(),
+                author.getMobile()
+        );
+
+        // Assert - Only one comment should remain
+        Event eventAfterDeletion = eventPersistence.readById(createdEvent.getId());
+        assertThat(eventAfterDeletion.getComments()).hasSize(1);
+    }
+
+    @Test
+    void testDeleteLastCommentFromEvent() {
+        // Arrange - Create event with one comment
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto author = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(author.getMobile())).thenReturn(author);
+
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Only comment");
+
+        Event eventWithComment = eventPersistence.readById(createdEvent.getId());
+        Comment comment = eventWithComment.getComments().getFirst();
+
+        // Act - Delete the only comment
+        eventService.deleteComment(
+                createdEvent.getId(),
+                comment.getAuthorId(),
+                comment.getCreatedDate(),
+                comment.getContent(),
+                author.getMobile()
+        );
+
+        // Assert - Event should have empty comments list
+        Event eventAfterDeletion = eventPersistence.readById(createdEvent.getId());
+        assertThat(eventAfterDeletion.getComments()).isEmpty();
+    }
+    @Test
+    void testDeleteCommentWithDifferentAuthor() {
+        // Arrange - Create event with a comment
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto author = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(author.getMobile())).thenReturn(author);
+
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Test comment");
+
+        Event eventWithComment = eventPersistence.readById(createdEvent.getId());
+        Comment actualComment = eventWithComment.getComments().getFirst();
+
+        // Act & Assert - Try to delete with different author ID
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        createdEvent.getId(),
+                        UUID.randomUUID(), // Wrong author ID
+                        actualComment.getCreatedDate(),
+                        actualComment.getContent(),
+                        author.getMobile()
+                )
+        ).isInstanceOf(es.upm.api.domain.exceptions.NotFoundException.class)
+                .hasMessageContaining("The comment doesn't exist in the event");
+    }
+    @Test
+    void testDeleteCommentWithNullCommentsList() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with null comments")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(null)
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto user = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(user.getMobile())).thenReturn(user);
+
+        // Act & Assert
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        createdEvent.getId(),
+                        user.getId(),
+                        LocalDateTime.now(),
+                        "Some comment",
+                        user.getMobile()
+                )
+        ).isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("The comment doesn't exist in the event");
+    }
+
+    @Test
+    void testDeleteCommentWithDifferentContent() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto author = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(author.getMobile())).thenReturn(author);
+
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Original content");
+
+        Event eventWithComment = eventPersistence.readById(createdEvent.getId());
+        Comment actualComment = eventWithComment.getComments().getFirst();
+
+        // Act & Assert - Different content
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        createdEvent.getId(),
+                        actualComment.getAuthorId(),
+                        actualComment.getCreatedDate(),
+                        "Different content",
+                        author.getMobile()
+                )
+        ).isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("The comment doesn't exist in the event");
+    }
+
+    @Test
+    void testDeleteCommentWithDifferentTimestamp() {
+        // Arrange
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .comments(new ArrayList<>())
+                .build();
+        Event createdEvent = eventService.create(event);
+
+        UserDto author = UserDto.builder()
+                .id(UUID.randomUUID())
+                .mobile("600000001")
+                .build();
+        Mockito.when(userWebClient.readUserByMobile(author.getMobile())).thenReturn(author);
+
+        eventService.addComment(createdEvent.getId(), author.getMobile(), "Test comment");
+
+        Event eventWithComment = eventPersistence.readById(createdEvent.getId());
+        Comment actualComment = eventWithComment.getComments().getFirst();
+
+        // Act & Assert - Different timestamp (outside tolerance)
+        LocalDateTime wrongDate = actualComment.getCreatedDate().plusHours(1);
+
+        assertThatThrownBy(() ->
+                eventService.deleteComment(
+                        createdEvent.getId(),
+                        actualComment.getAuthorId(),
+                        wrongDate,
+                        actualComment.getContent(),
+                        author.getMobile()
+                )
+        ).isInstanceOf(NotFoundException.class)
+                .hasMessageContaining("The comment doesn't exist in the event");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_DescendingOrder() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(3))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event3 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+        eventService.create(event3);
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+
+        assertThat(timelineEvents).hasSize(3);
+        assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
+        assertThat(timelineEvents.get(1).getTitle()).isEqualTo("Event 3");
+        assertThat(timelineEvents.get(2).getTitle()).isEqualTo("Event 1");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_AscendingOrder() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(5))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event3 = Event.builder()
+                .eventDate(eventDate.plusDays(8))
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+        eventService.create(event3);
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, true);
+
+        assertThat(timelineEvents).hasSize(3);
+        assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
+        assertThat(timelineEvents.get(1).getTitle()).isEqualTo("Event 1");
+        assertThat(timelineEvents.get(2).getTitle()).isEqualTo("Event 3");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_EmptyList() {
+        UUID nonExistentId = UUID.randomUUID();
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(nonExistentId, false);
+
+        assertThat(timelineEvents).isEmpty();
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_SingleEvent() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Single Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event);
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+
+        assertThat(timelineEvents).hasSize(1);
+        assertThat(timelineEvents.getFirst().getTitle()).isEqualTo("Single Event");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_SameDateDifferentTimes() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event eventMorning = Event.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 9, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Morning Meeting")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+        Event eventAfternoon = Event.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 15, 30, 0))
+                .type(EventType.PHASES)
+                .title("Afternoon Review")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+        Event eventEvening = Event.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 18, 45, 0))
+                .type(EventType.STANDARD_EVENT)
+                .title("Evening Call")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(eventMorning);
+        eventService.create(eventAfternoon);
+        eventService.create(eventEvening);
+
+        List<Event> descendingEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+
+        assertThat(descendingEvents).hasSize(3);
+        assertThat(descendingEvents.get(0).getTitle()).isEqualTo("Evening Call");
+        assertThat(descendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
+        assertThat(descendingEvents.get(2).getTitle()).isEqualTo("Morning Meeting");
+
+        List<Event> ascendingEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, true);
+
+        assertThat(ascendingEvents).hasSize(3);
+        assertThat(ascendingEvents.get(0).getTitle()).isEqualTo("Morning Meeting");
+        assertThat(ascendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
+        assertThat(ascendingEvents.get(2).getTitle()).isEqualTo("Evening Call");
+    }
+
 }
 

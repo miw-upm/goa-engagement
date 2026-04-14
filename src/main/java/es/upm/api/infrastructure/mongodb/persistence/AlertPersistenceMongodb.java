@@ -30,4 +30,10 @@ public class AlertPersistenceMongodb implements AlertPersistence {
                 .orElseThrow(() -> new NotFoundException("The Alert ID doesn't exist: " + id))
                 .toAlert();
     }
+
+    @Override
+    public void update(Alert alert) {
+        AlertEntity alertEntity = new AlertEntity(alert);
+        this.alertRepository.save(alertEntity);
+    }
 }
