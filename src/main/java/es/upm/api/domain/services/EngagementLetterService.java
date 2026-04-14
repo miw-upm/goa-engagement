@@ -167,6 +167,7 @@ public class EngagementLetterService {
 
         PdfBuilder pdf = new PdfBuilder("carta-encargo-" + engagementLetterId)
                 .header()
+                .space()
                 .title("HOJA DE ENCARGO PROFESIONAL")
                 .paragraphBold("En Madrid, a " + formatDateLong(letter.getCreationDate()), Element.ALIGN_RIGHT)
                 .space()
@@ -197,11 +198,10 @@ public class EngagementLetterService {
             pdf.space();
         }
 
-        pdf.space()
-                .paragraphBold(texts.get("ejecucion_trabajos"));
+        pdf.space().paragraphBold(texts.get("ejecucion_trabajos"));
 
         // Formas de pago
-        pdf.section("Formas de Pago");
+        pdf.space().section("Formas de Pago");
         letter.getPaymentMethods().stream()
                 .map(pm -> pm.getPercentage() + "% - " + pm.getDescription())
                 .forEach(pdf::paragraph);
@@ -238,8 +238,8 @@ public class EngagementLetterService {
                 .space()
                 .paragraph(texts.get("firma"));
 
-        pdf.space().space().space()
-                .twoColumnSignature("El Cliente", "El Abogado")
+        pdf.space(5)
+                .twoColumnSignature(vars.get("cliente_nombre"), "Nuría Ocaña Pérez")
                 .footer();
 
         return pdf.build();

@@ -2,10 +2,13 @@ package es.upm.api.domain.services;
 
 import es.upm.miw.pdf.PdfException;
 import org.openpdf.text.*;
+import org.openpdf.text.Font;
+import org.openpdf.text.Image;
+import org.openpdf.text.List;
+import org.openpdf.text.Rectangle;
 import org.openpdf.text.pdf.*;
-import org.openpdf.text.pdf.draw.LineSeparator;
 
-import java.awt.Color;
+import java.awt.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +20,7 @@ public class PdfBuilder {
 
     private final Document document;
     private final String filename;
+    private final PdfWriter writer;
 
     private static final Font FONT_NORMAL = new Font(Font.HELVETICA, 10);
     private static final Font FONT_BOLD = new Font(Font.HELVETICA, 10, Font.BOLD);
@@ -37,8 +41,8 @@ public class PdfBuilder {
         this.filename = Path.of(System.getProperty("java.io.tmpdir"), name + ".pdf").toString();
         this.document = new Document(PageSize.A4);
         try {
-            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
-            writer.setPageEvent(new PageFooterEvent());
+            this.writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
+            this.writer.setPageEvent(new PageFooterEvent());
             document.open();
         } catch (Exception e) {
             throw this.onError("creating PDF", e);
@@ -50,16 +54,23 @@ public class PdfBuilder {
             PdfPTable header = new PdfPTable(2);
             header.setWidthPercentage(100);
             header.setWidths(new float[]{59, 41});
+            header.getDefaultCell().setPadding(0);
+            header.getDefaultCell().setBorder(Rectangle.NO_BORDER);
 
             PdfPCell logoCell = new PdfPCell();
             logoCell.setBorder(Rectangle.NO_BORDER);
+            logoCell.setPadding(0);
+            logoCell.setPaddingLeft(0);
+            logoCell.setPaddingRight(0);
             logoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
             this.addLogoToCell(logoCell);
             header.addCell(logoCell);
 
             PdfPCell infoCell = new PdfPCell();
             infoCell.setBorder(Rectangle.NO_BORDER);
-            infoCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            infoCell.setPadding(0);
+            infoCell.setPaddingLeft(0);
+            infoCell.setPaddingRight(0);
             infoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
             Paragraph info = new Paragraph();
@@ -123,6 +134,13 @@ public class PdfBuilder {
 
     public PdfBuilder section(String text) {
         try {
+            float currentY = writer.getVerticalPosition(true);
+            float bottomMargin = document.bottomMargin() + 50; // 50 puntos de margen mínimo
+
+            if (currentY < bottomMargin) {
+                document.newPage();
+            }
+
             document.add(Chunk.NEWLINE);
             Paragraph section = new Paragraph(text, FONT_SECTION);
             section.setSpacingAfter(5);
@@ -184,21 +202,26 @@ public class PdfBuilder {
     }
 
     public PdfBuilder line() {
-        try {
-            LineSeparator separator = new LineSeparator();
-            separator.setPercentage(100);
-            document.add(new Paragraph(new Chunk(separator)));
-        } catch (DocumentException e) {
-            throw this.onError("adding line", e);
-        }
+        PdfContentByte cb = writer.getDirectContent();
+        float y = writer.getVerticalPosition(true) - 5;
+        cb.setLineWidth(1f);
+        cb.moveTo(document.leftMargin(), y);
+        cb.lineTo(document.right(), y);
+        cb.stroke();
         return this;
     }
 
     public PdfBuilder space() {
+        return space(1);
+    }
+
+    public PdfBuilder space(int times) {
         try {
-            Paragraph p = new Paragraph(" ");
-            p.setLeading(6);
-            document.add(p);
+            for (int i = 0; i < times; i++) {
+                Paragraph p = new Paragraph(" ");
+                p.setLeading(6);
+                document.add(p);
+            }
         } catch (DocumentException e) {
             throw this.onError("adding space", e);
         }
