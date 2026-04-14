@@ -5,6 +5,7 @@ import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.services.AlertService;
+import es.upm.api.infrastructure.dtos.AlertCreateDto;
 import es.upm.api.infrastructure.dtos.AlertUpdateDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -39,6 +40,83 @@ class AlertResourceIT {
 
     @MockitoBean
     private AlertService alertService;
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldCreateAlert() throws Exception {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+
+        AlertCreateDto dto = AlertCreateDto.builder()
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-4320)
+                .triggerAt(LocalDateTime.of(2026, 4, 22, 18, 0))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(LocalDateTime.of(2026, 4, 24, 18, 0))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification3 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        Alert createdAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .createdBy("admin")
+                .updatedBy("admin")
+                .notifications(List.of(notification1, notification2, notification3))
+                .build();
+
+        BDDMockito.given(this.alertService.create(any(Alert.class), eq("admin")))
+                .willReturn(createdAlert);
+
+        this.mockMvc.perform(post(AlertResource.ALERTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").value(alertId.toString()))
+                .andExpect(jsonPath("$.title").value("Alert title"))
+                .andExpect(jsonPath("$.description").value("Alert description"))
+                .andExpect(jsonPath("$.dueDate").value("2026-04-25T18:00:00"))
+                .andExpect(jsonPath("$.engagementLetterId").value(engagementLetterId.toString()))
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.createdBy").value("admin"))
+                .andExpect(jsonPath("$.updatedBy").value("admin"))
+                .andExpect(jsonPath("$.notifications.length()").value(3))
+                .andExpect(jsonPath("$.notifications[0].offsetMinutes").value(-4320))
+                .andExpect(jsonPath("$.notifications[0].triggerAt").value("2026-04-22T18:00:00"));
+    }
 
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
