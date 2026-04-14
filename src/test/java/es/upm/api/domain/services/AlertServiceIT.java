@@ -4,6 +4,7 @@ import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
+import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.persistence.AlertPersistence;
 import org.junit.jupiter.api.Test;
@@ -35,6 +36,144 @@ class AlertServiceIT {
 
     @MockitoBean
     private EngagementLetterService engagementLetterService;
+
+    @Test
+    void testCreateSuccessWithDefaultNotificationsWhenNotificationsIsEmpty() {
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        Alert alert = Alert.builder()
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .notifications(List.of())
+                .build();
+
+        BDDMockito.given(this.engagementLetterService.readById(engagementLetterId))
+                .willReturn(new EngagementLetter());
+        BDDMockito.willDoNothing().given(this.alertPersistence).create(any(Alert.class));
+
+        Alert createdAlert = this.alertService.create(alert, "admin");
+
+        assertThat(createdAlert).isNotNull();
+        assertThat(createdAlert.getId()).isNotNull();
+        assertThat(createdAlert.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(createdAlert.getCreatedAt()).isNotNull();
+        assertThat(createdAlert.getUpdatedAt()).isNotNull();
+        assertThat(createdAlert.getCreatedBy()).isEqualTo("admin");
+        assertThat(createdAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(createdAlert.getNotifications()).hasSize(3);
+        assertThat(createdAlert.getNotifications())
+                .extracting(AlertNotification::getOffsetMinutes)
+                .containsExactly(-4320, -1440, -120);
+        assertThat(createdAlert.getNotifications())
+                .extracting(AlertNotification::getTriggerAt)
+                .containsExactly(
+                        dueDate.plusMinutes(-4320),
+                        dueDate.plusMinutes(-1440),
+                        dueDate.plusMinutes(-120)
+                );
+        assertThat(createdAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.PENDING);
+
+        ArgumentCaptor<Alert> captor = ArgumentCaptor.forClass(Alert.class);
+        verify(this.engagementLetterService).readById(engagementLetterId);
+        verify(this.alertPersistence).create(captor.capture());
+
+        Alert persistedAlert = captor.getValue();
+        assertThat(persistedAlert).isNotNull();
+        assertThat(persistedAlert.getId()).isNotNull();
+        assertThat(persistedAlert.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(persistedAlert.getCreatedAt()).isNotNull();
+        assertThat(persistedAlert.getUpdatedAt()).isNotNull();
+        assertThat(persistedAlert.getCreatedBy()).isEqualTo("admin");
+        assertThat(persistedAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(persistedAlert.getNotifications()).hasSize(3);
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getOffsetMinutes)
+                .containsExactly(-4320, -1440, -120);
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getTriggerAt)
+                .containsExactly(
+                        dueDate.plusMinutes(-4320),
+                        dueDate.plusMinutes(-1440),
+                        dueDate.plusMinutes(-120)
+                );
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.PENDING);
+    }
+
+    @Test
+    void testCreateSuccessWithDefaultNotificationsWhenNotificationsIsNull() {
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 26, 10, 30);
+
+        Alert alert = Alert.builder()
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .notifications(null)
+                .build();
+
+        BDDMockito.given(this.engagementLetterService.readById(engagementLetterId))
+                .willReturn(new EngagementLetter());
+        BDDMockito.willDoNothing().given(this.alertPersistence).create(any(Alert.class));
+
+        Alert createdAlert = this.alertService.create(alert, "manager");
+
+        assertThat(createdAlert).isNotNull();
+        assertThat(createdAlert.getId()).isNotNull();
+        assertThat(createdAlert.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(createdAlert.getCreatedAt()).isNotNull();
+        assertThat(createdAlert.getUpdatedAt()).isNotNull();
+        assertThat(createdAlert.getCreatedBy()).isEqualTo("manager");
+        assertThat(createdAlert.getUpdatedBy()).isEqualTo("manager");
+        assertThat(createdAlert.getNotifications()).hasSize(3);
+        assertThat(createdAlert.getNotifications())
+                .extracting(AlertNotification::getOffsetMinutes)
+                .containsExactly(-4320, -1440, -120);
+        assertThat(createdAlert.getNotifications())
+                .extracting(AlertNotification::getTriggerAt)
+                .containsExactly(
+                        dueDate.plusMinutes(-4320),
+                        dueDate.plusMinutes(-1440),
+                        dueDate.plusMinutes(-120)
+                );
+        assertThat(createdAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.PENDING);
+
+        ArgumentCaptor<Alert> captor = ArgumentCaptor.forClass(Alert.class);
+        verify(this.engagementLetterService).readById(engagementLetterId);
+        verify(this.alertPersistence).create(captor.capture());
+
+        Alert persistedAlert = captor.getValue();
+        assertThat(persistedAlert).isNotNull();
+        assertThat(persistedAlert.getId()).isNotNull();
+        assertThat(persistedAlert.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(persistedAlert.getCreatedAt()).isNotNull();
+        assertThat(persistedAlert.getUpdatedAt()).isNotNull();
+        assertThat(persistedAlert.getCreatedBy()).isEqualTo("manager");
+        assertThat(persistedAlert.getUpdatedBy()).isEqualTo("manager");
+        assertThat(persistedAlert.getNotifications()).hasSize(3);
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getOffsetMinutes)
+                .containsExactly(-4320, -1440, -120);
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getTriggerAt)
+                .containsExactly(
+                        dueDate.plusMinutes(-4320),
+                        dueDate.plusMinutes(-1440),
+                        dueDate.plusMinutes(-120)
+                );
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.PENDING);
+    }
 
     @Test
     void testUpdateSuccessWhenDueDateChanges() {
