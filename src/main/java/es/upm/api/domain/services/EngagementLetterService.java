@@ -283,6 +283,6 @@ public class EngagementLetterService {
         DecimalFormat df = new DecimalFormat("#,##0.00");
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("es", "ES"));
         df.setDecimalFormatSymbols(symbols);
-        return df.format(budget) + " EUR";
+        return df.format(budget) + " \u20AC";
     }
 }

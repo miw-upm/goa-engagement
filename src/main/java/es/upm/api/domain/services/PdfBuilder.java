@@ -18,12 +18,12 @@ import java.util.function.Consumer;
 
 public class PdfBuilder {
 
-    private static final Font FONT_NORMAL = new Font(Font.HELVETICA, 10);
-    private static final Font FONT_BOLD = new Font(Font.HELVETICA, 10, Font.BOLD);
-    private static final Font FONT_TITLE = new Font(Font.HELVETICA, 16, Font.BOLD);
-    private static final Font FONT_SECTION = new Font(Font.HELVETICA, 12, Font.BOLD);
-    private static final Font FONT_SMALL = new Font(Font.HELVETICA, 8);
-    private static final Font FONT_HEADER = new Font(Font.HELVETICA, 9);
+    private static final Font FONT_NORMAL = createFont(BaseFont.HELVETICA, 10, Font.NORMAL);
+    private static final Font FONT_BOLD = createFont(BaseFont.HELVETICA_BOLD, 10, Font.BOLD);
+    private static final Font FONT_TITLE = createFont(BaseFont.HELVETICA_BOLD, 16, Font.BOLD);
+    private static final Font FONT_SECTION = createFont(BaseFont.HELVETICA_BOLD, 12, Font.BOLD);
+    private static final Font FONT_SMALL = createFont(BaseFont.HELVETICA, 8, Font.NORMAL);
+    private static final Font FONT_HEADER = createFont(BaseFont.HELVETICA, 9, Font.NORMAL);
     private static final Color HEADER_BG = new Color(240, 240, 240);
 
     private static final String COMPANY_NAME = "Ocaña Abogados";
@@ -385,6 +385,15 @@ public class PdfBuilder {
 
     private PdfException onError(String action, Exception e) {
         return new PdfException("Error " + action + ": " + e.getMessage());
+    }
+
+    private static Font createFont(String fontName, float size, int style) {
+        try {
+            BaseFont baseFont = BaseFont.createFont(fontName, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+            return new Font(baseFont, size, style);
+        } catch (DocumentException | IOException e) {
+            return new Font(Font.HELVETICA, size, style);
+        }
     }
 
     @FunctionalInterface
