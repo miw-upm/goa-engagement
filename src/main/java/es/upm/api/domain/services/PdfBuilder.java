@@ -250,6 +250,38 @@ public class PdfBuilder {
         });
     }
 
+    public PdfBuilder multiSignature(java.util.List<String> leftLabels, String rightLabel) {
+        return add("multi signature", () -> {
+            document.add(Chunk.NEWLINE);
+            document.add(Chunk.NEWLINE);
+
+            PdfPTable table = createTable(2);
+
+            // Columna izquierda: múltiples firmas
+            PdfPCell leftCell = noBorderCell();
+            for (String label : leftLabels) {
+                Paragraph p = new Paragraph();
+                p.add(new Chunk("\n\n"));
+                p.add(new Chunk("_".repeat(30) + "\n", FONT_NORMAL));
+                p.add(new Chunk(label, FONT_SMALL));
+                leftCell.addElement(p);
+            }
+            table.addCell(leftCell);
+
+            // Columna derecha: una firma
+            PdfPCell rightCell = noBorderCell();
+            Paragraph right = new Paragraph();
+            right.setAlignment(Element.ALIGN_RIGHT);
+            right.add(new Chunk("\n\n"));
+            right.add(new Chunk("_".repeat(30) + "\n", FONT_NORMAL));
+            right.add(new Chunk(rightLabel, FONT_SMALL));
+            rightCell.addElement(right);
+            table.addCell(rightCell);
+
+            document.add(table);
+        });
+    }
+
     public PdfBuilder twoColumnSignature(String leftLabel, String rightLabel) {
         return add("signature lines", () -> {
             document.add(Chunk.NEWLINE);

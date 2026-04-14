@@ -174,7 +174,7 @@ public class EngagementLetterService {
         addServices(pdf, letter, texts);
         addPaymentInfo(pdf, letter);
         addLegalTerms(pdf, texts);
-        addSignatures(pdf, vars);
+        addSignatures(pdf, letter);
 
         return pdf.build();
     }
@@ -192,9 +192,19 @@ public class EngagementLetterService {
                 .collect(Collectors.joining(", "));
 
         return Map.of(
-                "clientes", clientesTexto,
-                "cliente_nombre", letter.getOwner().getFirstName() + " " + letter.getOwner().getFamilyName()
+                "clientes", clientesTexto
         );
+    }
+
+    private List<String> getClientesNombres(EngagementLetter letter) {
+        List<UserDto> clientes = new ArrayList<>();
+        clientes.add(letter.getOwner());
+        if (letter.getAttachments() != null && !letter.getAttachments().isEmpty()) {
+            clientes.addAll(letter.getAttachments());
+        }
+        return clientes.stream()
+                .map(c -> c.getFirstName() + " " + c.getFamilyName())
+                .toList();
     }
 
     private String formatIdentity(String identity) {
@@ -279,19 +289,18 @@ public class EngagementLetterService {
         pdf.section("Jurisdicción")
                 .paragraph(texts.get("jurisdiccion"));
 
-        pdf.space(2)
+        pdf.space(3)
                 .paragraphBold("AVISO IMPORTANTE")
                 .paragraph(texts.get("aviso_importante"))
                 .space()
                 .paragraph(texts.get("firma"));
     }
 
-    private void addSignatures(PdfBuilder pdf, Map<String, String> vars) {
-        pdf.space(5)
-                .twoColumnSignature(vars.get("cliente_nombre"), "Nuria Ocaña Pérez")
+    private void addSignatures(PdfBuilder pdf, EngagementLetter letter) {
+        pdf.space(2)
+                .multiSignature(getClientesNombres(letter), "Nuria Ocaña Pérez")
                 .footer();
     }
-
     private String formatDateLong(LocalDate date) {
         if (date == null) return "-";
         String[] meses = {"enero", "febrero", "marzo", "abril", "mayo", "junio",
