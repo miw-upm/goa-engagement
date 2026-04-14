@@ -232,7 +232,7 @@ public class EngagementLetterService {
         pdf.section("Jurisdicción")
                 .paragraph(texts.get("jurisdiccion"));
 
-        pdf.space()
+        pdf.space(2)
                 .paragraphBold("AVISO IMPORTANTE")
                 .paragraph(texts.get("aviso_importante"))
                 .space()
