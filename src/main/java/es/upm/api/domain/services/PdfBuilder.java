@@ -50,7 +50,7 @@ public class PdfBuilder {
         try {
             PdfPTable header = new PdfPTable(2);
             header.setWidthPercentage(100);
-            header.setWidths(new float[]{30, 70});
+            header.setWidths(new float[]{59, 41});
 
             PdfPCell logoCell = new PdfPCell();
             logoCell.setBorder(Rectangle.NO_BORDER);
@@ -64,7 +64,6 @@ public class PdfBuilder {
             infoCell.setVerticalAlignment(Element.ALIGN_MIDDLE);
 
             Paragraph info = new Paragraph();
-            info.setAlignment(Element.ALIGN_RIGHT);
             info.add(new Chunk(COMPANY_NAME + "\n", FONT_BOLD));
             info.add(new Chunk("NIF: " + COMPANY_NIF + "\n", FONT_HEADER));
             info.add(new Chunk(COMPANY_ADDRESS + "\n", FONT_HEADER));
@@ -134,7 +133,9 @@ public class PdfBuilder {
 
     public PdfBuilder paragraph(String text) {
         try {
-            document.add(new Paragraph(text, FONT_NORMAL));
+            Paragraph p = new Paragraph(text, FONT_NORMAL);
+            p.setAlignment(Element.ALIGN_JUSTIFIED);
+            document.add(p);
         } catch (DocumentException e) {
             throw this.onError("adding paragraph", e);
         }
@@ -142,8 +143,14 @@ public class PdfBuilder {
     }
 
     public PdfBuilder paragraphBold(String text) {
+        return paragraphBold(text, Element.ALIGN_JUSTIFIED);
+    }
+
+    public PdfBuilder paragraphBold(String text, int alignment) {
         try {
-            document.add(new Paragraph(text, FONT_BOLD));
+            Paragraph p = new Paragraph(text, FONT_BOLD);
+            p.setAlignment(alignment);
+            document.add(p);
         } catch (DocumentException e) {
             throw this.onError("adding bold paragraph", e);
         }
@@ -185,7 +192,9 @@ public class PdfBuilder {
 
     public PdfBuilder space() {
         try {
-            document.add(Chunk.NEWLINE);
+            Paragraph p = new Paragraph(" ");
+            p.setLeading(6);
+            document.add(p);
         } catch (DocumentException e) {
             throw this.onError("adding space", e);
         }
@@ -319,7 +328,8 @@ public class PdfBuilder {
     public PdfBuilder list(java.util.List<String> items) {
         try {
             List list = new List(List.UNORDERED);
-            list.setListSymbol("• ");
+            list.setListSymbol("- ");
+            list.setIndentationLeft(15);
             items.forEach(item -> list.add(new ListItem(item, FONT_NORMAL)));
             document.add(list);
         } catch (DocumentException e) {

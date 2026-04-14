@@ -5,6 +5,7 @@ import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -167,10 +168,9 @@ public class EngagementLetterService {
         PdfBuilder pdf = new PdfBuilder("carta-encargo-" + engagementLetterId)
                 .header()
                 .title("HOJA DE ENCARGO PROFESIONAL")
+                .paragraphBold("En Madrid, a " + formatDateLong(letter.getCreationDate()), Element.ALIGN_RIGHT)
                 .space()
-                .paragraph("En Madrid, a " + formatDateLong(letter.getCreationDate()))
-                .space()
-                .paragraph(texts.get("intro", vars));
+                .paragraph(texts.get("cliente", vars));
 
         // Otros intervinientes
         if (letter.getAttachments() != null && !letter.getAttachments().isEmpty()) {
@@ -183,13 +183,18 @@ public class EngagementLetterService {
         // Servicios contratados
         pdf.section("Servicios Contratados");
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            pdf.space().paragraphBold(procedure.getTitle());
+            String budgetText = "Honorarios: " + formatBudget(procedure.getBudget()) +
+                    (Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)");
+
+            pdf.twoColumns(
+                    left -> left.paragraphBold(procedure.getTitle()),
+                    right -> right.paragraphBold(budgetText)
+            );
+
             if (procedure.getLegalTasks() != null && !procedure.getLegalTasks().isEmpty()) {
                 pdf.list(procedure.getLegalTasks());
             }
-            String budgetText = formatBudget(procedure.getBudget());
-            budgetText += Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)";
-            pdf.labelValue("Honorarios", budgetText);
+            pdf.space();
         }
 
         pdf.space()
@@ -249,6 +254,6 @@ public class EngagementLetterService {
 
     private String formatBudget(BigDecimal budget) {
         if (budget == null) return "-";
-        return NumberFormat.getCurrencyInstance(new Locale("es", "ES")).format(budget);
+        return String.format("%.2f EUR", budget);
     }
 }
