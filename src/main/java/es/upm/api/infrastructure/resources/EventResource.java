@@ -2,10 +2,7 @@ package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.services.EventService;
-import es.upm.api.infrastructure.dtos.CommentCreateDto;
-import es.upm.api.infrastructure.dtos.EventCreateDto;
-import es.upm.api.infrastructure.dtos.EventResponseDto;
-import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.EventMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -25,6 +22,7 @@ public class EventResource {
     public static final String ID_ID = "/{id}";
     public static final String ID_COMMENTS = "/{eventId}/comments";
     public static final String ENGAGEMENT_LETTER_ID = "/engagement-letter/{engagementLetterId}";
+    private static final String TIMELINE_BY_ENGAGEMENT =  "/engagement-letter/{engagementLetterId}/timeline-events";
 
     private final EventService eventService;
     private final EventMapper eventMapper;
@@ -75,11 +73,39 @@ public class EventResource {
         );
     }
 
+    @DeleteMapping(ID_COMMENTS)
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Delete comment from event")
+    public void deleteComment(@PathVariable UUID eventId,
+                              @Valid @RequestBody CommentDeleteDto commentDeleteDto,
+                              Authentication authentication) {
+        this.eventService.deleteComment(
+                eventId,
+                commentDeleteDto.getAuthorId(),
+                commentDeleteDto.getCreatedDate(),
+                commentDeleteDto.getContent(),
+                authentication.getName()
+        );
+    }
+
     @GetMapping(ENGAGEMENT_LETTER_ID)
     @ResponseStatus(HttpStatus.OK)
     public List<EventResponseDto> findByEngagementLetterId(
             @PathVariable UUID engagementLetterId) {
         List<Event> events = this.eventService.findByEngagementLetterId(engagementLetterId).toList();
         return this.eventMapper.toDtoList(events);
+    }
+
+    @GetMapping(TIMELINE_BY_ENGAGEMENT)
+    @ResponseStatus(HttpStatus.OK)
+    public List<TimelineEventDto> getTimelineEvents(
+            @PathVariable UUID engagementLetterId,
+            @RequestParam(required = false, defaultValue = "false") Boolean ascending) {
+
+         List <Event> events = eventService.findTimelineEventsByEngagementLetterId(
+                engagementLetterId,
+                ascending
+        );
+         return this.eventMapper.toTimelineDtoList(events);
     }
 }

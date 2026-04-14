@@ -68,6 +68,30 @@ public class EventPersistenceMongodb implements EventPersistence {
     }
 
     @Override
+    public void deleteComment(UUID eventId, Comment comment) {
+        EventEntity eventEntity = this.eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("The Event ID doesn't exist: " + eventId));
+
+        List<CommentEntity> comments = Optional.ofNullable(eventEntity.getComments())
+                .orElseGet(ArrayList::new);
+
+        CommentEntity commentToRemove = comments.stream()
+                .filter(c -> c.getAuthorId().equals(comment.getAuthorId()) &&
+                        c.getCreatedDate().equals(comment.getCreatedDate()) &&
+                        c.getContent().equals(comment.getContent()))
+                .findFirst()
+                .orElse(null);
+
+        if (commentToRemove == null) {
+            throw new NotFoundException("The comment doesn't exist in the event");
+        }
+
+        comments.remove(commentToRemove);
+        eventEntity.setComments(comments);
+        this.eventRepository.save(eventEntity);
+    }
+
+    @Override
     public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
         return this.eventRepository.findByEngagementLetterIdOrderByEventDateAsc(engagementLetterId).stream()
                 .map(EventEntity::toEvent);

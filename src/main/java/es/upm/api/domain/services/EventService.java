@@ -1,5 +1,7 @@
 package es.upm.api.domain.services;
 
+import es.upm.api.domain.exceptions.ForbiddenException;
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
@@ -9,7 +11,10 @@ import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -46,7 +51,7 @@ public class EventService {
         return event;
     }
 
-    public void delete (UUID id){
+    public void delete(UUID id) {
         this.eventPersistence.delete(id);
     }
 
@@ -67,7 +72,53 @@ public class EventService {
         return this.eventPersistence.addComment(eventId, comment);
     }
 
+    public void deleteComment(UUID eventId, UUID commentAuthorId, LocalDateTime commentCreatedDate, String commentContent, String authenticatedUser) {
+
+        Event event = this.eventPersistence.readById(eventId);
+
+        UUID currentUserId = this.userWebClient.readUserByMobile(authenticatedUser).getId();
+
+        Comment commentToDelete = event.getComments() != null ?
+                event.getComments().stream()
+                        .filter(comment ->
+                                comment.getAuthorId().equals(commentAuthorId) &&
+                                        comment.getContent().equals(commentContent) &&
+                                        comment.getCreatedDate().truncatedTo(ChronoUnit.SECONDS)
+                                                .equals(commentCreatedDate.truncatedTo(ChronoUnit.SECONDS))
+                        )
+                        .findFirst()
+                        .orElse(null)
+                : null;
+
+        if (commentToDelete == null) {
+            throw new NotFoundException("The comment doesn't exist in the event");
+        }
+
+        if (!commentToDelete.getAuthorId().equals(currentUserId)) {
+            throw new ForbiddenException("You can only delete your own comments");
+        }
+
+        this.eventPersistence.deleteComment(eventId, commentToDelete);
+    }
+
     public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {
         return this.eventPersistence.findByEngagementLetterId(engagementLetterId);
+    }
+
+    public List<Event> findTimelineEventsByEngagementLetterId(
+            UUID engagementId,
+            Boolean ascending) {
+
+        List<Event> events = eventPersistence.findByEngagementLetterId(engagementId).toList();
+
+        Comparator<Event> comparator = Comparator.comparing(Event::getEventDate);
+
+        if (!ascending) {
+            comparator = comparator.reversed();
+        }
+
+        return events.stream()
+                .sorted(comparator)
+                .toList();
     }
 }

@@ -1,10 +1,8 @@
 package es.upm.api.infrastructure.mappers;
 
 import es.upm.api.domain.model.Alert;
-import es.upm.api.infrastructure.dtos.AlertCreateDto;
-import es.upm.api.infrastructure.dtos.AlertResponseDto;
+import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.domain.model.AlertNotification;
-import es.upm.api.infrastructure.dtos.AlertNotificationDto;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -69,5 +67,35 @@ public class AlertMapper {
                 .createdAt(notification.getCreatedAt())
                 .updatedAt(notification.getUpdatedAt())
                 .build();
+    }
+
+    public Alert toEntity(AlertUpdateDto dto) {
+        if (dto == null) return null;
+        return Alert.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .dueDate(dto.getDueDate())
+                .build();
+    }
+
+    public AlertSummaryDto toSummaryDto(Alert alert) {
+        if (alert == null) {
+            return null;
+        }
+
+        return AlertSummaryDto.builder()
+                .id(alert.getId())
+                .title(alert.getTitle())
+                .dueDate(alert.getDueDate())
+                .status(alert.getStatus())
+                .build();
+    }
+
+    public List<AlertSummaryDto> toSummaryDtoList(List<Alert> alerts) {
+        return Optional.ofNullable(alerts)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(this::toSummaryDto)
+                .collect(Collectors.toList());
     }
 }

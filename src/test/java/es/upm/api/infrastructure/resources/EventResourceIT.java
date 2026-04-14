@@ -7,6 +7,7 @@ import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.CommentCreateDto;
+import es.upm.api.infrastructure.dtos.CommentDeleteDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import org.junit.jupiter.api.BeforeEach;
@@ -24,8 +25,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -814,6 +817,610 @@ class EventResourceIT {
         mockMvc.perform(get(EventResource.EVENTS + EventResource.ENGAGEMENT_LETTER_ID, engagementLetterId))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    @WithMockUser(username = "600000001", authorities = {"ROLE_admin"})
+    void testDeleteNonExistentCommentShouldFail() throws Exception {
+        // Arrange - Create event without comments
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event without comments")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert - Try to delete non-existent comment
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .content("Non-existent comment")
+                .build();
+
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "600000001", authorities = {"ROLE_admin"})
+    void testDeleteCommentFromNonExistentEventShouldFail() throws Exception {
+        // Arrange
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .content("Some comment")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "600000001", authorities = {"ROLE_admin"})
+    void testDeleteCommentWithInvalidBodyShouldFail() throws Exception {
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert - Send invalid body (missing required fields)
+        String invalidJson = "{}";
+
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @WithMockUser(username = "600000002", authorities = {"ROLE_admin"})
+    void testDeleteCommentAsDifferentUserShouldFail() throws Exception {
+
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // 🔥 MOCK USER 1 (autor del comentario)
+        UUID user1Id = UUID.randomUUID();
+        when(userWebClient.readUserByMobile("600000001"))
+                .thenReturn(UserDto.builder().id(user1Id).build());
+
+        // 🔥 MOCK USER 2 (usuario que intenta borrar)
+        UUID user2Id = UUID.randomUUID();
+        when(userWebClient.readUserByMobile("600000002"))
+                .thenReturn(UserDto.builder().id(user2Id).build());
+
+        // Create comment as user1
+        CommentCreateDto commentCreateDto = CommentCreateDto.builder()
+                .content("Comment by user1")
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentCreateDto))
+                        .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("600000001")
+                                .roles("admin")))
+                .andExpect(status().isCreated());
+
+        // Read event to get comment
+        String eventWithCommentResponse = mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var commentNode = objectMapper.readTree(eventWithCommentResponse)
+                .get("comments")
+                .get(0);
+
+        UUID authorId = UUID.fromString(commentNode.get("authorId").asText());
+
+        LocalDateTime createdDate = LocalDateTime.parse(commentNode.get("createdDate").asText())
+                .withNano(0);
+
+        String content = commentNode.get("content").asText();
+
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(authorId)
+                .createdDate(createdDate)
+                .content(content)
+                .build();
+
+        // Act & Assert - delete as different user
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isForbidden());
+    }
+
+
+    @Test
+    @WithMockUser(username = "600000001", authorities = {"ROLE_admin"})
+    void testDeleteCommentMultipleCommentsRemovesOnlyOne() throws Exception {
+        // Arrange - Create event with multiple comments
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event with multiple comments")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Add first comment
+        CommentCreateDto comment1 = CommentCreateDto.builder()
+                .content("First comment")
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(comment1)))
+                .andExpect(status().isCreated());
+
+        // Wait a bit to ensure different timestamps
+        try {
+            Thread.sleep(1100);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        // Add second comment
+        CommentCreateDto comment2 = CommentCreateDto.builder()
+                .content("Second comment")
+                .build();
+        mockMvc.perform(post(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(comment2)))
+                .andExpect(status().isCreated());
+
+        // Read event to get first comment details
+        String eventWithCommentsResponse = mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var commentsNode = objectMapper.readTree(eventWithCommentsResponse).get("comments");
+        assertThat(commentsNode.size(), is(2));
+
+        var firstComment = commentsNode.get(0);
+        UUID authorId = UUID.fromString(firstComment.get("authorId").asText());
+        String createdDateStr = firstComment.get("createdDate").asText();
+        LocalDateTime createdDate = LocalDateTime.parse(createdDateStr);
+        String content = firstComment.get("content").asText();
+
+        // Act - Delete first comment
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(authorId)
+                .createdDate(createdDate)
+                .content(content)
+                .build();
+
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isNoContent());
+
+        // Assert - Only second comment should remain
+        String eventAfterDeleteResponse = mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var commentsAfterDelete = objectMapper.readTree(eventAfterDeleteResponse).get("comments");
+        assertThat(commentsAfterDelete.size(), is(1));
+        assertThat(commentsAfterDelete.get(0).get("content").asText(), is("Second comment"));
+    }
+
+    @Test
+    @WithMockUser(username = "600000001", authorities = {"ROLE_manager"})
+    void testDeleteCommentWithManagerRole() throws Exception {
+        // Arrange - Create event and comment
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Create comment
+        CommentCreateDto commentCreateDto = CommentCreateDto.builder()
+                .content("Test comment")
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentCreateDto)))
+                .andExpect(status().isCreated());
+
+        // Read to get comment details
+        String eventWithCommentResponse = mockMvc.perform(get(EventResource.EVENTS + EventResource.ID_ID, eventId))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var commentNode = objectMapper.readTree(eventWithCommentResponse)
+                .get("comments")
+                .get(0);
+
+        UUID authorId = UUID.fromString(commentNode.get("authorId").asText());
+
+        //  truncar a segundos
+        LocalDateTime createdDate = LocalDateTime.parse(commentNode.get("createdDate").asText())
+                .withNano(0);
+
+        String content = commentNode.get("content").asText();
+
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(authorId)
+                .createdDate(createdDate)
+                .content(content)
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isNoContent());
+    }
+
+
+    @Test
+    void testDeleteCommentWithoutAuthenticationShouldFail() throws Exception {
+        // Arrange
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .content("Test")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = {"ROLE_user"})
+    void testDeleteCommentWithUnauthorizedRoleShouldFail() throws Exception {
+        // Arrange
+        CommentDeleteDto deleteDto = CommentDeleteDto.builder()
+                .authorId(UUID.randomUUID())
+                .createdDate(LocalDateTime.now())
+                .content("Test")
+                .build();
+
+        // Act & Assert
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(deleteDto)))
+                .andExpect(status().isUnauthorized());
+    }
+    @Test
+    @WithMockUser(username = "600000001", authorities = {"ROLE_admin"})
+    void testDeleteCommentWithMissingAuthorIdShouldFail() throws Exception {
+        // Arrange - Create event
+        EventCreateDto eventCreateDto = EventCreateDto.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+        String eventJson = objectMapper.writeValueAsString(eventCreateDto);
+        String eventResponse = mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        // Act & Assert - Missing authorId
+        String invalidJson = "{\"createdDate\":\"2025-01-15T10:30:00\",\"content\":\"Test\"}";
+
+        mockMvc.perform(delete(EventResource.EVENTS + EventResource.ID_COMMENTS, eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(invalidJson))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsDescendingOrder() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 10, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("First Event")
+                .description("Description 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 20, 14, 30, 0))
+                .type(EventType.PHASES)
+                .title("Second Event")
+                .description("Description 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event3 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 18, 9, 15, 0))
+                .type(EventType.STANDARD_EVENT)
+                .title("Third Event")
+                .description("Description 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String event1Json = objectMapper.writeValueAsString(event1);
+        String event2Json = objectMapper.writeValueAsString(event2);
+        String event3Json = objectMapper.writeValueAsString(event3);
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event1Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event2Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event3Json))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .param("ascending", "false")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].title", is("Second Event")))
+                .andExpect(jsonPath("$[0].date", is("2026-04-20T14:30:00")))
+                .andExpect(jsonPath("$[0].type", is("PHASES")))
+                .andExpect(jsonPath("$[0].status", is("IN_PROGRESS")))
+                .andExpect(jsonPath("$[1].title", is("Third Event")))
+                .andExpect(jsonPath("$[1].date", is("2026-04-18T09:15:00")))
+                .andExpect(jsonPath("$[2].title", is("First Event")))
+                .andExpect(jsonPath("$[2].date", is("2026-04-15T10:00:00")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsAscendingOrder() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 25, 11, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Later Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                .type(EventType.PHASES)
+                .title("Earlier Event")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String event1Json = objectMapper.writeValueAsString(event1);
+        String event2Json = objectMapper.writeValueAsString(event2);
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event1Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event2Json))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .param("ascending", "true")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Earlier Event")))
+                .andExpect(jsonPath("$[0].date", is("2026-04-10T09:00:00")))
+                .andExpect(jsonPath("$[1].title", is("Later Event")))
+                .andExpect(jsonPath("$[1].date", is("2026-04-25T11:00:00")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsDefaultOrderIsDescending() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 10, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Older Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 20, 14, 0, 0))
+                .type(EventType.PHASES)
+                .title("Newer Event")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String event1Json = objectMapper.writeValueAsString(event1);
+        String event2Json = objectMapper.writeValueAsString(event2);
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event1Json))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(event2Json))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].title", is("Newer Event")))
+                .andExpect(jsonPath("$[1].title", is("Older Event")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsEmptyList() throws Exception {
+        UUID nonExistentId = UUID.randomUUID();
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + nonExistentId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEventsReturnsOnlyRequiredFields() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        BDDMockito.given(this.engagementLetterService.readById(any(UUID.class)))
+                .willReturn(new es.upm.api.domain.model.EngagementLetter());
+
+        EventCreateDto event = EventCreateDto.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 10, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Timeline Event")
+                .description("Timeline Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        String eventJson = objectMapper.writeValueAsString(event);
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(eventJson))
+                .andExpect(status().isCreated());
+
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", notNullValue()))
+                .andExpect(jsonPath("$[0].date", is("2026-04-15T10:00:00")))
+                .andExpect(jsonPath("$[0].type", is("MILESTONE")))
+                .andExpect(jsonPath("$[0].title", is("Timeline Event")))
+                .andExpect(jsonPath("$[0].description", is("Timeline Description")))
+                .andExpect(jsonPath("$[0].status", is("PENDING")))
+                .andExpect(jsonPath("$[0].createdDate").doesNotExist())
+                .andExpect(jsonPath("$[0].engagementLetterId").doesNotExist())
+                .andExpect(jsonPath("$[0].comments").doesNotExist());
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = {"ROLE_user"})
+    void testGetTimelineEventsUnauthorizedForNonAdmin() throws Exception {
+        UUID engagementId = UUID.randomUUID();
+        String timelineUrl = EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events";
+
+        mockMvc.perform(get(timelineUrl)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized());
+    }
+
+
+
 }
 
 
