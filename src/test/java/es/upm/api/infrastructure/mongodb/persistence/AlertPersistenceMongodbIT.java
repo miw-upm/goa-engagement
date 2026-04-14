@@ -100,4 +100,196 @@ class AlertPersistenceMongodbIT {
                 .isEqualTo(updatedDueDate.plusMinutes(-120));
         assertThat(updated.getNotifications().getFirst().getUpdatedAt()).isEqualTo(updatedAt);
     }
+
+    @Test
+    void testReadById() {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 12, 10, 30);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-4320)
+                .triggerAt(LocalDateTime.of(2026, 4, 22, 18, 0))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .createdBy("creator")
+                .updatedBy("updater")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        this.alertPersistence.create(alert);
+
+        Alert result = this.alertPersistence.readById(alertId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(alertId);
+        assertThat(result.getTitle()).isEqualTo("Alert title");
+        assertThat(result.getDescription()).isEqualTo("Alert description");
+        assertThat(result.getDueDate()).isEqualTo(dueDate);
+        assertThat(result.getEngagementLetterId()).isEqualTo(engagementLetterId);
+        assertThat(result.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(result.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(result.getUpdatedAt()).isEqualTo(updatedAt);
+        assertThat(result.getCreatedBy()).isEqualTo("creator");
+        assertThat(result.getUpdatedBy()).isEqualTo("updater");
+        assertThat(result.getNotifications()).hasSize(2);
+        assertThat(result.getNotifications().get(0).getOffsetMinutes()).isEqualTo(-4320);
+        assertThat(result.getNotifications().get(0).getTriggerAt())
+                .isEqualTo(LocalDateTime.of(2026, 4, 22, 18, 0));
+        assertThat(result.getNotifications().get(1).getOffsetMinutes()).isEqualTo(-120);
+        assertThat(result.getNotifications().get(1).getTriggerAt())
+                .isEqualTo(LocalDateTime.of(2026, 4, 25, 16, 0));
+    }
+
+    @Test
+    void testFindByEngagementLetterId() {
+        UUID engagementLetterId1 = UUID.randomUUID();
+        UUID engagementLetterId2 = UUID.randomUUID();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId1)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .dueDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+                .status(Status.CANCELLED)
+                .engagementLetterId(engagementLetterId1)
+                .build();
+
+        Alert alert3 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 3")
+                .dueDate(LocalDateTime.of(2026, 5, 1, 12, 0))
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId2)
+                .build();
+
+        this.alertPersistence.create(alert1);
+        this.alertPersistence.create(alert2);
+        this.alertPersistence.create(alert3);
+
+        List<Alert> result = this.alertPersistence.findByEngagementLetterId(engagementLetterId1);
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Alert::getTitle)
+                .containsExactlyInAnyOrder("Alert 1", "Alert 2");
+        assertThat(result)
+                .extracting(Alert::getEngagementLetterId)
+                .containsOnly(engagementLetterId1);
+    }
+
+    @Test
+    void testFindByEngagementLetterIdEmpty() {
+        UUID engagementLetterId = UUID.randomUUID();
+
+        List<Alert> result = this.alertPersistence.findByEngagementLetterId(engagementLetterId);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testCancelAlertUsingUpdate() {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 10, 0);
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 13, 12, 30);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(dueDate.plusMinutes(-1440))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(createdAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(createdAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Original title")
+                .description("Original description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(createdAt)
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        this.alertPersistence.create(alert);
+
+        Alert toCancel = this.alertPersistence.readById(alertId);
+        toCancel.setStatus(Status.CANCELLED);
+        toCancel.setUpdatedAt(updatedAt);
+        toCancel.setUpdatedBy("admin");
+        toCancel.setNotifications(
+                toCancel.getNotifications().stream()
+                        .peek(notification -> {
+                            notification.setStatus(Status.CANCELLED);
+                            notification.setUpdatedAt(updatedAt);
+                        })
+                        .toList()
+        );
+
+        this.alertPersistence.update(toCancel);
+
+        Alert cancelled = this.alertPersistence.readById(alertId);
+
+        assertThat(cancelled.getId()).isEqualTo(alertId);
+        assertThat(cancelled.getStatus()).isEqualTo(Status.CANCELLED);
+        assertThat(cancelled.getUpdatedAt()).isEqualTo(updatedAt);
+        assertThat(cancelled.getUpdatedBy()).isEqualTo("admin");
+        assertThat(cancelled.getNotifications()).hasSize(2);
+        assertThat(cancelled.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.CANCELLED);
+        assertThat(cancelled.getNotifications())
+                .extracting(AlertNotification::getUpdatedAt)
+                .containsOnly(updatedAt);
+    }
 }

@@ -74,6 +74,39 @@ public class AlertService {
         this.alertPersistence.update(existingAlert);
         return existingAlert;
     }
+
+    public Alert readById(UUID alertId) {
+        return this.alertPersistence.readById(alertId);
+    }
+
+    public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {
+        this.engagementLetterService.readById(engagementLetterId);
+        return this.alertPersistence.findByEngagementLetterId(engagementLetterId);
+    }
+
+    public Alert cancel(UUID alertId, String authenticatedUser) {
+        Alert alert = this.alertPersistence.readById(alertId);
+        LocalDateTime now = LocalDateTime.now();
+
+        alert.setStatus(Status.CANCELLED);
+        alert.setUpdatedAt(now);
+        alert.setUpdatedBy(authenticatedUser);
+
+        if (alert.getNotifications() != null) {
+            alert.setNotifications(alert.getNotifications().stream()
+                    .map(notification -> this.cancelNotification(notification, now))
+                    .toList());
+        }
+
+        this.alertPersistence.update(alert);
+        return alert;
+    }
+
+    private AlertNotification cancelNotification(AlertNotification notification, LocalDateTime now) {
+        notification.setStatus(Status.CANCELLED);
+        notification.setUpdatedAt(now);
+        return notification;
+    }
     private AlertNotification buildNotification(Alert alert, Integer offsetMinutes, LocalDateTime now) {
         return AlertNotification.builder()
                 .id(UUID.randomUUID())
