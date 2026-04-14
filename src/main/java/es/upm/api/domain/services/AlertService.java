@@ -74,6 +74,10 @@ public class AlertService {
         this.alertPersistence.update(existingAlert);
         return existingAlert;
     }
+
+    public Alert readById(UUID alertId) {
+        return this.alertPersistence.readById(alertId);
+    }
     private AlertNotification buildNotification(Alert alert, Integer offsetMinutes, LocalDateTime now) {
         return AlertNotification.builder()
                 .id(UUID.randomUUID())
