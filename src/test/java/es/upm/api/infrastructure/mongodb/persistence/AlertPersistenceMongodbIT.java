@@ -219,4 +219,77 @@ class AlertPersistenceMongodbIT {
 
         assertThat(result).isEmpty();
     }
+
+    @Test
+    void testCancelAlertUsingUpdate() {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 10, 0);
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 13, 12, 30);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(dueDate.plusMinutes(-1440))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(createdAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(createdAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Original title")
+                .description("Original description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(createdAt)
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        this.alertPersistence.create(alert);
+
+        Alert toCancel = this.alertPersistence.readById(alertId);
+        toCancel.setStatus(Status.CANCELLED);
+        toCancel.setUpdatedAt(updatedAt);
+        toCancel.setUpdatedBy("admin");
+        toCancel.setNotifications(
+                toCancel.getNotifications().stream()
+                        .peek(notification -> {
+                            notification.setStatus(Status.CANCELLED);
+                            notification.setUpdatedAt(updatedAt);
+                        })
+                        .toList()
+        );
+
+        this.alertPersistence.update(toCancel);
+
+        Alert cancelled = this.alertPersistence.readById(alertId);
+
+        assertThat(cancelled.getId()).isEqualTo(alertId);
+        assertThat(cancelled.getStatus()).isEqualTo(Status.CANCELLED);
+        assertThat(cancelled.getUpdatedAt()).isEqualTo(updatedAt);
+        assertThat(cancelled.getUpdatedBy()).isEqualTo("admin");
+        assertThat(cancelled.getNotifications()).hasSize(2);
+        assertThat(cancelled.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.CANCELLED);
+        assertThat(cancelled.getNotifications())
+                .extracting(AlertNotification::getUpdatedAt)
+                .containsOnly(updatedAt);
+    }
 }

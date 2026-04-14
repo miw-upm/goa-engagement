@@ -67,4 +67,13 @@ public class AlertResource {
         List<Alert> alerts = this.alertService.findByEngagementLetterId(engagementLetterId);
         return this.alertMapper.toSummaryDtoList(alerts);
     }
+
+    @PatchMapping("/{alertId}/cancel")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Cancel alert")
+    public AlertResponseDto cancel(@PathVariable UUID alertId,
+                                   Authentication authentication) {
+        Alert cancelledAlert = this.alertService.cancel(alertId, authentication.getName());
+        return this.alertMapper.toDto(cancelledAlert);
+    }
 }
