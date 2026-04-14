@@ -3,6 +3,7 @@ package es.upm.api.infrastructure.mappers;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.Status;
+import es.upm.api.infrastructure.dtos.AlertCreateDto;
 import es.upm.api.infrastructure.dtos.AlertResponseDto;
 import es.upm.api.infrastructure.dtos.AlertSummaryDto;
 import es.upm.api.infrastructure.dtos.AlertUpdateDto;
@@ -23,6 +24,101 @@ class AlertMapperIT {
 
     @Autowired
     private AlertMapper alertMapper;
+
+    @Test
+    void testToEntityFromCreateDto() {
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertCreateDto dto = AlertCreateDto.builder()
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        Alert alert = this.alertMapper.toEntity(dto);
+
+        assertThat(alert).isNotNull();
+        assertThat(alert.getTitle()).isEqualTo("Alert title");
+        assertThat(alert.getDescription()).isEqualTo("Alert description");
+        assertThat(alert.getDueDate()).isEqualTo(dueDate);
+        assertThat(alert.getEngagementLetterId()).isEqualTo(engagementLetterId);
+        assertThat(alert.getNotifications()).isNotNull();
+        assertThat(alert.getNotifications()).isEmpty();
+    }
+
+    @Test
+    void testToEntityFromCreateDtoNull() {
+        Alert alert = this.alertMapper.toEntity((AlertCreateDto) null);
+        assertThat(alert).isNull();
+    }
+
+    @Test
+    void testToDtoFromCreatedAlert() {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 12, 10, 30);
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-4320)
+                .triggerAt(LocalDateTime.of(2026, 4, 22, 18, 0))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .createdBy("creator")
+                .updatedBy("updater")
+                .notifications(List.of(notification1, notification2))
+                .build();
+
+        AlertResponseDto dto = this.alertMapper.toDto(alert);
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getId()).isEqualTo(alertId);
+        assertThat(dto.getTitle()).isEqualTo("Alert title");
+        assertThat(dto.getDescription()).isEqualTo("Alert description");
+        assertThat(dto.getDueDate()).isEqualTo(dueDate);
+        assertThat(dto.getEngagementLetterId()).isEqualTo(engagementLetterId);
+        assertThat(dto.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(dto.getCreatedAt()).isEqualTo(createdAt);
+        assertThat(dto.getUpdatedAt()).isEqualTo(updatedAt);
+        assertThat(dto.getCreatedBy()).isEqualTo("creator");
+        assertThat(dto.getUpdatedBy()).isEqualTo("updater");
+        assertThat(dto.getNotifications()).hasSize(2);
+        assertThat(dto.getNotifications().get(0).getOffsetMinutes()).isEqualTo(-4320);
+        assertThat(dto.getNotifications().get(0).getTriggerAt())
+                .isEqualTo(LocalDateTime.of(2026, 4, 22, 18, 0));
+        assertThat(dto.getNotifications().get(0).getStatus()).isEqualTo(Status.PENDING);
+        assertThat(dto.getNotifications().get(1).getOffsetMinutes()).isEqualTo(-120);
+        assertThat(dto.getNotifications().get(1).getTriggerAt())
+                .isEqualTo(LocalDateTime.of(2026, 4, 25, 16, 0));
+        assertThat(dto.getNotifications().get(1).getStatus()).isEqualTo(Status.PENDING);
+    }
 
     @Test
     void testToEntityFromUpdateDto() {
