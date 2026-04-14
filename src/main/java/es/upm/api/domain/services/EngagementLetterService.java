@@ -159,11 +159,7 @@ public class EngagementLetterService {
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
         PdfTextRepository texts = new PdfTextRepository("templates/engagement-letter-texts.txt");
-
-        Map<String, String> vars = Map.of(
-                "cliente_nombre", letter.getOwner().getFirstName() + " " + letter.getOwner().getFamilyName(),
-                "cliente_telefono", letter.getOwner().getMobile()
-        );
+        Map<String, String> vars = buildVariables(letter);
 
         PdfBuilder pdf = new PdfBuilder("carta-encargo-" + engagementLetterId)
                 .header()
@@ -173,15 +169,33 @@ public class EngagementLetterService {
                 .space()
                 .paragraph(texts.get("cliente", vars));
 
-        // Otros intervinientes
-        if (letter.getAttachments() != null && !letter.getAttachments().isEmpty()) {
-            pdf.space().paragraphBold("Otros intervinientes:");
-            letter.getAttachments().forEach(att ->
-                    pdf.paragraph("• " + att.getFirstName() + " " + att.getFamilyName() + " (Tel: " + att.getMobile() + ")")
-            );
-        }
+        addAttachments(pdf, letter);
+        addServices(pdf, letter, texts);
+        addPaymentInfo(pdf, letter);
+        addLegalTerms(pdf, texts);
+        addSignatures(pdf, vars);
 
-        // Servicios contratados
+        return pdf.build();
+    }
+
+    private Map<String, String> buildVariables(EngagementLetter letter) {
+        return Map.of(
+                "cliente_nombre", letter.getOwner().getFirstName() + " " + letter.getOwner().getFamilyName(),
+                "cliente_telefono", letter.getOwner().getMobile()
+        );
+    }
+
+    private void addAttachments(PdfBuilder pdf, EngagementLetter letter) {
+        if (letter.getAttachments() == null || letter.getAttachments().isEmpty()) {
+            return;
+        }
+        pdf.space().paragraphBold("Otros intervinientes:");
+        letter.getAttachments().forEach(att ->
+                pdf.paragraph("• " + att.getFirstName() + " " + att.getFamilyName() + " (Tel: " + att.getMobile() + ")")
+        );
+    }
+
+    private void addServices(PdfBuilder pdf, EngagementLetter letter, PdfTextRepository texts) {
         pdf.section("Servicios Contratados");
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
             String budgetText = "Honorarios: " + formatBudget(procedure.getBudget()) +
@@ -197,10 +211,10 @@ public class EngagementLetterService {
             }
             pdf.space();
         }
-
         pdf.space().paragraphBold(texts.get("ejecucion_trabajos"));
+    }
 
-        // Formas de pago
+    private void addPaymentInfo(PdfBuilder pdf, EngagementLetter letter) {
         pdf.space().section("Formas de Pago");
         letter.getPaymentMethods().stream()
                 .map(pm -> pm.getPercentage() + "% - " + pm.getDescription())
@@ -210,7 +224,9 @@ public class EngagementLetterService {
                 .labelValue("Cuenta", "ES09 1465 0100 96 1707148504")
                 .labelValue("Entidad", "ING")
                 .labelValue("Titular", "Nuria Ocaña Pérez");
+    }
 
+    private void addLegalTerms(PdfBuilder pdf, PdfTextRepository texts) {
         pdf.section("Combinación de vías")
                 .paragraph(texts.get("combinacion_vias"));
 
@@ -237,12 +253,12 @@ public class EngagementLetterService {
                 .paragraph(texts.get("aviso_importante"))
                 .space()
                 .paragraph(texts.get("firma"));
+    }
 
+    private void addSignatures(PdfBuilder pdf, Map<String, String> vars) {
         pdf.space(5)
-                .twoColumnSignature(vars.get("cliente_nombre"), "Nuría Ocaña Pérez")
+                .twoColumnSignature(vars.get("cliente_nombre"), "Nuria Ocaña Pérez")
                 .footer();
-
-        return pdf.build();
     }
 
     private String formatDateLong(LocalDate date) {
@@ -255,5 +271,4 @@ public class EngagementLetterService {
     private String formatBudget(BigDecimal budget) {
         if (budget == null) return "-";
         return String.format("%.2f EUR", budget);
-    }
-}
+    }}
