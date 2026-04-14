@@ -49,4 +49,12 @@ public class AlertResource {
         Alert updatedAlert = this.alertService.update(alertId, alert, authentication.getName());
         return this.alertMapper.toDto(updatedAlert);
     }
+
+    @GetMapping("/{alertId}")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Read alert by id")
+    public AlertResponseDto readById(@PathVariable UUID alertId) {
+        Alert alert = this.alertService.readById(alertId);
+        return this.alertMapper.toDto(alert);
+    }
 }

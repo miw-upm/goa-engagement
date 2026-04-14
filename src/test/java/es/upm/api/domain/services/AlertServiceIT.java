@@ -202,4 +202,65 @@ class AlertServiceIT {
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining(alertId.toString());
     }
+
+    @Test
+    void testReadByIdSuccess() {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime now = LocalDateTime.now();
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(now.minusDays(1))
+                .updatedAt(now)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(2))
+                .updatedAt(now)
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(alert);
+
+        Alert result = this.alertService.readById(alertId);
+
+        assertThat(result).isNotNull();
+        assertThat(result.getId()).isEqualTo(alertId);
+        assertThat(result.getTitle()).isEqualTo("Alert title");
+        assertThat(result.getDescription()).isEqualTo("Alert description");
+        assertThat(result.getDueDate()).isEqualTo(dueDate);
+        assertThat(result.getEngagementLetterId()).isEqualTo(engagementLetterId);
+        assertThat(result.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(result.getCreatedBy()).isEqualTo("creator");
+        assertThat(result.getUpdatedBy()).isEqualTo("creator");
+        assertThat(result.getNotifications()).hasSize(1);
+        assertThat(result.getNotifications().getFirst().getOffsetMinutes()).isEqualTo(-120);
+        assertThat(result.getNotifications().getFirst().getTriggerAt()).isEqualTo(dueDate.plusMinutes(-120));
+    }
+
+    @Test
+    void testReadByIdWhenAlertDoesNotExist() {
+        UUID alertId = UUID.randomUUID();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId))
+                .willThrow(new NotFoundException("The Alert ID doesn't exist: " + alertId));
+
+        assertThatThrownBy(() -> this.alertService.readById(alertId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(alertId.toString());
+    }
 }
