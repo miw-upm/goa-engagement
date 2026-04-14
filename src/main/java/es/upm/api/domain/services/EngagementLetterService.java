@@ -238,7 +238,7 @@ public class EngagementLetterService {
                 .space()
                 .paragraph(texts.get("firma"));
 
-        pdf.space()
+        pdf.space().space().space()
                 .twoColumnSignature("El Cliente", "El Abogado")
                 .footer();
 

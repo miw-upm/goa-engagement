@@ -2,9 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.miw.pdf.PdfException;
 import org.openpdf.text.*;
-import org.openpdf.text.pdf.PdfPCell;
-import org.openpdf.text.pdf.PdfPTable;
-import org.openpdf.text.pdf.PdfWriter;
+import org.openpdf.text.pdf.*;
 import org.openpdf.text.pdf.draw.LineSeparator;
 
 import java.awt.Color;
@@ -39,7 +37,8 @@ public class PdfBuilder {
         this.filename = Path.of(System.getProperty("java.io.tmpdir"), name + ".pdf").toString();
         this.document = new Document(PageSize.A4);
         try {
-            PdfWriter.getInstance(document, new FileOutputStream(filename));
+            PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
+            writer.setPageEvent(new PageFooterEvent());
             document.open();
         } catch (Exception e) {
             throw this.onError("creating PDF", e);
@@ -81,6 +80,23 @@ public class PdfBuilder {
         return this;
     }
 
+    public PdfBuilder footer() {
+        try {
+            this.line();
+            space();
+            Paragraph info = new Paragraph();
+            info.setAlignment(Element.ALIGN_CENTER);
+            info.add(new Chunk(COMPANY_NAME + "\n", FONT_BOLD));
+            info.add(new Chunk(COMPANY_ADDRESS + "\n", FONT_SMALL));
+            info.add(new Chunk("Tel: " + COMPANY_PHONE + " | ", FONT_SMALL));
+            info.add(new Chunk(COMPANY_EMAIL + " | " + COMPANY_WEB, FONT_SMALL));
+            document.add(info);
+        } catch (DocumentException e) {
+            throw this.onError("adding footer", e);
+        }
+        return this;
+    }
+
     private void addLogoToCell(PdfPCell logoCell) {
         try (InputStream is = getClass().getClassLoader().getResourceAsStream(LOGO_PATH)) {
             if (is != null) {
@@ -91,20 +107,6 @@ public class PdfBuilder {
             }
         } catch (IOException | BadElementException ignored) {
         }
-    }
-
-    public PdfBuilder footer() {
-        try {
-            this.line();
-            document.add(Chunk.NEWLINE);
-            Paragraph footer = new Paragraph();
-            footer.setAlignment(Element.ALIGN_CENTER);
-            footer.add(new Chunk(COMPANY_EMAIL + " | " + COMPANY_WEB, FONT_SMALL));
-            document.add(footer);
-        } catch (DocumentException e) {
-            throw this.onError("adding footer", e);
-        }
-        return this;
     }
 
     public PdfBuilder title(String text) {
@@ -183,7 +185,9 @@ public class PdfBuilder {
 
     public PdfBuilder line() {
         try {
-            document.add(new Paragraph(new Chunk(new LineSeparator())));
+            LineSeparator separator = new LineSeparator();
+            separator.setPercentage(100);
+            document.add(new Paragraph(new Chunk(separator)));
         } catch (DocumentException e) {
             throw this.onError("adding line", e);
         }
@@ -467,6 +471,23 @@ public class PdfBuilder {
             p.add(new Chunk(value != null ? value : "-", FONT_NORMAL));
             cell.addElement(p);
             return this;
+        }
+    }
+
+    private static class PageFooterEvent extends PdfPageEventHelper {
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfContentByte cb = writer.getDirectContent();
+            float y = document.bottomMargin() - 10;
+
+            cb.setLineWidth(0.5f);
+            cb.moveTo(document.leftMargin(), y + 15);
+            cb.lineTo(document.right(), y + 15);
+            cb.stroke();
+
+            Phrase footer = new Phrase(COMPANY_EMAIL + "    |    " + COMPANY_PHONE, FONT_SMALL);
+            ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, footer,
+                    (document.right() + document.leftMargin()) / 2, y, 0);
         }
     }
 }
