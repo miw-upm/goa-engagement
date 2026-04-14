@@ -78,6 +78,11 @@ public class AlertService {
     public Alert readById(UUID alertId) {
         return this.alertPersistence.readById(alertId);
     }
+
+    public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {
+        this.engagementLetterService.readById(engagementLetterId);
+        return this.alertPersistence.findByEngagementLetterId(engagementLetterId);
+    }
     private AlertNotification buildNotification(Alert alert, Integer offsetMinutes, LocalDateTime now) {
         return AlertNotification.builder()
                 .id(UUID.randomUUID())
