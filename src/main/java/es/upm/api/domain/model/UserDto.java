@@ -16,4 +16,6 @@ public class UserDto {
     private String mobile;
     private String firstName;
     private String familyName;
+    private String documentType;
+    private String identity;
 }

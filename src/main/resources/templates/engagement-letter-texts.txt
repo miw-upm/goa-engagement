@@ -1,8 +1,7 @@
 #cliente
-D./Dña. {{cliente_nombre}}, provisto de número de teléfono {{cliente_telefono}}, en su nombre y derecho, encarga
-profesionalmente a la abogada Nuria Ocaña Pérez con número de D.N.I. n.º 46.882.956-D y número de colegiada 135.280
-del ICAM con despacho profesional sito en el Paseo de la Castellana, 93 – 2º planta de Madrid la realización de
-los siguientes trabajos profesionales.
+{{clientes}}, en su nombre y derecho, encarga profesionalmente a la abogada Nuria Ocaña Pérez con número de
+D.N.I. n.º 46.882.956-D y número de colegiada 135.280 del ICAM con despacho profesional sito en el Paseo de la
+Castellana, 93 – 2º planta de Madrid la realización de los siguientes trabajos profesionales.
 
 #ejecucion_trabajos
 La ejecución de estos trabajos profesionales se efectuará en régimen de arrendamiento de servicios, con arreglo a las

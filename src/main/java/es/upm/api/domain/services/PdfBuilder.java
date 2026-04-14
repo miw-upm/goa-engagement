@@ -415,7 +415,13 @@ public class PdfBuilder {
         }
 
         public ColumnBuilder paragraphBold(String text) {
-            cell.addElement(new Paragraph(text, FONT_BOLD));
+            return paragraphBold(text, Element.ALIGN_LEFT);
+        }
+
+        public ColumnBuilder paragraphBold(String text, int alignment) {
+            Paragraph p = new Paragraph(text, FONT_BOLD);
+            p.setAlignment(alignment);
+            cell.addElement(p);
             return this;
         }
 

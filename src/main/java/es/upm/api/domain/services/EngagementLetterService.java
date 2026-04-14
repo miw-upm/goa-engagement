@@ -15,6 +15,7 @@ import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -170,7 +171,6 @@ public class EngagementLetterService {
                 .space()
                 .paragraph(texts.get("cliente", vars));
 
-        addAttachments(pdf, letter);
         addServices(pdf, letter, texts);
         addPaymentInfo(pdf, letter);
         addLegalTerms(pdf, texts);
@@ -180,31 +180,52 @@ public class EngagementLetterService {
     }
 
     private Map<String, String> buildVariables(EngagementLetter letter) {
+        List<UserDto> clientes = new ArrayList<>();
+        clientes.add(letter.getOwner());
+        if (letter.getAttachments() != null && !letter.getAttachments().isEmpty()) {
+            clientes.addAll(letter.getAttachments());
+        }
+
+        String clientesTexto = clientes.stream()
+                .map(c -> "D./Dña. " + c.getFirstName() + " " + c.getFamilyName() +
+                        " con " + formatDocumentType(c.getDocumentType()) + " nº " + formatIdentity(c.getIdentity()))
+                .collect(Collectors.joining(", "));
+
         return Map.of(
-                "cliente_nombre", letter.getOwner().getFirstName() + " " + letter.getOwner().getFamilyName(),
-                "cliente_telefono", letter.getOwner().getMobile()
+                "clientes", clientesTexto,
+                "cliente_nombre", letter.getOwner().getFirstName() + " " + letter.getOwner().getFamilyName()
         );
     }
 
-    private void addAttachments(PdfBuilder pdf, EngagementLetter letter) {
-        if (letter.getAttachments() == null || letter.getAttachments().isEmpty()) {
-            return;
+    private String formatIdentity(String identity) {
+        if (identity == null || identity.length() < 2) {
+            return identity;
         }
-        pdf.space().paragraphBold("Otros intervinientes:");
-        letter.getAttachments().forEach(att ->
-                pdf.paragraph("• " + att.getFirstName() + " " + att.getFamilyName() + " (Tel: " + att.getMobile() + ")")
-        );
+        String numbers = identity.substring(0, identity.length() - 1);
+        String letter = identity.substring(identity.length() - 1);
+
+        if (numbers.length() == 8) {
+            return numbers.substring(0, 2) + "." + numbers.substring(2, 5) + "." + numbers.substring(5, 8) + "-" + letter;
+        }
+        return identity;
+    }
+
+    private String formatDocumentType(String documentType) {
+        if ("DNI".equalsIgnoreCase(documentType)) {
+            return "D.N.I.";
+        }
+        return documentType;
     }
 
     private void addServices(PdfBuilder pdf, EngagementLetter letter, PdfTextRepository texts) {
         pdf.section("Servicios Contratados");
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            String budgetText = "Honorarios: " + formatBudget(procedure.getBudget()) +
+            String budgetText = formatBudget(procedure.getBudget()) +
                     (Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)");
 
             pdf.twoColumns(
                     left -> left.paragraphBold(procedure.getTitle()),
-                    right -> right.paragraphBold(budgetText)
+                    right -> right.paragraphBold(budgetText,Element.ALIGN_RIGHT)
             );
 
             if (procedure.getLegalTasks() != null && !procedure.getLegalTasks().isEmpty()) {

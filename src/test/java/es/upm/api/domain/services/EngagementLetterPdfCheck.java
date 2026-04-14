@@ -32,7 +32,9 @@ class EngagementLetterPdfCheck {
                         .id(UUID.randomUUID())
                         .firstName("María")
                         .familyName("García López")
-                        .mobile("+34 612 345 678")
+                        .mobile("612345678")
+                        .documentType("DNI")
+                        .identity("43234543V")
                         .build());
 
         byte[] pdf = this.engagementLetterService.generatePdf(
