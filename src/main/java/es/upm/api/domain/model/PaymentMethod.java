@@ -16,4 +16,10 @@ public class PaymentMethod {
     @Min(0)
     @Max(100)
     private int percentage;
+
+    @Override
+    public String toString(){
+        return percentage + "% - " + description;
+    }
+
 }

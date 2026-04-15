@@ -18,6 +18,8 @@ public class EngagementLetterResource {
     public static final String ENGAGEMENT_LETTER = "/engagement-letters";
     public static final String ID_ID = "/{id}";
     public static final String PUBLIC_ACCESS_TOKEN = "/public-access-token";
+    public static final String PRINT_VIEW = "/print-view";
+
 
     private final EngagementLetterService engagementLetterService;
 
@@ -39,6 +41,11 @@ public class EngagementLetterResource {
     @GetMapping(ID_ID)
     public EngagementLetter read(@PathVariable UUID id) {
         return this.engagementLetterService.readById(id);
+    }
+
+    @GetMapping(value = ID_ID + PRINT_VIEW, produces = {"application/pdf", "application/json"})
+    public byte[] readPrintView(@PathVariable UUID id) {
+        return this.engagementLetterService.generatePdf(id);
     }
 
     @PutMapping(ID_ID)
