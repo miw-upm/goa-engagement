@@ -9,11 +9,7 @@ import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Stream;
 
@@ -162,50 +158,33 @@ public class EngagementLetterService {
         PdfBuilder pdf = new PdfBuilder()
                 .header()
                 .space()
-                .title(dict.getText("hoja"))
+                .title(dict.getTitle("hoja"))
                 .paragraphBold(letter.buildCreationDate(), Element.ALIGN_RIGHT)
-                .space()
-                .paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())))
-                .section(dict.getText("servicios"));
-
+                .space();
+        pdf.paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
+        pdf.section(dict.getText("servicios"));
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            String title = procedure.getTitle();
-            String budget = procedure.buildFormatBudget() +
-                    (Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)");
+            String budget = procedure.buildFormatBudget() ;
             pdf.twoColumns(
-                    left -> left.paragraphBold(title),
-                    right -> right.paragraphBold(budget, Element.ALIGN_RIGHT)
-            );
-            if (procedure.getLegalTasks() != null && !procedure.getLegalTasks().isEmpty()) {
-                pdf.list(procedure.getLegalTasks());
-            }
+                    left -> left.paragraphBold(procedure.getTitle()),
+                    right -> right.paragraphBold(budget, Element.ALIGN_RIGHT));
+            pdf.list(procedure.getLegalTasks());
             pdf.space();
         }
-
         pdf.space()
-                .paragraphBold(dict.getText("ejecucion_trabajos"))
-                .space()
-                .section("Formas de Pago")
+                .paragraphBold(dict.getText("ejecucion_trabajos")).space()
+                .section(dict.getTitle("pagos"))
                 .list(letter.getPaymentMethods().stream().map(PaymentMethod::toString).toList())
-                .section("Datos Bancarios")
-                .labelValue("Cuenta", "ES09 1465 0100 96 1707148504")
-                .labelValue("Entidad", "ING")
-                .labelValue("Titular", "Nuria Ocaña Pérez")
+                .section(dict.getTitle("bancos"))
+                .list(dict.getList("banco"))
                 .section(dict.getTitle("combinacion_vias"))
                 .paragraph(dict.getText("combinacion_vias"))
                 .section(dict.getTitle("condiciones_generales"))
                 .paragraphs(dict.getText("condiciones_generales"))
-                .paragraphBold(dict.getText("nota_solidaridad"))
-                .space()
-                .paragraph(dict.getText("desavenencias"))
-                .space()
-                .paragraphBold("Advertencias:")
-                .numberedList(List.of(
-                        dict.getText("advertencia_1"),
-                        dict.getText("advertencia_2"),
-                        dict.getText("advertencia_3"),
-                        dict.getText("advertencia_4"),
-                        dict.getText("advertencia_5")))
+                .paragraphBold(dict.getText("nota_solidaridad")).space()
+                .paragraph(dict.getText("desavenencias")).space()
+                .paragraphBold(dict.getTitle("advertencias"))
+                .numberedList(dict.getList("advertencia"))
                 .section(dict.getTitle("seguro_rc"))
                 .paragraph(dict.getText("seguro_rc"))
                 .section(dict.getTitle("comunicaciones"))
@@ -213,16 +192,12 @@ public class EngagementLetterService {
                 .section(dict.getTitle("proteccion_datos"))
                 .paragraph(dict.getText("proteccion_datos"))
                 .section(dict.getTitle("jurisdiccion"))
-                .paragraph(dict.getText("jurisdiccion"))
-                .space(3)
+                .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
-                .paragraph(dict.getText("aviso_importante"))
-                .space()
-                .paragraph(dict.getText("firma"))
-                .space(2)
+                .paragraph(dict.getText("aviso_importante")).space()
+                .paragraph(dict.getText("firma")).space(2)
                 .multiSignature(letter.buildClientsName(), "Nuria Ocaña Pérez")
                 .footer();
-
         return pdf.build();
     }
 }

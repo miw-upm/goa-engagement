@@ -1,13 +1,11 @@
-#hoja:
-HOJA DE ENCARGO PROFESIONAL
+#hoja:HOJA DE ENCARGO PROFESIONAL
 
 #intervinientes:
 {{clientes}}, en su nombre y derecho, encarga profesionalmente a la abogada Nuria Ocaña Pérez con número de
 D.N.I. n.º 46.882.956-D y número de colegiada 135.280 del ICAM con despacho profesional sito en el Paseo de la
 Castellana, 93 – 2º planta de Madrid la realización de los siguientes trabajos profesionales.
 
-#servicios:
-Servicios Contratados
+#servicios:Servicios Contratados
 
 #ejecucion_trabajos:
 La ejecución de estos trabajos profesionales se efectuará en régimen de arrendamiento de servicios, con arreglo a las
@@ -15,6 +13,14 @@ normas deontológicas de la Abogacía. En consecuencia, con carácter indicativo
 plantearse incluyendo los honorarios de otros profesionales que deban intervenir (procurador, peritos, costas de
 contrario, Notarios, Registros, etc.), no incluirán los gastos de desplazamiento o de otra naturaleza, ni suplidos que
 puedan ocasionarse en la ejecución de los trabajos objeto de este encargo.
+
+#pagos:Formas de Pago
+
+#bancos:Datos Bancarios
+
+#banco*:Cuenta: ES09 1465 0100 96 1707148504
+#banco*:Entidad: ING
+#banco*:Titular: Nuria Ocaña Pérez
 
 #combinacion_vias:Combinación de vías
 Existe la posibilidad de que una fase (por ejemplo, la formación de inventario) se tramite de forma contenciosa, y la
@@ -49,22 +55,13 @@ unilateralmente, previo aviso por escrito a la otra parte, de la continuación e
 parte de la Letrada, debiéndose liquidar en ese momento las cantidades adeudadas por el cliente por los trabajos
 efectivamente realizados por la Letrada.
 
-#advertencia_1:
-El ejercicio de la acción puede ser infructuoso.
+#advertencias:Advertencias
 
-#advertencia_2:
-Los Letrados se encuentran sujetos a las normas sobre prevención de blanqueo de capitales y financiación del terrorismo
-establecidas en la Ley 10/2010.
-
-#advertencia_3:
-El cliente autoriza a entregar copia de la documentación facilitada a terceros necesarios para la realización del encargo.
-
-#advertencia_4:
-La Letrada podrá delegar tareas en los Abogados colaboradores de su despacho.
-
-#advertencia_5:
-El cliente se compromete a facilitar información veraz y actualizada, así como a comunicar cualquier cambio relevante
-para el desarrollo del encargo.
+#advertencia*:El ejercicio de la acción puede ser infructuoso.
+#advertencia*:Los Letrados se encuentran sujetos a las normas sobre prevención de blanqueo de capitales y financiación del terrorismo establecidas en la Ley 10/2010.
+#advertencia*:El cliente autoriza a entregar copia de la documentación facilitada a terceros necesarios para la realización del encargo.
+#advertencia*:La Letrada podrá delegar tareas en los Abogados colaboradores de su despacho.
+#advertencia*:El cliente se compromete a facilitar información veraz y actualizada, así como a comunicar cualquier cambio relevante para el desarrollo del encargo.
 
 #seguro_rc:Seguro de Responsabilidad Civil
 La Letrada dispone de seguro de responsabilidad civil profesional conforme a la normativa vigente del Ilustre Colegio

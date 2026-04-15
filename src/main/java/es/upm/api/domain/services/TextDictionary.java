@@ -1,22 +1,35 @@
 package es.upm.api.domain.services;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextDictionary {
 
     private static final Pattern BLOCK_PATTERN = Pattern.compile("^#([a-z_0-9]+):(.*)$", Pattern.MULTILINE);
+    private static final Pattern LIST_PATTERN = Pattern.compile("^#([a-z_0-9]+)\\*:(.*)$", Pattern.MULTILINE);
 
     private final Map<String, String> titles = new HashMap<>();
     private final Map<String, String> texts = new HashMap<>();
+    private final Map<String, List<String>> lists = new HashMap<>();
 
     public TextDictionary(String templatePath) {
         parse(TemplateReader.read(templatePath));
     }
 
     private void parse(String content) {
+        // Primero extraer listas (con *)
+        Matcher listMatcher = LIST_PATTERN.matcher(content);
+        while (listMatcher.find()) {
+            String key = listMatcher.group(1);
+            String value = normalize(listMatcher.group(2).trim());
+            lists.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
+        }
+
+        // Eliminar líneas de lista del contenido para procesar bloques
+        content = LIST_PATTERN.matcher(content).replaceAll("");
+
+        // Procesar bloques normales
         Matcher matcher = BLOCK_PATTERN.matcher(content);
         int lastStart = -1;
         String lastId = null;
@@ -46,6 +59,10 @@ public class TextDictionary {
 
     public String getText(String id, Map<String, String> variables) {
         return TemplateReader.replaceVariables(getText(id), variables);
+    }
+
+    public List<String> getList(String id) {
+        return lists.getOrDefault(id, List.of());
     }
 
     public boolean hasTitle(String id) {

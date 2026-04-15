@@ -19,9 +19,12 @@ public class UserDto {
     private String documentType;
     private String identity;
 
-    public String toClientText() {
-        return "D./Dña. " + firstName + " " + familyName +
-                " con " + formatDocumentType() + " nº " + this.identity;
+    public String toFullName() {
+        return "D./Dña. " + firstName + " " + familyName;
+    }
+
+    public String toFullNameAndIdentity() {
+        return this.toFullName() + " con " + formatDocumentType() + " nº " + this.identity;
     }
 
     private String formatDocumentType() {

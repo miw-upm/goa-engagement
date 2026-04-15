@@ -34,6 +34,6 @@ public class LegalProcedure {
         DecimalFormat df = new DecimalFormat("#,##0.00");
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("es", "ES"));
         df.setDecimalFormatSymbols(symbols);
-        return df.format(budget) + " €";
+        return df.format(budget) + " €" + (Boolean.TRUE.equals(vatIncluded) ? " (IVA incluido)" : " (+ IVA)");
     }
 }

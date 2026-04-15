@@ -48,20 +48,20 @@ public class EngagementLetter {
         }
 
         return clients.stream()
-                .map(UserDto::toClientText)
+                .map(UserDto::toFullNameAndIdentity)
                 .collect(Collectors.joining(", "));
     }
 
     public List<String> buildClientsName() {
         List<String> names = new ArrayList<>();
-        names.add(this.getOwner().toClientText());
+        names.add(this.getOwner().toFullName());
         if (this.getAttachments() != null) {
-            this.getAttachments().forEach(user -> names.add(user.toClientText()));
+            this.getAttachments().forEach(user -> names.add(user.toFullName()));
         }
         return names;
     }
 
-    public String buildCreationDate(){
+    public String buildCreationDate() {
         return "En Madrid, a " + creationDate
                 .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES")));
     }
