@@ -16,12 +16,14 @@ import java.util.function.Consumer;
 
 public class PdfBuilder {
 
-    private static final Font FONT_NORMAL = createFont(BaseFont.HELVETICA, 10, Font.NORMAL);
-    private static final Font FONT_BOLD = createFont(BaseFont.HELVETICA_BOLD, 10, Font.BOLD);
-    private static final Font FONT_TITLE = createFont(BaseFont.HELVETICA_BOLD, 14, Font.BOLD);
-    private static final Font FONT_SECTION = createFont(BaseFont.HELVETICA_BOLD, 12, Font.BOLD);
-    private static final Font FONT_SMALL = createFont(BaseFont.HELVETICA, 8, Font.NORMAL);
-    private static final Font FONT_HEADER = createFont(BaseFont.HELVETICA, 9, Font.NORMAL);
+    private static final BaseFont BASE_FONT_HELVETICA = requiredBaseFont(BaseFont.HELVETICA);
+    private static final BaseFont BASE_FONT_HELVETICA_BOLD = requiredBaseFont(BaseFont.HELVETICA_BOLD);
+    private static final Font FONT_NORMAL = createFont(BASE_FONT_HELVETICA, 10, Font.NORMAL);
+    private static final Font FONT_BOLD = createFont(BASE_FONT_HELVETICA_BOLD, 10, Font.BOLD);
+    private static final Font FONT_TITLE = createFont(BASE_FONT_HELVETICA_BOLD, 14, Font.BOLD);
+    private static final Font FONT_SECTION = createFont(BASE_FONT_HELVETICA_BOLD, 12, Font.BOLD);
+    private static final Font FONT_SMALL = createFont(BASE_FONT_HELVETICA, 8, Font.NORMAL);
+    private static final Font FONT_HEADER = createFont(BASE_FONT_HELVETICA, 9, Font.NORMAL);
     private static final Color HEADER_BG = new Color(240, 240, 240);
 
     private static final String COMPANY_NAME = "Ocaña Abogados";
@@ -44,12 +46,12 @@ public class PdfBuilder {
             this.writer.setPageEvent(new PageFooterEvent());
             document.open();
         } catch (Exception e) {
-            throw onError("creating PDF", e);
+            throw this.onError("creating PDF", e);
         }
     }
 
     public PdfBuilder header() {
-        return add("header", () -> {
+        return this.add("header", () -> {
             PdfPTable table = this.createTable(2, 59, 41);
             table.addCell(this.createLogoCell());
             table.addCell(this.createInfoCell());
@@ -58,8 +60,8 @@ public class PdfBuilder {
     }
 
     public PdfBuilder footer() {
-        line().space();
-        return add("footer", () -> {
+        this.line().space();
+        return this.add("footer", () -> {
             Paragraph info = new Paragraph();
             info.setAlignment(Element.ALIGN_CENTER);
             info.add(new Chunk(COMPANY_NAME + "\n", FONT_BOLD));
@@ -70,7 +72,7 @@ public class PdfBuilder {
     }
 
     public PdfBuilder title(String text) {
-        return add("title", () -> {
+        return this.add("title", () -> {
             Paragraph p = new Paragraph(text, FONT_TITLE);
             p.setAlignment(Element.ALIGN_CENTER);
             p.setSpacingAfter(10);
@@ -82,7 +84,7 @@ public class PdfBuilder {
         if (writer.getVerticalPosition(true) < document.bottomMargin() + 50) {
             document.newPage();
         }
-        return add("section", () -> {
+        return this.add("section", () -> {
             document.add(Chunk.NEWLINE);
             Paragraph p = new Paragraph(text, FONT_SECTION);
             p.setSpacingAfter(5);
@@ -101,11 +103,11 @@ public class PdfBuilder {
     }
 
     public PdfBuilder space() {
-        return space(1);
+        return this.space(1);
     }
 
     public PdfBuilder space(int times) {
-        return add("space", () -> {
+        return this.add("space", () -> {
             for (int i = 0; i < times; i++) {
                 Paragraph p = new Paragraph(" ");
                 p.setLeading(6);
@@ -120,7 +122,7 @@ public class PdfBuilder {
     }
 
     public PdfBuilder paragraph(String text) {
-        return add("paragraph", () -> {
+        return this.add("paragraph", () -> {
             Paragraph p = new Paragraph(text, FONT_NORMAL);
             p.setAlignment(Element.ALIGN_JUSTIFIED);
             document.add(p);
@@ -128,11 +130,11 @@ public class PdfBuilder {
     }
 
     public PdfBuilder paragraphBold(String text) {
-        return paragraphBold(text, Element.ALIGN_JUSTIFIED);
+        return this.paragraphBold(text, Element.ALIGN_JUSTIFIED);
     }
 
     public PdfBuilder paragraphBold(String text, int alignment) {
-        return add("bold paragraph", () -> {
+        return this.add("bold paragraph", () -> {
             Paragraph p = new Paragraph(text, FONT_BOLD);
             p.setAlignment(alignment);
             document.add(p);
@@ -143,15 +145,15 @@ public class PdfBuilder {
         for (String block : text.split("\n\n")) {
             block = block.trim();
             if (!block.isEmpty()) {
-                paragraph(block);
-                space();
+                this.paragraph(block);
+                this.space();
             }
         }
         return this;
     }
 
     public PdfBuilder labelValue(String label, String value) {
-        return add("label-value", () -> {
+        return this.add("label-value", () -> {
             Paragraph p = new Paragraph();
             p.add(new Chunk(label + ": ", FONT_BOLD));
             p.add(new Chunk(value != null ? value : "-", FONT_NORMAL));
@@ -161,7 +163,7 @@ public class PdfBuilder {
 
     // === Listas ===
     public PdfBuilder list(java.util.List<String> items) {
-        return add("list", () -> {
+        return this.add("list", () -> {
             List list = new List(List.UNORDERED);
             list.setListSymbol("- ");
             list.setIndentationLeft(15);
@@ -171,7 +173,7 @@ public class PdfBuilder {
     }
 
     public PdfBuilder numberedList(java.util.List<String> items) {
-        return add("numbered list", () -> {
+        return this.add("numbered list", () -> {
             List list = new List(List.ORDERED);
             list.setIndentationLeft(15);
             items.forEach(item -> list.add(new ListItem(item, FONT_NORMAL)));
@@ -180,40 +182,47 @@ public class PdfBuilder {
     }
 
     public PdfBuilder twoColumns(Consumer<ColumnBuilder> leftContent, Consumer<ColumnBuilder> rightContent) {
-        return add("two columns", () -> {
-            PdfPTable table = createTable(2);
-            table.addCell(createColumnCell(leftContent, 0, 10));
-            table.addCell(createColumnCell(rightContent, 10, 0));
+        return this.add("two columns", () -> {
+            PdfPTable table = this.createTable(2);
+            table.addCell(this.createColumnCell(leftContent, 0, 10));
+            table.addCell(this.createColumnCell(rightContent, 10, 0));
             document.add(table);
         });
     }
 
     public PdfBuilder table(String[] headers, java.util.List<String[]> rows) {
-        return add("table", () -> {
-            PdfPTable table = createDataTable(headers.length);
-            addTableHeaders(table, headers);
-            addTableRows(table, rows);
+        return this.add("table", () -> {
+            this.validateTableInput(headers, rows);
+            PdfPTable table = this.createDataTable(headers.length);
+            this.addTableHeaders(table, headers);
+            this.addTableRows(table, rows);
             document.add(table);
         });
     }
 
     public PdfBuilder table(String[] headers, float[] widths, java.util.List<String[]> rows) {
-        return add("table", () -> {
+        return this.add("table", () -> {
+            this.validateTableInput(headers, rows);
+            this.validateColumnWidths(headers, widths);
             PdfPTable table = new PdfPTable(widths);
             table.setWidthPercentage(100);
             table.setSpacingBefore(5);
             table.setSpacingAfter(5);
-            addTableHeaders(table, headers);
-            addTableRows(table, rows);
+            this.addTableHeaders(table, headers);
+            this.addTableRows(table, rows);
             document.add(table);
         });
     }
 
     public PdfBuilder tableWithTotal(String[] headers, java.util.List<String[]> rows, String totalLabel, String totalValue) {
-        return add("table with total", () -> {
-            PdfPTable table = createDataTable(headers.length);
-            addTableHeaders(table, headers);
-            addTableRows(table, rows);
+        return this.add("table with total", () -> {
+            this.validateTableInput(headers, rows);
+            if (headers.length < 2) {
+                throw new IllegalArgumentException("tableWithTotal requires at least 2 header columns");
+            }
+            PdfPTable table = this.createDataTable(headers.length);
+            this.addTableHeaders(table, headers);
+            this.addTableRows(table, rows);
 
             PdfPCell labelCell = new PdfPCell(new Phrase(totalLabel, FONT_BOLD));
             labelCell.setColspan(headers.length - 1);
@@ -232,7 +241,7 @@ public class PdfBuilder {
     }
 
     public PdfBuilder signatureLine(String label) {
-        return add("signature", () -> {
+        return this.add("signature", () -> {
             document.add(Chunk.NEWLINE);
             document.add(Chunk.NEWLINE);
             Paragraph p = new Paragraph();
@@ -243,13 +252,13 @@ public class PdfBuilder {
     }
 
     public PdfBuilder multiSignature(java.util.List<String> leftLabels, String rightLabel) {
-        return add("multi signature", () -> {
+        return this.add("multi signature", () -> {
             document.add(Chunk.NEWLINE);
             document.add(Chunk.NEWLINE);
 
-            PdfPTable table = createTable(2);
+            PdfPTable table = this.createTable(2);
 
-            PdfPCell leftCell = noBorderCell();
+            PdfPCell leftCell = this.noBorderCell();
             for (String label : leftLabels) {
                 Paragraph p = new Paragraph();
                 p.add(new Chunk("\n\n"));
@@ -259,7 +268,7 @@ public class PdfBuilder {
             }
             table.addCell(leftCell);
 
-            PdfPCell rightCell = noBorderCell();
+            PdfPCell rightCell = this.noBorderCell();
             Paragraph right = new Paragraph();
             right.setAlignment(Element.ALIGN_RIGHT);
             right.add(new Chunk("\n\n"));
@@ -273,12 +282,12 @@ public class PdfBuilder {
     }
 
     public PdfBuilder twoColumnSignature(String leftLabel, String rightLabel) {
-        return add("signature lines", () -> {
+        return this.add("signature lines", () -> {
             document.add(Chunk.NEWLINE);
             document.add(Chunk.NEWLINE);
-            PdfPTable table = createTable(2);
-            table.addCell(createSignatureCell(leftLabel, Element.ALIGN_LEFT));
-            table.addCell(createSignatureCell(rightLabel, Element.ALIGN_RIGHT));
+            PdfPTable table = this.createTable(2);
+            table.addCell(this.createSignatureCell(leftLabel, Element.ALIGN_LEFT));
+            table.addCell(this.createSignatureCell(rightLabel, Element.ALIGN_RIGHT));
             document.add(table);
         });
     }
@@ -290,7 +299,7 @@ public class PdfBuilder {
             img.setAlignment(Element.ALIGN_CENTER);
             document.add(img);
         } catch (IOException | DocumentException e) {
-            throw onError("adding image", e);
+            throw this.onError("adding image", e);
         }
         return this;
     }
@@ -304,7 +313,7 @@ public class PdfBuilder {
         try {
             runnable.run();
         } catch (Exception e) {
-            throw onError(action, e);
+            throw this.onError(action, e);
         }
         return this;
     }
@@ -315,7 +324,7 @@ public class PdfBuilder {
             table.setWidthPercentage(100);
             return table;
         } catch (DocumentException e) {
-            throw onError("creating table", e);
+            throw this.onError("creating table", e);
         }
     }
 
@@ -346,6 +355,35 @@ public class PdfBuilder {
         }
     }
 
+    private void validateTableInput(String[] headers, java.util.List<String[]> rows) {
+        if (headers == null || headers.length == 0) {
+            throw new IllegalArgumentException("table headers must not be null or empty");
+        }
+        if (rows == null) {
+            throw new IllegalArgumentException("table rows must not be null");
+        }
+        for (int i = 0; i < rows.size(); i++) {
+            String[] row = rows.get(i);
+            if (row == null) {
+                throw new IllegalArgumentException("table row " + i + " must not be null");
+            }
+            if (row.length != headers.length) {
+                throw new IllegalArgumentException("table row " + i + " has " + row.length
+                        + " columns but expected " + headers.length);
+            }
+        }
+    }
+
+    private void validateColumnWidths(String[] headers, float[] widths) {
+        if (widths == null || widths.length == 0) {
+            throw new IllegalArgumentException("table widths must not be null or empty");
+        }
+        if (widths.length != headers.length) {
+            throw new IllegalArgumentException("table widths size (" + widths.length
+                    + ") must match headers size (" + headers.length + ")");
+        }
+    }
+
     private PdfPCell noBorderCell() {
         PdfPCell cell = new PdfPCell();
         cell.setBorder(Rectangle.NO_BORDER);
@@ -354,21 +392,22 @@ public class PdfBuilder {
     }
 
     private PdfPCell createLogoCell() {
-        PdfPCell cell = noBorderCell();
+        PdfPCell cell = this.noBorderCell();
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
-        try (InputStream is = getClass().getClassLoader().getResourceAsStream(LOGO_PATH)) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(LOGO_PATH)) {
             if (is != null) {
                 Image logo = Image.getInstance(is.readAllBytes());
                 logo.scaleToFit(80, 80);
                 cell.addElement(logo);
             }
-        } catch (Exception ignored) {
+        } catch (Exception e) {
+            throw this.onError("loading logo", e);
         }
         return cell;
     }
 
     private PdfPCell createInfoCell() {
-        PdfPCell cell = noBorderCell();
+        PdfPCell cell = this.noBorderCell();
         cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
         Paragraph info = new Paragraph();
         info.add(new Chunk(COMPANY_NAME + "\n", FONT_BOLD));
@@ -381,7 +420,7 @@ public class PdfBuilder {
     }
 
     private PdfPCell createColumnCell(Consumer<ColumnBuilder> content, int paddingLeft, int paddingRight) {
-        PdfPCell cell = noBorderCell();
+        PdfPCell cell = this.noBorderCell();
         cell.setPaddingLeft(paddingLeft);
         cell.setPaddingRight(paddingRight);
         content.accept(new ColumnBuilder(cell));
@@ -389,7 +428,7 @@ public class PdfBuilder {
     }
 
     private PdfPCell createSignatureCell(String label, int alignment) {
-        PdfPCell cell = noBorderCell();
+        PdfPCell cell = this.noBorderCell();
         Paragraph p = new Paragraph();
         p.setAlignment(alignment);
         p.add(new Chunk("_".repeat(30) + "\n", FONT_NORMAL));
@@ -402,12 +441,15 @@ public class PdfBuilder {
         return new PdfException("Error " + action + ": " + e.getMessage());
     }
 
-    private static Font createFont(String fontName, float size, int style) {
+    private static Font createFont(BaseFont baseFont, float size, int style) {
+        return new Font(baseFont, size, style);
+    }
+
+    private static BaseFont requiredBaseFont(String fontName) {
         try {
-            BaseFont baseFont = BaseFont.createFont(fontName, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-            return new Font(baseFont, size, style);
+            return BaseFont.createFont(fontName, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
         } catch (DocumentException | IOException e) {
-            return new Font(Font.HELVETICA, size, style);
+            throw new IllegalStateException("PDF font initialization failed: " + fontName, e);
         }
     }
 
@@ -430,7 +472,7 @@ public class PdfBuilder {
         }
 
         public ColumnBuilder paragraphBold(String text) {
-            return paragraphBold(text, Element.ALIGN_LEFT);
+            return this.paragraphBold(text, Element.ALIGN_LEFT);
         }
 
         public ColumnBuilder paragraphBold(String text, int alignment) {
@@ -471,16 +513,10 @@ public class PdfBuilder {
     private static class PageFooterEvent extends PdfPageEventHelper {
 
         private PdfTemplate totalPages;
-        private BaseFont baseFont;
 
         @Override
         public void onOpenDocument(PdfWriter writer, Document document) {
             totalPages = writer.getDirectContent().createTemplate(30, 12);
-            try {
-                baseFont = BaseFont.createFont(BaseFont.HELVETICA, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-            } catch (Exception e) {
-                baseFont = null;
-            }
         }
 
         @Override
@@ -501,9 +537,9 @@ public class PdfBuilder {
 
             // Número de página a la derecha
             String pageText = "Página " + writer.getPageNumber() + " de ";
-            float pageTextWidth = baseFont.getWidthPoint(pageText, 8);
+            float pageTextWidth = BASE_FONT_HELVETICA.getWidthPoint(pageText, 8);
             cb.beginText();
-            cb.setFontAndSize(baseFont, 8);
+            cb.setFontAndSize(BASE_FONT_HELVETICA, 8);
             cb.setTextMatrix(document.right() - pageTextWidth - 20, y);
             cb.showText(pageText);
             cb.endText();
@@ -512,9 +548,10 @@ public class PdfBuilder {
 
         @Override
         public void onCloseDocument(PdfWriter writer, Document document) {
+            int totalPageCount = Math.max(1, writer.getPageNumber() - 1);
             totalPages.beginText();
-            totalPages.setFontAndSize(baseFont, 8);
-            totalPages.showText(String.valueOf(writer.getPageNumber()));
+            totalPages.setFontAndSize(BASE_FONT_HELVETICA, 8);
+            totalPages.showText(String.valueOf(totalPageCount));
             totalPages.endText();
         }
     }

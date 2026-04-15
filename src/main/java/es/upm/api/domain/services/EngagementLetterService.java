@@ -157,7 +157,7 @@ public class EngagementLetterService {
 
         PdfBuilder pdf = new PdfBuilder()
                 .header()
-                .space()
+                .space(2)
                 .title(dict.getTitle("hoja"))
                 .paragraphBold(letter.buildCreationDate(), Element.ALIGN_RIGHT)
                 .space();
@@ -194,8 +194,7 @@ public class EngagementLetterService {
                 .section(dict.getTitle("jurisdiccion"))
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
-                .paragraph(dict.getText("aviso_importante")).space()
-                .paragraph(dict.getText("firma")).space(2)
+                .paragraph(dict.getText("aviso_importante")).space(3)
                 .multiSignature(letter.buildClientsName(), "Nuria Ocaña Pérez")
                 .footer();
         return pdf.build();
