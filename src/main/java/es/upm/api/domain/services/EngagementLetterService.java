@@ -12,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -158,125 +157,104 @@ public class EngagementLetterService {
 
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
-        TextDictionary dictionary = new TextDictionary("templates/engagement-letter-texts.txt");
-        Map<String, String> templateVars = Map.of("clientes", letter.buildClientsText());
+        TextDictionary texts = new TextDictionary("templates/engagement-letter-texts.txt");
+
+        Map<String, Object> dict = new HashMap<>();
+        dict.put("fecha", letter.getCreationDate()
+                .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES"))));
+        dict.put("intervinientes", texts.get("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
+        dict.put("services", letter.getLegalProcedures().stream()
+                .map(procedure -> Map.of(
+                        "title", procedure.getTitle(),
+                        "budget", procedure.buildFormatBudget() + (Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)"),
+                        "tasks", procedure.getLegalTasks() != null ? procedure.getLegalTasks() : List.<String>of()
+                ))
+                .toList());
+        dict.put("ejecucion", texts.get("ejecucion_trabajos"));
+        dict.put("pagos", letter.getPaymentMethods().stream()
+                .map(pm -> pm.getPercentage() + "% - " + pm.getDescription())
+                .toList());
+        dict.put("combinacion", texts.get("combinacion_vias"));
+        dict.put("condiciones", texts.get("condiciones_generales"));
+        dict.put("solidaridad", texts.get("nota_solidaridad"));
+        dict.put("desavenencias", texts.get("desavenencias"));
+        dict.put("advertencias", List.of(
+                texts.get("advertencia_1"),
+                texts.get("advertencia_2"),
+                texts.get("advertencia_3"),
+                texts.get("advertencia_4"),
+                texts.get("advertencia_5")));
+        dict.put("seguro", texts.get("seguro_rc"));
+        dict.put("comunicaciones", texts.get("comunicaciones"));
+        dict.put("proteccion", texts.get("proteccion_datos"));
+        dict.put("jurisdiccion", texts.get("jurisdiccion"));
+        dict.put("aviso", texts.get("aviso_importante"));
+        dict.put("firma", texts.get("firma"));
+        dict.put("clientsNames", letter.buildClientsName());
 
         PdfBuilder pdf = new PdfBuilder()
                 .header()
                 .space()
                 .title("HOJA DE ENCARGO PROFESIONAL")
-                .paragraphBold("En Madrid, a " + letter.getCreationDate()
-                                .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES"))),
-                        Element.ALIGN_RIGHT)
+                .paragraphBold("En Madrid, a " + dict.get("fecha"), Element.ALIGN_RIGHT)
                 .space()
-                .paragraph(dictionary.get("cliente", templateVars));
+                .paragraph((String) dict.get("intervinientes"))
+                .section("Servicios Contratados");
 
-        this.addServices(pdf, letter, dictionary);
-        this.addPaymentInfo(pdf, letter);
-        this.addLegalTerms(pdf, dictionary);
-        this.addSignatures(pdf, letter);
-
-        return pdf.build();
-    }
-
-    private List<String> getClientesNombres(EngagementLetter letter) {
-        List<UserDto> clientes = new ArrayList<>();
-        clientes.add(letter.getOwner());
-        if (letter.getAttachments() != null && !letter.getAttachments().isEmpty()) {
-            clientes.addAll(letter.getAttachments());
-        }
-        return clientes.stream()
-                .map(c -> c.getFirstName() + " " + c.getFamilyName())
-                .toList();
-    }
-
-    private void addServices(PdfBuilder pdf, EngagementLetter letter, TextDictionary texts) {
-        pdf.section("Servicios Contratados");
-        for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            String budgetText = formatBudget(procedure.getBudget()) +
-                    (Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)");
+        for (Map<String, Object> service : (List<Map<String, Object>>) dict.get("services")) {
+            String title = (String) service.get("title");
+            String budget = (String) service.get("budget");
+            List<String> tasks = (List<String>) service.get("tasks");
 
             pdf.twoColumns(
-                    left -> left.paragraphBold(procedure.getTitle()),
-                    right -> right.paragraphBold(budgetText, Element.ALIGN_RIGHT)
+                    left -> left.paragraphBold(title),
+                    right -> right.paragraphBold(budget, Element.ALIGN_RIGHT)
             );
-
-            if (procedure.getLegalTasks() != null && !procedure.getLegalTasks().isEmpty()) {
-                pdf.list(procedure.getLegalTasks());
+            if (!tasks.isEmpty()) {
+                pdf.list(tasks);
             }
             pdf.space();
         }
-        pdf.space().paragraphBold(texts.get("ejecucion_trabajos"));
-    }
 
-    private void addPaymentInfo(PdfBuilder pdf, EngagementLetter letter) {
-        pdf.space().section("Formas de Pago");
-        letter.getPaymentMethods().stream()
-                .map(pm -> pm.getPercentage() + "% - " + pm.getDescription())
-                .forEach(pdf::paragraph);
+        pdf.space()
+                .paragraphBold((String) dict.get("ejecucion"))
+                .space()
+                .section("Formas de Pago");
+
+        ((List<String>) dict.get("pagos")).forEach(pdf::paragraph);
 
         pdf.section("Datos Bancarios")
                 .labelValue("Cuenta", "ES09 1465 0100 96 1707148504")
                 .labelValue("Entidad", "ING")
-                .labelValue("Titular", "Nuria Ocaña Pérez");
-    }
-
-    private void addLegalTerms(PdfBuilder pdf, TextDictionary texts) {
-        pdf.section("Combinación de vías")
-                .paragraph(texts.get("combinacion_vias"));
-
-        pdf.section("Condiciones Generales")
-                .paragraphs(texts.get("condiciones_generales"))
-                .paragraphBold(texts.get("nota_solidaridad"))
+                .labelValue("Titular", "Nuria Ocaña Pérez")
+                .section("Combinación de vías")
+                .paragraph((String) dict.get("combinacion"))
+                .section("Condiciones Generales")
+                .paragraphs((String) dict.get("condiciones"))
+                .paragraphBold((String) dict.get("solidaridad"))
                 .space()
-                .paragraph(texts.get("desavenencias"));
-
-        pdf.space()
+                .paragraph((String) dict.get("desavenencias"))
+                .space()
                 .paragraphBold("Advertencias:")
-                .numberedList(List.of(
-                        texts.get("advertencia_1"),
-                        texts.get("advertencia_2"),
-                        texts.get("advertencia_3"),
-                        texts.get("advertencia_4"),
-                        texts.get("advertencia_5")
-                ));
-
-        pdf.section("Seguro de Responsabilidad Civil")
-                .paragraph(texts.get("seguro_rc"));
-
-        pdf.section("Comunicaciones")
-                .paragraph(texts.get("comunicaciones"));
-
-        pdf.section("Protección de Datos")
-                .paragraph(texts.get("proteccion_datos"));
-        pdf.section("Jurisdicción")
-                .paragraph(texts.get("jurisdiccion"));
-
-        pdf.space(3)
+                .numberedList((List<String>) dict.get("advertencias"))
+                .section("Seguro de Responsabilidad Civil")
+                .paragraph((String) dict.get("seguro"))
+                .section("Comunicaciones")
+                .paragraph((String) dict.get("comunicaciones"))
+                .section("Protección de Datos")
+                .paragraph((String) dict.get("proteccion"))
+                .section("Jurisdicción")
+                .paragraph((String) dict.get("jurisdiccion"))
+                .space(3)
                 .paragraphBold("AVISO IMPORTANTE")
-                .paragraph(texts.get("aviso_importante"))
+                .paragraph((String) dict.get("aviso"))
                 .space()
-                .paragraph(texts.get("firma"));
-    }
-
-    private void addSignatures(PdfBuilder pdf, EngagementLetter letter) {
-        pdf.space(2)
-                .multiSignature(getClientesNombres(letter), "Nuria Ocaña Pérez")
+                .paragraph((String) dict.get("firma"))
+                .space(2)
+                .multiSignature((List<String>) dict.get("clientsNames"), "Nuria Ocaña Pérez")
                 .footer();
+
+        return pdf.build();
     }
 
-    private String formatDateLong(LocalDate date) {
-        if (date == null) return "-";
-        String[] meses = {"enero", "febrero", "marzo", "abril", "mayo", "junio",
-                "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"};
-        return date.getDayOfMonth() + " de " + meses[date.getMonthValue() - 1] + " de " + date.getYear();
-    }
-
-    private String formatBudget(BigDecimal budget) {
-        if (budget == null) return "-";
-        DecimalFormat df = new DecimalFormat("#,##0.00");
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("es", "ES"));
-        df.setDecimalFormatSymbols(symbols);
-        return df.format(budget) + " €";
-    }
 }

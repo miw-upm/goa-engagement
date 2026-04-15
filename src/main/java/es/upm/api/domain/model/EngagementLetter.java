@@ -38,7 +38,7 @@ public class EngagementLetter {
     private List<PaymentMethod> paymentMethods;
     private List<AcceptanceEngagement> acceptanceEngagements;
 
-    public String buildClientsText() {
+    public String buildClientsFullNameIdentity() {
         List<UserDto> clients = new ArrayList<>();
         clients.add(this.owner);
         if (this.attachments != null && !this.attachments.isEmpty()) {
@@ -48,5 +48,14 @@ public class EngagementLetter {
         return clients.stream()
                 .map(UserDto::toClientText)
                 .collect(Collectors.joining(", "));
+    }
+
+    public List<String> buildClientsName() {
+        List<String> names = new ArrayList<>();
+        names.add(this.getOwner().toClientText());
+        if (this.getAttachments() != null) {
+            this.getAttachments().forEach(user -> names.add(user.toClientText()));
+        }
+        return names;
     }
 }
