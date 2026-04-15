@@ -9,6 +9,7 @@ import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -50,6 +51,7 @@ public class EngagementLetterService {
         engagementLetter.setOwner(
                 this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
+        engagementLetter.setCreationDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
             engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
         }
@@ -164,7 +166,7 @@ public class EngagementLetterService {
         pdf.paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
         pdf.section(dict.getText("servicios"));
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            String budget = procedure.buildFormatBudget() ;
+            String budget = procedure.buildFormatBudget();
             pdf.twoColumns(
                     left -> left.paragraphBold(procedure.getTitle()),
                     right -> right.paragraphBold(budget, Element.ALIGN_RIGHT));

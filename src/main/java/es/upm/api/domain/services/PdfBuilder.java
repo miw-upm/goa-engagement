@@ -50,6 +50,18 @@ public class PdfBuilder {
         }
     }
 
+    private static Font createFont(BaseFont baseFont, float size, int style) {
+        return new Font(baseFont, size, style);
+    }
+
+    private static BaseFont requiredBaseFont(String fontName) {
+        try {
+            return BaseFont.createFont(fontName, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
+        } catch (DocumentException | IOException e) {
+            throw new IllegalStateException("PDF font initialization failed: " + fontName, e);
+        }
+    }
+
     public PdfBuilder header() {
         return this.add("header", () -> {
             PdfPTable table = this.createTable(2, 59, 41);
@@ -439,18 +451,6 @@ public class PdfBuilder {
 
     private BadGatewayException onError(String action, Exception e) {
         return new BadGatewayException("Error " + action + ": " + e.getMessage());
-    }
-
-    private static Font createFont(BaseFont baseFont, float size, int style) {
-        return new Font(baseFont, size, style);
-    }
-
-    private static BaseFont requiredBaseFont(String fontName) {
-        try {
-            return BaseFont.createFont(fontName, BaseFont.CP1252, BaseFont.NOT_EMBEDDED);
-        } catch (DocumentException | IOException e) {
-            throw new IllegalStateException("PDF font initialization failed: " + fontName, e);
-        }
     }
 
     @FunctionalInterface

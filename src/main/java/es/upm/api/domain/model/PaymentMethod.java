@@ -18,7 +18,7 @@ public class PaymentMethod {
     private int percentage;
 
     @Override
-    public String toString(){
+    public String toString() {
         return percentage + "% - " + description;
     }
 
