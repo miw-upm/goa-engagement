@@ -6,6 +6,7 @@ import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventResponseDto;
+import es.upm.api.infrastructure.dtos.TimelineEventDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -687,6 +688,252 @@ class EventMapperIT {
 
         // Assert
         assertThat(dtos).isEmpty();
+    }
+
+    @Test
+    void testToTimelineDto_FromEvent() {
+        UUID eventId = UUID.randomUUID();
+        LocalDateTime eventDate = LocalDateTime.of(2026, 4, 15, 10, 30, 0);
+
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Timeline Event")
+                .description("Timeline Description")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto timelineDto = eventMapper.toTimelineDto(event);
+
+        assertThat(timelineDto).isNotNull();
+        assertThat(timelineDto.getId()).isEqualTo(eventId);
+        assertThat(timelineDto.getDate()).isEqualTo(eventDate);
+        assertThat(timelineDto.getType()).isEqualTo(EventType.MILESTONE);
+        assertThat(timelineDto.getTitle()).isEqualTo("Timeline Event");
+        assertThat(timelineDto.getDescription()).isEqualTo("Timeline Description");
+        assertThat(timelineDto.getStatus()).isEqualTo(Status.PENDING);
+    }
+
+    @Test
+    void testToTimelineDto_NullEvent() {
+        TimelineEventDto timelineDto = eventMapper.toTimelineDto(null);
+
+        assertThat(timelineDto).isNull();
+    }
+
+    @Test
+    void testToTimelineDto_ExcludesUnnecessaryFields() {
+        UUID eventId = UUID.randomUUID();
+        LocalDateTime createdDate = LocalDateTime.now();
+        LocalDateTime eventDate = LocalDateTime.of(2026, 4, 15, 10, 30, 0);
+
+        List<Comment> comments = new ArrayList<>();
+        comments.add(Comment.builder()
+                .authorId(authorId)
+                .createdDate(LocalDateTime.now())
+                .content("Test comment")
+                .build());
+
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(createdDate)
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Event with Comments")
+                .description("Description")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .comments(comments)
+                .build();
+
+        TimelineEventDto timelineDto = eventMapper.toTimelineDto(event);
+
+        assertThat(timelineDto).isNotNull();
+        assertThat(timelineDto.getId()).isEqualTo(eventId);
+        assertThat(timelineDto.getDate()).isEqualTo(eventDate);
+        assertThat(timelineDto.getType()).isEqualTo(EventType.PHASES);
+        assertThat(timelineDto.getTitle()).isEqualTo("Event with Comments");
+        assertThat(timelineDto.getDescription()).isEqualTo("Description");
+        assertThat(timelineDto.getStatus()).isEqualTo(Status.IN_PROGRESS);
+    }
+
+    @Test
+    void testToTimelineDto_AllEventTypes() {
+        // Test MILESTONE
+        Event milestoneEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Milestone")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto milestoneDto = eventMapper.toTimelineDto(milestoneEvent);
+        assertThat(milestoneDto.getType()).isEqualTo(EventType.MILESTONE);
+
+        // Test PHASES
+        Event phasesEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.PHASES)
+                .title("Phases")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto phasesDto = eventMapper.toTimelineDto(phasesEvent);
+        assertThat(phasesDto.getType()).isEqualTo(EventType.PHASES);
+
+        // Test STANDARD_EVENT
+        Event standardEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.STANDARD_EVENT)
+                .title("Standard")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto standardDto = eventMapper.toTimelineDto(standardEvent);
+        assertThat(standardDto.getType()).isEqualTo(EventType.STANDARD_EVENT);
+    }
+
+    @Test
+    void testToTimelineDto_AllStatus() {
+        // Test PENDING
+        Event pendingEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Pending")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto pendingDto = eventMapper.toTimelineDto(pendingEvent);
+        assertThat(pendingDto.getStatus()).isEqualTo(Status.PENDING);
+
+        // Test IN_PROGRESS
+        Event inProgressEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("In Progress")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto inProgressDto = eventMapper.toTimelineDto(inProgressEvent);
+        assertThat(inProgressDto.getStatus()).isEqualTo(Status.IN_PROGRESS);
+
+        // Test COMPLETED
+        Event completedEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Completed")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto completedDto = eventMapper.toTimelineDto(completedEvent);
+        assertThat(completedDto.getStatus()).isEqualTo(Status.COMPLETED);
+
+        // Test CANCELLED
+        Event cancelledEvent = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Cancelled")
+                .status(Status.CANCELLED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        TimelineEventDto cancelledDto = eventMapper.toTimelineDto(cancelledEvent);
+        assertThat(cancelledDto.getStatus()).isEqualTo(Status.CANCELLED);
+    }
+
+
+
+    @Test
+    void testToTimelineDtoList() {
+
+        Event event1 = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(LocalDateTime.of(2026, 4, 25, 11, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Later Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        Event event2 = Event.builder()
+                .id(UUID.randomUUID())
+                .eventDate(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                .type(EventType.PHASES)
+                .title("Earlier Event")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        List<Event> events = List.of(event1, event2);
+
+        List<TimelineEventDto> timelineDtos = eventMapper.toTimelineDtoList(events);
+
+        assertThat(timelineDtos).hasSize(2);
+
+        // SOLO mapping, no order assumption
+        assertThat(timelineDtos)
+                .extracting(TimelineEventDto::getTitle)
+                .containsExactlyInAnyOrder("Earlier Event", "Later Event");
+    }
+
+    @Test
+    void testToTimelineDtoList_EmptyList() {
+        List<TimelineEventDto> timelineDtos = eventMapper.toTimelineDtoList(new ArrayList<>());
+
+        assertThat(timelineDtos).isEmpty();
+    }
+
+    @Test
+    void testToTimelineDtoList_NullList() {
+        List<TimelineEventDto> timelineDtos = eventMapper.toTimelineDtoList(null);
+
+        assertThat(timelineDtos).isEmpty();
+    }
+
+    @Test
+    void testToTimelineDtoList_PreservesAllRequiredFields() {
+        UUID eventId = UUID.randomUUID();
+        LocalDateTime eventDate = LocalDateTime.of(2026, 4, 15, 10, 30, 0);
+
+        Event event = Event.builder()
+                .id(eventId)
+                .createdDate(LocalDateTime.now())
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Complete Event")
+                .description("Complete Description")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementLetterId)
+                .build();
+
+        List<Event> events = List.of(event);
+        List<TimelineEventDto> timelineDtos = eventMapper.toTimelineDtoList(events);
+
+        assertThat(timelineDtos).hasSize(1);
+        TimelineEventDto dto = timelineDtos.getFirst();
+
+        assertThat(dto.getId()).isEqualTo(eventId);
+        assertThat(dto.getDate()).isEqualTo(eventDate);
+        assertThat(dto.getType()).isEqualTo(EventType.MILESTONE);
+        assertThat(dto.getTitle()).isEqualTo("Complete Event");
+        assertThat(dto.getDescription()).isEqualTo("Complete Description");
+        assertThat(dto.getStatus()).isEqualTo(Status.IN_PROGRESS);
     }
 
 }

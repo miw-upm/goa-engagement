@@ -1,5 +1,6 @@
 package es.upm.api.infrastructure.mongodb.repositories;
 
+import es.upm.api.domain.model.Status;
 import es.upm.api.infrastructure.mongodb.entities.*;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Profile;
@@ -18,11 +19,13 @@ public class DatabaseSeederDev {
     private final LegalTaskRepository legalTaskRepository;
     private final LegalProcedureRepository legalProcedureRepository;
     private final EngagementLetterRepository engagementLetterRepository;
+    private final AlertRepository alertRepository;
 
-    public DatabaseSeederDev(LegalTaskRepository legalTaskRepository, LegalProcedureRepository legalProcedureRepository, EngagementLetterRepository engagementLetterRepository) {
+    public DatabaseSeederDev(LegalTaskRepository legalTaskRepository, LegalProcedureRepository legalProcedureRepository, EngagementLetterRepository engagementLetterRepository, AlertRepository alertRepository) {
         this.legalTaskRepository = legalTaskRepository;
         this.legalProcedureRepository = legalProcedureRepository;
         this.engagementLetterRepository = engagementLetterRepository;
+        this.alertRepository = alertRepository;
         this.deleteAllAndInitializeAndSeedDataBase();
     }
 
@@ -32,6 +35,7 @@ public class DatabaseSeederDev {
     }
 
     private void deleteAllAndInitialize() {
+        this.alertRepository.deleteAll();
         this.engagementLetterRepository.deleteAll();
         this.legalProcedureRepository.deleteAll();
         this.legalTaskRepository.deleteAll();
@@ -128,9 +132,92 @@ public class DatabaseSeederDev {
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
                                 .signatureDate(LocalDateTime.now()).build())
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2])).build(),
+                EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
+                        .discount(15)
+                        .creationDate(LocalDate.now())
+                        .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006"))
+                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007"))
+                        .paymentMethodEntity(PaymentMethodEntity.builder()
+                                .description("A la firma de la carta de encargo")
+                                .percentage(50).build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder()
+                                .description("A la finalización del procedimiento")
+                                .percentage(50).build())
+                        .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
+                        .build(),
         };
         this.engagementLetterRepository.saveAll(List.of(encargos));
         log.warn("        ------- Hojas de encargo ------------------------------------------------------------------");
+        AlertEntity[] alerts = {
+                AlertEntity.builder()
+                        .id(UUID.fromString("bbbbbbb0-bbbb-cccc-dddd-eeeeffff0000"))
+                        .title("Aportar documentación adicional")
+                        .description("El cliente debe aportar documentación antes del vencimiento")
+                        .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0, 0))
+                        .engagementLetterId(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+                        .status(Status.PENDING)
+                        .createdAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                        .updatedAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                        .createdBy("seed")
+                        .updatedBy("seed")
+                        .notifications(List.of(
+                                AlertNotificationEntity.builder()
+                                        .id(UUID.fromString("ccccccc0-bbbb-cccc-dddd-eeeeffff0000"))
+                                        .offsetMinutes(-4320)
+                                        .triggerAt(LocalDateTime.of(2026, 4, 22, 18, 0, 0))
+                                        .status(Status.PENDING)
+                                        .shownAt(null)
+                                        .createdAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                                        .updatedAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                                        .build(),
+                                AlertNotificationEntity.builder()
+                                        .id(UUID.fromString("ccccccc0-bbbb-cccc-dddd-eeeeffff0001"))
+                                        .offsetMinutes(-1440)
+                                        .triggerAt(LocalDateTime.of(2026, 4, 24, 18, 0, 0))
+                                        .status(Status.PENDING)
+                                        .shownAt(null)
+                                        .createdAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                                        .updatedAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                                        .build(),
+                                AlertNotificationEntity.builder()
+                                        .id(UUID.fromString("ccccccc0-bbbb-cccc-dddd-eeeeffff0002"))
+                                        .offsetMinutes(-120)
+                                        .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0, 0))
+                                        .status(Status.PENDING)
+                                        .shownAt(null)
+                                        .createdAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                                        .updatedAt(LocalDateTime.of(2026, 4, 10, 9, 0, 0))
+                                        .build()
+                        ))
+                        .build(),
+
+                AlertEntity.builder()
+                        .id(UUID.fromString("bbbbbbb0-bbbb-cccc-dddd-eeeeffff0001"))
+                        .title("Revisión de plazo notarial")
+                        .description("Alerta ya cancelada para pruebas")
+                        .dueDate(LocalDateTime.of(2026, 5, 5, 12, 0, 0))
+                        .engagementLetterId(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
+                        .status(Status.CANCELLED)
+                        .createdAt(LocalDateTime.of(2026, 4, 11, 10, 30, 0))
+                        .updatedAt(LocalDateTime.of(2026, 4, 12, 8, 0, 0))
+                        .createdBy("seed")
+                        .updatedBy("seed")
+                        .notifications(List.of(
+                                AlertNotificationEntity.builder()
+                                        .id(UUID.fromString("ccccccc0-bbbb-cccc-dddd-eeeeffff0003"))
+                                        .offsetMinutes(-1440)
+                                        .triggerAt(LocalDateTime.of(2026, 5, 4, 12, 0, 0))
+                                        .status(Status.CANCELLED)
+                                        .shownAt(null)
+                                        .createdAt(LocalDateTime.of(2026, 4, 11, 10, 30, 0))
+                                        .updatedAt(LocalDateTime.of(2026, 4, 12, 8, 0, 0))
+                                        .build()
+                        ))
+                        .build()
+        };
+
+        this.alertRepository.saveAll(List.of(alerts));
+        log.warn("        ------- Alertas ---------------------------------------------------------------------------");
     }
 
 }

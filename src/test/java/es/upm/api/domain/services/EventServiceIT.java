@@ -15,6 +15,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -1027,5 +1028,164 @@ class EventServiceIT {
         ).isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("The comment doesn't exist in the event");
     }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_DescendingOrder() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(3))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event3 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+        eventService.create(event3);
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+
+        assertThat(timelineEvents).hasSize(3);
+        assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
+        assertThat(timelineEvents.get(1).getTitle()).isEqualTo("Event 3");
+        assertThat(timelineEvents.get(2).getTitle()).isEqualTo("Event 1");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_AscendingOrder() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(5))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+        Event event3 = Event.builder()
+                .eventDate(eventDate.plusDays(8))
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+        eventService.create(event3);
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, true);
+
+        assertThat(timelineEvents).hasSize(3);
+        assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
+        assertThat(timelineEvents.get(1).getTitle()).isEqualTo("Event 1");
+        assertThat(timelineEvents.get(2).getTitle()).isEqualTo("Event 3");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_EmptyList() {
+        UUID nonExistentId = UUID.randomUUID();
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(nonExistentId, false);
+
+        assertThat(timelineEvents).isEmpty();
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_SingleEvent() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .title("Single Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event);
+
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+
+        assertThat(timelineEvents).hasSize(1);
+        assertThat(timelineEvents.getFirst().getTitle()).isEqualTo("Single Event");
+    }
+
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_SameDateDifferentTimes() {
+        UUID engagementId = UUID.randomUUID();
+        Mockito.when(engagementLetterService.readById(any(UUID.class)))
+                .thenReturn(new EngagementLetter());
+
+        Event eventMorning = Event.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 9, 0, 0))
+                .type(EventType.MILESTONE)
+                .title("Morning Meeting")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+        Event eventAfternoon = Event.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 15, 30, 0))
+                .type(EventType.PHASES)
+                .title("Afternoon Review")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+        Event eventEvening = Event.builder()
+                .eventDate(LocalDateTime.of(2026, 4, 15, 18, 45, 0))
+                .type(EventType.STANDARD_EVENT)
+                .title("Evening Call")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(eventMorning);
+        eventService.create(eventAfternoon);
+        eventService.create(eventEvening);
+
+        List<Event> descendingEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+
+        assertThat(descendingEvents).hasSize(3);
+        assertThat(descendingEvents.get(0).getTitle()).isEqualTo("Evening Call");
+        assertThat(descendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
+        assertThat(descendingEvents.get(2).getTitle()).isEqualTo("Morning Meeting");
+
+        List<Event> ascendingEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, true);
+
+        assertThat(ascendingEvents).hasSize(3);
+        assertThat(ascendingEvents.get(0).getTitle()).isEqualTo("Morning Meeting");
+        assertThat(ascendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
+        assertThat(ascendingEvents.get(2).getTitle()).isEqualTo("Evening Call");
+    }
+
 }
 

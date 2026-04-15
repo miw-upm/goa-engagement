@@ -2,10 +2,7 @@ package es.upm.api.infrastructure.mappers;
 
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
-import es.upm.api.infrastructure.dtos.CommentDto;
-import es.upm.api.infrastructure.dtos.EventCreateDto;
-import es.upm.api.infrastructure.dtos.EventResponseDto;
-import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.dtos.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -99,6 +96,28 @@ public class EventMapper {
                 .orElse(Collections.emptyList())
                 .stream()
                 .map(this::toDto)
+                .collect(Collectors.toList());
+    }
+    public TimelineEventDto toTimelineDto(Event event) {
+        if (event == null) {
+            return null;
+        }
+
+        return TimelineEventDto.builder()
+                .id(event.getId())
+                .date(event.getEventDate())
+                .type(event.getType())
+                .title(event.getTitle())
+                .description(event.getDescription())
+                .status(event.getStatus())
+                .build();
+    }
+
+    public List<TimelineEventDto> toTimelineDtoList(List<Event> events) {
+        return Optional.ofNullable(events)
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(this::toTimelineDto)
                 .collect(Collectors.toList());
     }
 }
