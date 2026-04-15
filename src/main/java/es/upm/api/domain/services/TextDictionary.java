@@ -14,22 +14,17 @@ public class TextDictionary {
     private final Map<String, List<String>> lists = new HashMap<>();
 
     public TextDictionary(String templatePath) {
-        parse(TemplateReader.read(templatePath));
+        this.parse(TemplateReader.read(templatePath));
     }
 
     private void parse(String content) {
-        // Primero extraer listas (con *)
         Matcher listMatcher = LIST_PATTERN.matcher(content);
         while (listMatcher.find()) {
             String key = listMatcher.group(1);
             String value = normalize(listMatcher.group(2).trim());
             lists.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
         }
-
-        // Eliminar líneas de lista del contenido para procesar bloques
         content = LIST_PATTERN.matcher(content).replaceAll("");
-
-        // Procesar bloques normales
         Matcher matcher = BLOCK_PATTERN.matcher(content);
         int lastStart = -1;
         String lastId = null;
@@ -63,10 +58,6 @@ public class TextDictionary {
 
     public List<String> getList(String id) {
         return lists.getOrDefault(id, List.of());
-    }
-
-    public boolean hasTitle(String id) {
-        return titles.get(id) != null;
     }
 
     private String normalize(String text) {

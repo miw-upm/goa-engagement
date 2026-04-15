@@ -18,7 +18,7 @@ public class PdfBuilder {
 
     private static final Font FONT_NORMAL = createFont(BaseFont.HELVETICA, 10, Font.NORMAL);
     private static final Font FONT_BOLD = createFont(BaseFont.HELVETICA_BOLD, 10, Font.BOLD);
-    private static final Font FONT_TITLE = createFont(BaseFont.HELVETICA_BOLD, 16, Font.BOLD);
+    private static final Font FONT_TITLE = createFont(BaseFont.HELVETICA_BOLD, 14, Font.BOLD);
     private static final Font FONT_SECTION = createFont(BaseFont.HELVETICA_BOLD, 12, Font.BOLD);
     private static final Font FONT_SMALL = createFont(BaseFont.HELVETICA, 8, Font.NORMAL);
     private static final Font FONT_HEADER = createFont(BaseFont.HELVETICA, 9, Font.NORMAL);
@@ -48,15 +48,13 @@ public class PdfBuilder {
         }
     }
 
-    // === Estructura ===
     public PdfBuilder header() {
         return add("header", () -> {
-            PdfPTable table = createTable(2, 59, 41);
-            table.addCell(createLogoCell());
-            table.addCell(createInfoCell());
+            PdfPTable table = this.createTable(2, 59, 41);
+            table.addCell(this.createLogoCell());
+            table.addCell(this.createInfoCell());
             document.add(table);
-            document.add(Chunk.NEWLINE);
-        }).line();
+        }).space().line();
     }
 
     public PdfBuilder footer() {
@@ -121,7 +119,6 @@ public class PdfBuilder {
         return this;
     }
 
-    // === Texto ===
     public PdfBuilder paragraph(String text) {
         return add("paragraph", () -> {
             Paragraph p = new Paragraph(text, FONT_NORMAL);
@@ -182,7 +179,6 @@ public class PdfBuilder {
         });
     }
 
-    // === Tablas ===
     public PdfBuilder twoColumns(Consumer<ColumnBuilder> leftContent, Consumer<ColumnBuilder> rightContent) {
         return add("two columns", () -> {
             PdfPTable table = createTable(2);
@@ -235,8 +231,6 @@ public class PdfBuilder {
         });
     }
 
-    // === Firmas ===
-
     public PdfBuilder signatureLine(String label) {
         return add("signature", () -> {
             document.add(Chunk.NEWLINE);
@@ -255,7 +249,6 @@ public class PdfBuilder {
 
             PdfPTable table = createTable(2);
 
-            // Columna izquierda: múltiples firmas
             PdfPCell leftCell = noBorderCell();
             for (String label : leftLabels) {
                 Paragraph p = new Paragraph();
@@ -266,7 +259,6 @@ public class PdfBuilder {
             }
             table.addCell(leftCell);
 
-            // Columna derecha: una firma
             PdfPCell rightCell = noBorderCell();
             Paragraph right = new Paragraph();
             right.setAlignment(Element.ALIGN_RIGHT);
@@ -291,7 +283,6 @@ public class PdfBuilder {
         });
     }
 
-    // === Imagen ===
     public PdfBuilder image(byte[] imageBytes, float width) {
         try {
             Image img = Image.getInstance(imageBytes);
@@ -309,7 +300,6 @@ public class PdfBuilder {
         return outputStream.toByteArray();
     }
 
-    // === Helpers privados ===
     private PdfBuilder add(String action, DocumentAction runnable) {
         try {
             runnable.run();
