@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.miw.exception.InternalServerException;
+import es.upm.api.domain.exceptions.BadGatewayException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,11 +15,11 @@ public class TemplateReader {
     public static String read(String path) {
         try (InputStream is = TemplateReader.class.getClassLoader().getResourceAsStream(path)) {
             if (is == null) {
-                throw new InternalServerException("Template not found: " + path);
+                throw new BadGatewayException("Template not found: " + path);
             }
             return new String(is.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
-            throw new InternalServerException("Error reading template: " + path);
+            throw new BadGatewayException("Error reading template: " + path);
         }
     }
 
