@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,16 +77,22 @@ public class EventResource {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete comment from event")
     public void deleteComment(@PathVariable UUID eventId,
-                              @Valid @RequestBody CommentDeleteDto commentDeleteDto,
+                              @RequestParam UUID authorId,
+                              @RequestParam String content,
+                              @RequestParam String createdDate,
                               Authentication authentication) {
+
+        LocalDateTime parsedDate = LocalDateTime.parse(createdDate);
+
         this.eventService.deleteComment(
                 eventId,
-                commentDeleteDto.getAuthorId(),
-                commentDeleteDto.getCreatedDate(),
-                commentDeleteDto.getContent(),
+                authorId,
+                parsedDate,
+                content,
                 authentication.getName()
         );
     }
+
 
     @GetMapping(ENGAGEMENT_LETTER_ID)
     @ResponseStatus(HttpStatus.OK)
@@ -93,5 +100,11 @@ public class EventResource {
             @PathVariable UUID engagementLetterId) {
         List<Event> events = this.eventService.findByEngagementLetterId(engagementLetterId).toList();
         return this.eventMapper.toDtoList(events);
+    }
+    @GetMapping("/{eventId}/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> getComments(@PathVariable UUID eventId) {
+
+        return this.eventService.getComments(eventId);
     }
 }
