@@ -16,4 +16,19 @@ public class UserDto {
     private String mobile;
     private String firstName;
     private String familyName;
+    private String documentType;
+    private String identity;
+
+    public String toFullName() {
+        return "D./Dña. " + firstName + " " + familyName;
+    }
+
+    public String toFullNameAndIdentity() {
+        return this.toFullName() + " con " + formatDocumentType() + " nº " + this.identity;
+    }
+
+    private String formatDocumentType() {
+        return String.join(".", documentType.toUpperCase().split("")) + ".";
+    }
+
 }
