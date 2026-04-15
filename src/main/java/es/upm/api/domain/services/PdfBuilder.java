@@ -9,11 +9,9 @@ import org.openpdf.text.Rectangle;
 import org.openpdf.text.pdf.*;
 
 import java.awt.*;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class PdfBuilder {
@@ -35,14 +33,14 @@ public class PdfBuilder {
     private static final String LOGO_PATH = "images/oa.png";
 
     private final Document document;
-    private final String filename;
+    private final ByteArrayOutputStream outputStream;
     private final PdfWriter writer;
 
-    public PdfBuilder(String name) {
-        this.filename = Path.of(System.getProperty("java.io.tmpdir"), name + ".pdf").toString();
+    public PdfBuilder() {
+        this.outputStream = new ByteArrayOutputStream();
         this.document = new Document(PageSize.A4);
         try {
-            this.writer = PdfWriter.getInstance(document, new FileOutputStream(filename));
+            this.writer = PdfWriter.getInstance(document, outputStream);
             this.writer.setPageEvent(new PageFooterEvent());
             document.open();
         } catch (Exception e) {
@@ -306,14 +304,9 @@ public class PdfBuilder {
         return this;
     }
 
-    // === Build ===
     public byte[] build() {
         document.close();
-        try {
-            return Files.readAllBytes(Path.of(filename));
-        } catch (IOException e) {
-            throw onError("reading PDF", e);
-        }
+        return outputStream.toByteArray();
     }
 
     // === Helpers privados ===

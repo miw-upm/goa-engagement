@@ -5,13 +5,13 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class PdfTextRepository {
+public class TextDictionary {
 
     private static final Pattern BLOCK_PATTERN = Pattern.compile("^#([a-z_0-9]+)$", Pattern.MULTILINE);
 
     private final Map<String, String> texts = new HashMap<>();
 
-    public PdfTextRepository(String templatePath) {
+    public TextDictionary(String templatePath) {
         parse(TemplateReader.read(templatePath));
     }
 

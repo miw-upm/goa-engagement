@@ -14,8 +14,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -152,48 +152,31 @@ public class EngagementLetterService {
             List<UUID> ids = this.userWebClient.findNullSafe(criteria.getOwner()).stream()
                     .map(UserDto::getId).toList();
             return this.engagementLetterPersistence.findNullSafe(criteria)
-                    .filter(engagementLetter -> {
-                        return ids.contains(engagementLetter.getOwner().getId());
-                    });
+                    .filter(engagementLetter -> ids.contains(engagementLetter.getOwner().getId()));
         }
     }
 
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
-        PdfTextRepository texts = new PdfTextRepository("templates/engagement-letter-texts.txt");
-        Map<String, String> vars = buildVariables(letter);
+        TextDictionary dictionary = new TextDictionary("templates/engagement-letter-texts.txt");
+        Map<String, String> templateVars = Map.of("clientes", letter.buildClientsText());
 
-        PdfBuilder pdf = new PdfBuilder("carta-encargo-" + engagementLetterId)
+        PdfBuilder pdf = new PdfBuilder()
                 .header()
                 .space()
                 .title("HOJA DE ENCARGO PROFESIONAL")
-                .paragraphBold("En Madrid, a " + formatDateLong(letter.getCreationDate()), Element.ALIGN_RIGHT)
+                .paragraphBold("En Madrid, a " + letter.getCreationDate()
+                                .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES"))),
+                        Element.ALIGN_RIGHT)
                 .space()
-                .paragraph(texts.get("cliente", vars));
+                .paragraph(dictionary.get("cliente", templateVars));
 
-        addServices(pdf, letter, texts);
-        addPaymentInfo(pdf, letter);
-        addLegalTerms(pdf, texts);
-        addSignatures(pdf, letter);
+        this.addServices(pdf, letter, dictionary);
+        this.addPaymentInfo(pdf, letter);
+        this.addLegalTerms(pdf, dictionary);
+        this.addSignatures(pdf, letter);
 
         return pdf.build();
-    }
-
-    private Map<String, String> buildVariables(EngagementLetter letter) {
-        List<UserDto> clientes = new ArrayList<>();
-        clientes.add(letter.getOwner());
-        if (letter.getAttachments() != null && !letter.getAttachments().isEmpty()) {
-            clientes.addAll(letter.getAttachments());
-        }
-
-        String clientesTexto = clientes.stream()
-                .map(c -> "D./Dña. " + c.getFirstName() + " " + c.getFamilyName() +
-                        " con " + formatDocumentType(c.getDocumentType()) + " nº " + formatIdentity(c.getIdentity()))
-                .collect(Collectors.joining(", "));
-
-        return Map.of(
-                "clientes", clientesTexto
-        );
     }
 
     private List<String> getClientesNombres(EngagementLetter letter) {
@@ -207,27 +190,7 @@ public class EngagementLetterService {
                 .toList();
     }
 
-    private String formatIdentity(String identity) {
-        if (identity == null || identity.length() < 2) {
-            return identity;
-        }
-        String numbers = identity.substring(0, identity.length() - 1);
-        String letter = identity.substring(identity.length() - 1);
-
-        if (numbers.length() == 8) {
-            return numbers.substring(0, 2) + "." + numbers.substring(2, 5) + "." + numbers.substring(5, 8) + "-" + letter;
-        }
-        return identity;
-    }
-
-    private String formatDocumentType(String documentType) {
-        if ("DNI".equalsIgnoreCase(documentType)) {
-            return "D.N.I.";
-        }
-        return documentType;
-    }
-
-    private void addServices(PdfBuilder pdf, EngagementLetter letter, PdfTextRepository texts) {
+    private void addServices(PdfBuilder pdf, EngagementLetter letter, TextDictionary texts) {
         pdf.section("Servicios Contratados");
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
             String budgetText = formatBudget(procedure.getBudget()) +
@@ -235,7 +198,7 @@ public class EngagementLetterService {
 
             pdf.twoColumns(
                     left -> left.paragraphBold(procedure.getTitle()),
-                    right -> right.paragraphBold(budgetText,Element.ALIGN_RIGHT)
+                    right -> right.paragraphBold(budgetText, Element.ALIGN_RIGHT)
             );
 
             if (procedure.getLegalTasks() != null && !procedure.getLegalTasks().isEmpty()) {
@@ -258,7 +221,7 @@ public class EngagementLetterService {
                 .labelValue("Titular", "Nuria Ocaña Pérez");
     }
 
-    private void addLegalTerms(PdfBuilder pdf, PdfTextRepository texts) {
+    private void addLegalTerms(PdfBuilder pdf, TextDictionary texts) {
         pdf.section("Combinación de vías")
                 .paragraph(texts.get("combinacion_vias"));
 
@@ -301,6 +264,7 @@ public class EngagementLetterService {
                 .multiSignature(getClientesNombres(letter), "Nuria Ocaña Pérez")
                 .footer();
     }
+
     private String formatDateLong(LocalDate date) {
         if (date == null) return "-";
         String[] meses = {"enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -311,8 +275,8 @@ public class EngagementLetterService {
     private String formatBudget(BigDecimal budget) {
         if (budget == null) return "-";
         DecimalFormat df = new DecimalFormat("#,##0.00");
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(new Locale("es", "ES"));
+        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("es", "ES"));
         df.setDecimalFormatSymbols(symbols);
-        return df.format(budget) + " \u20AC";
+        return df.format(budget) + " €";
     }
 }

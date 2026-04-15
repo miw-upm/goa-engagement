@@ -18,4 +18,14 @@ public class UserDto {
     private String familyName;
     private String documentType;
     private String identity;
+
+    public String toClientText() {
+        return "D./Dña. " + firstName + " " + familyName +
+                " con " + formatDocumentType() + " nº " + this.identity;
+    }
+
+    private String formatDocumentType() {
+        return String.join(".", documentType.toUpperCase().split("")) + ".";
+    }
+
 }

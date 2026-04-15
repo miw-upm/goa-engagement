@@ -11,8 +11,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Builder
 @Data
@@ -35,4 +37,16 @@ public class EngagementLetter {
     @ListNotEmpty
     private List<PaymentMethod> paymentMethods;
     private List<AcceptanceEngagement> acceptanceEngagements;
+
+    public String buildClientsText() {
+        List<UserDto> clients = new ArrayList<>();
+        clients.add(this.owner);
+        if (this.attachments != null && !this.attachments.isEmpty()) {
+            clients.addAll(this.attachments);
+        }
+
+        return clients.stream()
+                .map(UserDto::toClientText)
+                .collect(Collectors.joining(", "));
+    }
 }
