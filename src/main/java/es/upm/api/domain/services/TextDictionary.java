@@ -7,8 +7,9 @@ import java.util.regex.Pattern;
 
 public class TextDictionary {
 
-    private static final Pattern BLOCK_PATTERN = Pattern.compile("^#([a-z_0-9]+)$", Pattern.MULTILINE);
+    private static final Pattern BLOCK_PATTERN = Pattern.compile("^#([a-z_0-9]+):(.*)$", Pattern.MULTILINE);
 
+    private final Map<String, String> titles = new HashMap<>();
     private final Map<String, String> texts = new HashMap<>();
 
     public TextDictionary(String templatePath) {
@@ -22,36 +23,40 @@ public class TextDictionary {
 
         while (matcher.find()) {
             if (lastId != null) {
-                texts.put(lastId, content.substring(lastStart, matcher.start()).trim());
+                texts.put(lastId, normalize(content.substring(lastStart, matcher.start()).trim()));
             }
             lastId = matcher.group(1);
+            String title = matcher.group(2).trim();
+            titles.put(lastId, title.isEmpty() ? null : title);
             lastStart = matcher.end() + 1;
         }
 
         if (lastId != null && lastStart < content.length()) {
-            texts.put(lastId, content.substring(lastStart).trim());
+            texts.put(lastId, normalize(content.substring(lastStart).trim()));
         }
     }
 
-    public String get(String id) {
-        String text = texts.getOrDefault(id, "");
-        return normalize(text);
+    public String getTitle(String id) {
+        return titles.get(id);
     }
 
-    public String get(String id, Map<String, String> variables) {
-        return TemplateReader.replaceVariables(get(id), variables);
+    public String getText(String id) {
+        return texts.getOrDefault(id, "");
+    }
+
+    public String getText(String id, Map<String, String> variables) {
+        return TemplateReader.replaceVariables(getText(id), variables);
+    }
+
+    public boolean hasTitle(String id) {
+        return titles.get(id) != null;
     }
 
     private String normalize(String text) {
-        // Normalizar saltos de línea Windows
         text = text.replace("\r\n", "\n");
-        // Preservar dobles saltos (separadores de párrafo)
         text = text.replace("\n\n", "{{BREAK}}");
-        // Saltos simples -> espacio
         text = text.replace("\n", " ");
-        // Restaurar dobles saltos
         text = text.replace("{{BREAK}}", "\n\n");
-        // Limpiar espacios múltiples
         text = text.replaceAll(" +", " ");
         return text.trim();
     }

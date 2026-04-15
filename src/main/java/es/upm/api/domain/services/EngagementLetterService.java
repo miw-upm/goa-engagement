@@ -157,23 +157,21 @@ public class EngagementLetterService {
 
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
-        TextDictionary dictionary = new TextDictionary("templates/engagement-letter-texts.txt");
+        TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.txt");
 
         PdfBuilder pdf = new PdfBuilder()
                 .header()
                 .space()
-                .title("HOJA DE ENCARGO PROFESIONAL")
-                .paragraphBold("En Madrid, a " + letter.getCreationDate()
-                        .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES"))), Element.ALIGN_RIGHT)
+                .title(dict.getText("hoja"))
+                .paragraphBold(letter.buildCreationDate(), Element.ALIGN_RIGHT)
                 .space()
-                .paragraph(dictionary.get("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())))
-                .section("Servicios Contratados");
+                .paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())))
+                .section(dict.getText("servicios"));
 
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
             String title = procedure.getTitle();
             String budget = procedure.buildFormatBudget() +
                     (Boolean.TRUE.equals(procedure.getVatIncluded()) ? " (IVA incluido)" : " (+ IVA)");
-
             pdf.twoColumns(
                     left -> left.paragraphBold(title),
                     right -> right.paragraphBold(budget, Element.ALIGN_RIGHT)
@@ -185,46 +183,42 @@ public class EngagementLetterService {
         }
 
         pdf.space()
-                .paragraphBold(dictionary.get("ejecucion_trabajos"))
+                .paragraphBold(dict.getText("ejecucion_trabajos"))
                 .space()
-                .section("Formas de Pago");
-
-        pdf.list(letter.getPaymentMethods().stream()
-                .map(PaymentMethod::toString)
-                .toList());
-
-        pdf.section("Datos Bancarios")
+                .section("Formas de Pago")
+                .list(letter.getPaymentMethods().stream().map(PaymentMethod::toString).toList())
+                .section("Datos Bancarios")
                 .labelValue("Cuenta", "ES09 1465 0100 96 1707148504")
                 .labelValue("Entidad", "ING")
                 .labelValue("Titular", "Nuria Ocaña Pérez")
-                .section("Combinación de vías")
-                .paragraph(dictionary.get("combinacion_vias"))
-                .section("Condiciones Generales")
-                .paragraphs(dictionary.get("condiciones_generales"))
-                .paragraphBold(dictionary.get("nota_solidaridad"))
+                .section(dict.getTitle("combinacion_vias"))
+                .paragraph(dict.getText("combinacion_vias"))
+                .section(dict.getTitle("condiciones_generales"))
+                .paragraphs(dict.getText("condiciones_generales"))
+                .paragraphBold(dict.getText("nota_solidaridad"))
                 .space()
-                .paragraph(dictionary.get("desavenencias"))
+                .paragraph(dict.getText("desavenencias"))
                 .space()
                 .paragraphBold("Advertencias:")
                 .numberedList(List.of(
-                        dictionary.get("advertencia_1"),
-                        dictionary.get("advertencia_2"),
-                        dictionary.get("advertencia_3"),
-                        dictionary.get("advertencia_4"),
-                        dictionary.get("advertencia_5")))
-                .section("Seguro de Responsabilidad Civil")
-                .paragraph(dictionary.get("seguro_rc"))
-                .section("Comunicaciones")
-                .paragraph(dictionary.get("comunicaciones"))
-                .section("Protección de Datos")
-                .paragraph(dictionary.get("proteccion_datos"))
-                .section("Jurisdicción")
-                .paragraph(dictionary.get("jurisdiccion"))
+                        dict.getText("advertencia_1"),
+                        dict.getText("advertencia_2"),
+                        dict.getText("advertencia_3"),
+                        dict.getText("advertencia_4"),
+                        dict.getText("advertencia_5")))
+                .section(dict.getTitle("seguro_rc"))
+                .paragraph(dict.getText("seguro_rc"))
+                .section(dict.getTitle("comunicaciones"))
+                .paragraph(dict.getText("comunicaciones"))
+                .section(dict.getTitle("proteccion_datos"))
+                .paragraph(dict.getText("proteccion_datos"))
+                .section(dict.getTitle("jurisdiccion"))
+                .paragraph(dict.getText("jurisdiccion"))
                 .space(3)
-                .paragraphBold("AVISO IMPORTANTE")
-                .paragraph(dictionary.get("aviso_importante"))
+                .paragraphBold(dict.getTitle("aviso_importante"))
+                .paragraph(dict.getText("aviso_importante"))
                 .space()
-                .paragraph(dictionary.get("firma"))
+                .paragraph(dict.getText("firma"))
                 .space(2)
                 .multiSignature(letter.buildClientsName(), "Nuria Ocaña Pérez")
                 .footer();

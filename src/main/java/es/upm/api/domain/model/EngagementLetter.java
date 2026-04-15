@@ -11,8 +11,10 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -57,5 +59,10 @@ public class EngagementLetter {
             this.getAttachments().forEach(user -> names.add(user.toClientText()));
         }
         return names;
+    }
+
+    public String buildCreationDate(){
+        return "En Madrid, a " + creationDate
+                .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES")));
     }
 }
