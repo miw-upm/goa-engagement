@@ -9,6 +9,7 @@ import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
@@ -47,6 +48,9 @@ public class EngagementLetterService {
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
+        if (engagementLetter.getCreationDate() == null) {
+            engagementLetter.setCreationDate(LocalDate.now());
+        }
         engagementLetter.setOwner(
                 this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
