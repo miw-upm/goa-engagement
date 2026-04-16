@@ -80,7 +80,23 @@ public class AlertService {
     }
 
     public Alert configureNotifications(UUID alertId, List<Integer> offsetMinutes, String authenticatedUser) {
-        return this.alertPersistence.readById(alertId);
+        Alert existingAlert = this.alertPersistence.readById(alertId);
+
+        if (Status.CANCELLED.equals(existingAlert.getStatus())) {
+            throw new BadRequestException("Cancelled alerts cannot be configured");
+        }
+
+        this.validateOffsetMinutes(offsetMinutes);
+
+        LocalDateTime now = LocalDateTime.now();
+        existingAlert.setNotifications(offsetMinutes.stream()
+                .map(offset -> this.buildNotification(existingAlert, offset, now))
+                .toList());
+        existingAlert.setUpdatedAt(now);
+        existingAlert.setUpdatedBy(authenticatedUser);
+
+        this.alertPersistence.update(existingAlert);
+        return existingAlert;
     }
 
     public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {
@@ -135,5 +151,17 @@ public class AlertService {
         notification.setTriggerAt(newDueDate.plusMinutes(notification.getOffsetMinutes()));
         notification.setUpdatedAt(now);
         return notification;
+    }
+
+    private void validateOffsetMinutes(List<Integer> offsetMinutes) {
+        if (offsetMinutes == null) {
+            throw new BadRequestException("Offset minutes list is required");
+        }
+        if (offsetMinutes.stream().anyMatch(offset -> offset == null || offset >= 0)) {
+            throw new BadRequestException("Offset minutes must be negative");
+        }
+        if (offsetMinutes.stream().distinct().count() != offsetMinutes.size()) {
+            throw new BadRequestException("Offset minutes cannot be duplicated");
+        }
     }
 }
