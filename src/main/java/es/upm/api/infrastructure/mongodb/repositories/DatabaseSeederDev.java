@@ -120,6 +120,7 @@ public class DatabaseSeederDev {
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
+                        .legalClause(" Clausula especial legal!!!")
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
                                 .signatureDate(LocalDateTime.now()).build())
                         .legalProcedureEntities(List.of(procedimientos[0])).build(),

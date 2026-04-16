@@ -38,6 +38,7 @@ public class EngagementLetter {
     private List<LegalProcedure> legalProcedures;
     @ListNotEmpty
     private List<PaymentMethod> paymentMethods;
+    private String legalClause;
     private List<AcceptanceEngagement> acceptanceEngagements;
 
     public String buildClientsFullNameIdentity() {
