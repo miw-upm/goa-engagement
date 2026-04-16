@@ -5,8 +5,8 @@ COPY pom.xml ./
 
 RUN --mount=type=secret,id=github_token mkdir -p /root/.m2 && \
     echo "<settings><servers><server><id>github</id><username>x</username>\
-    <password>$(cat /run/secrets/github_token)</password></server></servers></settings>" > /root/.m2/settings.xml && \
-    mvn dependency:go-offline -B && rm -f /root/.m2/settings.xml \
+<password>$(cat /run/secrets/github_token)</password></server></servers></settings>" \
+    > /root/.m2/settings.xml &&  mvn dependency:go-offline -B &&  rm -f /root/.m2/settings.xml
 
 COPY src ./src
 RUN mvn clean package -DskipTests && rm -f /root/.m2/settings.xml
