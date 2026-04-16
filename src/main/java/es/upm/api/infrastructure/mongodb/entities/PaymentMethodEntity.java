@@ -13,7 +13,7 @@ import org.springframework.beans.BeanUtils;
 @AllArgsConstructor
 public class PaymentMethodEntity {
     private String description;
-    private Integer percentage;
+    private String percentage;
 
     public PaymentMethodEntity(PaymentMethod paymentMethod) {
         BeanUtils.copyProperties(paymentMethod, this);
