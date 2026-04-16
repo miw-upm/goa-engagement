@@ -65,7 +65,7 @@ class PublicEngagementLetterAccessServiceIT {
                         .budget(BigDecimal.TEN)
                         .legalTasks(List.of("task"))
                         .build()))
-                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage(100).build()))
+                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("20%").build()))
                 .build();
         BDDMockito.given(this.publicAccessTokenPersistence.readByToken("public-token-123")).willReturn(publicAccessToken);
         BDDMockito.given(this.publicAccessTokenPersistence.update(any(PublicAccessToken.class)))

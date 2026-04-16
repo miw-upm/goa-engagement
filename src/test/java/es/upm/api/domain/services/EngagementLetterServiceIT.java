@@ -42,7 +42,7 @@ class EngagementLetterServiceIT {
                 .owner(UserDto.builder().id(UUID.randomUUID()).mobile("123456789").firstName("John").build())
                 .legalProcedures(List.of(LegalProcedure.builder()
                         .title("procedimiento").budget(BigDecimal.TEN).legalTasks(List.of("tarea")).build()))
-                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage(100).build()))
+                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
                 .build();
 
         BDDMockito.given(this.userWebClient.readUserByMobile(any(String.class)))
@@ -90,7 +90,7 @@ class EngagementLetterServiceIT {
                 .discount(30)
                 .owner(engagementLetter.getOwner())
                 .legalProcedures(engagementLetter.getLegalProcedures())
-                .paymentMethods(List.of(PaymentMethod.builder().description("Actualizado").percentage(100).build()))
+                .paymentMethods(List.of(PaymentMethod.builder().description("Actualizado").percentage("20%").build()))
                 .build();
         this.engagementLetterService.update(originalId, updatedEngagementLetter);
 
