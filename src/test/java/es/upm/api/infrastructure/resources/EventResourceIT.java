@@ -1,15 +1,13 @@
 package es.upm.api.infrastructure.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.api.domain.webclients.UserWebClient;
-import es.upm.api.infrastructure.dtos.CommentCreateDto;
-import es.upm.api.infrastructure.dtos.CommentDto;
-import es.upm.api.infrastructure.dtos.EventCreateDto;
-import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.api.infrastructure.dtos.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +23,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1140,8 +1139,226 @@ class EventResourceIT {
                 .andExpect(status().isUnauthorized());
     }
 
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEvents_DefaultDescending() throws Exception {
+
+        UUID engagementId = UUID.randomUUID();
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(3))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event3 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(2))
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event3)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].title", is("Event 2")))
+                .andExpect(jsonPath("$[1].title", is("Event 3")))
+                .andExpect(jsonPath("$[2].title", is("Event 1")));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEvents_AscendingOrder() throws Exception {
+
+        UUID engagementId = UUID.randomUUID();
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(3))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event3 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(2))
+                .type(EventType.STANDARD_EVENT)
+                .title("Event 3")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event3)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events?ascending=true"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(3)))
+                .andExpect(jsonPath("$[0].title", is("Event 1")))
+                .andExpect(jsonPath("$[1].title", is("Event 3")))
+                .andExpect(jsonPath("$[2].title", is("Event 2")));
+    }
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEvents_FilterByType() throws Exception {
+
+        UUID engagementId = UUID.randomUUID();
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(2))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events?type=MILESTONE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Event 1")));
+    }
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEvents_FilterByStatus() throws Exception {
+
+        UUID engagementId = UUID.randomUUID();
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(2))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(EventResource.EVENTS + "/engagement-letter/" + engagementId + "/timeline-events?status=PENDING"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Event 1")));
+    }
 
 
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void testGetTimelineEvents_FilterByTypeAndStatus() throws Exception {
+
+        UUID engagementId = UUID.randomUUID();
+
+        EventCreateDto event1 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(1))
+                .type(EventType.MILESTONE)
+                .status(Status.PENDING)
+                .title("Keep")
+                .engagementLetterId(engagementId)
+                .build();
+
+        EventCreateDto event2 = EventCreateDto.builder()
+                .eventDate(LocalDateTime.now().plusDays(2))
+                .type(EventType.MILESTONE)
+                .status(Status.COMPLETED)
+                .title("Remove")
+                .engagementLetterId(engagementId)
+                .build();
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event1)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post(EventResource.EVENTS)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(event2)))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(get(EventResource.EVENTS +
+                        "/engagement-letter/" + engagementId +
+                        "/timeline-events?type=MILESTONE&status=PENDING"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title", is("Keep")));
+    }
 
 
 }
