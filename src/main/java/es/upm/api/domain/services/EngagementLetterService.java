@@ -173,6 +173,9 @@ public class EngagementLetterService {
             pdf.list(procedure.getLegalTasks());
             pdf.space();
         }
+        if (letter.getLegalClause() != null) {
+            pdf.space().paragraph(letter.getLegalClause()).space();
+        }
         pdf.space()
                 .paragraphBold(dict.getText("ejecucion_trabajos")).space()
                 .section(dict.getTitle("pagos"))
