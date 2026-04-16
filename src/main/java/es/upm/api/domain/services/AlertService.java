@@ -79,6 +79,10 @@ public class AlertService {
         return this.alertPersistence.readById(alertId);
     }
 
+    public Alert configureNotifications(UUID alertId, List<Integer> offsetMinutes, String authenticatedUser) {
+        return this.alertPersistence.readById(alertId);
+    }
+
     public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {
         this.engagementLetterService.readById(engagementLetterId);
         return this.alertPersistence.findByEngagementLetterId(engagementLetterId);
