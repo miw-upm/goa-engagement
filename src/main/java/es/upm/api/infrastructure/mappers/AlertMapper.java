@@ -25,6 +25,12 @@ public class AlertMapper {
                 .build();
     }
 
+    public List<Integer> toOffsetMinutes(AlertNotificationConfigDto dto) {
+        return Optional.ofNullable(dto)
+                .map(AlertNotificationConfigDto::getOffsetMinutes)
+                .orElse(Collections.emptyList());
+    }
+
     public AlertResponseDto toDto(Alert alert) {
         if (alert == null) {
             return null;
