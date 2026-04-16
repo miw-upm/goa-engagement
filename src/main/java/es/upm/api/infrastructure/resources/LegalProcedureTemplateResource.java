@@ -44,6 +44,7 @@ public class LegalProcedureTemplateResource {
         this.legalProcedureTemplateService.update(id, legalProcedureTemplate);
     }
 
+    @PreAuthorize(Security.ADMIN)
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
         this.legalProcedureTemplateService.delete(id);

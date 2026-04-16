@@ -58,6 +58,7 @@ public class EngagementLetterResource {
         return new PublicAccessTokenResponse(this.engagementLetterService.createPublicAccessToken(id));
     }
 
+    @PreAuthorize(Security.ADMIN)
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
         this.engagementLetterService.delete(id);
