@@ -116,8 +116,8 @@ public class DatabaseSeederDev {
         EngagementLetterEntity[] encargos = {
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                         .discount(10).creationDate(LocalDate.now().minusDays(5))
-                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage(40).build())
-                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage(60).build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
@@ -125,8 +125,8 @@ public class DatabaseSeederDev {
                         .legalProcedureEntities(List.of(procedimientos[0])).build(),
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
                         .discount(20).creationDate(LocalDate.now())
-                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage(40).build())
-                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage(60).build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
@@ -139,10 +139,10 @@ public class DatabaseSeederDev {
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007"))
                         .paymentMethodEntity(PaymentMethodEntity.builder()
                                 .description("A la firma de la carta de encargo")
-                                .percentage(50).build())
+                                .percentage("50%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder()
                                 .description("A la finalización del procedimiento")
-                                .percentage(50).build())
+                                .percentage("50%").build())
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
                         .build(),
         };
