@@ -48,9 +48,6 @@ public class EngagementLetterService {
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
-        if (engagementLetter.getCreationDate() == null) {
-            engagementLetter.setCreationDate(LocalDate.now());
-        }
         engagementLetter.setOwner(
                 this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
