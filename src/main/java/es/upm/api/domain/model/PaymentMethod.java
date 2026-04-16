@@ -15,7 +15,7 @@ public class PaymentMethod {
 
     @Override
     public String toString() {
-        return percentage + " -- " + description;
+        return percentage + ":  " + description;
     }
 
 }
