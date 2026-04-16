@@ -1,7 +1,5 @@
 package es.upm.api.domain.model;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +11,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PaymentMethod {
     private String description;
-    @Min(0)
-    @Max(100)
-    private int percentage;
+    private String percentage;
+
+    @Override
+    public String toString() {
+        return percentage + ":  " + description;
+    }
+
 }

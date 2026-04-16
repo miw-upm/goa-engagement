@@ -1,29 +1,33 @@
 services:
   goa-engagement:
-    build: .
+    build:
+      context: .
+      secrets: [github_token]
     image: goa-engagement:latest
     restart: always
     ports: ["0:8082"] # Expose the container port on a random host port
 #    ports: ["8082"] # Don't expose the container port
     environment:
       JAVA_OPTS: "-Xms64m -Xmx384m"
-      mem_limit: 512m
       SPRING_DATA_MONGODB_URI: mongodb://mongo:mongo@mongo:27017/goaengagementdb?authSource=admin
       EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE: http://host.docker.internal:8761/eureka/
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: http://host.docker.internal:8080/api/goa-user/oauth2/jwks
       APP_OAUTH2_TOKEN_URI: http://host.docker.internal:8080/api/goa-user/oauth2/token
-    networks:
-      - goa
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-
+    networks: [goa]
+    extra_hosts: ["host.docker.internal:host-gateway"]
 
 networks:
   goa:
     external: true
 
+secrets:
+  github_token:
+    environment: GITHUB_TOKEN
+
+#> $env:GITHUB_TOKEN="xxxx"   echo $env:GITHUB_TOKEN
+#> export GITHUB_TOKEN=xxxx
+
 #> docker compose up --build -d
 #> docker compose up --build -d --scale goa-engagement=2
 
-# Para ver los logs de arranque
 #> docker logs -f goa-user

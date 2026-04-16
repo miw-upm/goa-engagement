@@ -29,6 +29,7 @@ public class EngagementLetterEntity {
     private List<LegalProcedureEntity> legalProcedureEntities;
     @Singular
     private List<PaymentMethodEntity> paymentMethodEntities;
+    private String legalClause;
     @Singular
     private List<AcceptanceDocumentEntity> acceptanceDocumentEntities;
 

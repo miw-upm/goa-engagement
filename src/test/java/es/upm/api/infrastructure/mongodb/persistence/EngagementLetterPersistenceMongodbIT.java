@@ -51,7 +51,7 @@ class EngagementLetterPersistenceMongodbIT {
                         .build()))
                 .paymentMethods(List.of(PaymentMethod.builder()
                         .description("Todo")
-                        .percentage(100)
+                        .percentage("100%")
                         .build()))
                 .build();
         this.engagementLetterPersistence.create(engagementLetter);

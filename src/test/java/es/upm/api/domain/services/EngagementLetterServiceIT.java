@@ -15,6 +15,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +42,7 @@ class EngagementLetterServiceIT {
                 .owner(UserDto.builder().id(UUID.randomUUID()).mobile("123456789").firstName("John").build())
                 .legalProcedures(List.of(LegalProcedure.builder()
                         .title("procedimiento").budget(BigDecimal.TEN).legalTasks(List.of("tarea")).build()))
-                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage(100).build()))
+                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
                 .build();
 
         BDDMockito.given(this.userWebClient.readUserByMobile(any(String.class)))
@@ -71,6 +72,7 @@ class EngagementLetterServiceIT {
         assertThat(engagementLetterDb)
                 .isNotNull()
                 .satisfies(engagement -> {
+                    assertThat(engagement.getCreationDate()).isEqualTo(LocalDate.now());
                     assertThat(engagement.getDiscount()).isEqualTo(15);
                     assertThat(engagement.getPaymentMethods()).hasSize(1);
                     assertThat(engagement.getPaymentMethods().getFirst().getDescription()).isEqualTo("Todo");
@@ -88,7 +90,7 @@ class EngagementLetterServiceIT {
                 .discount(30)
                 .owner(engagementLetter.getOwner())
                 .legalProcedures(engagementLetter.getLegalProcedures())
-                .paymentMethods(List.of(PaymentMethod.builder().description("Actualizado").percentage(100).build()))
+                .paymentMethods(List.of(PaymentMethod.builder().description("Actualizado").percentage("20%").build()))
                 .build();
         this.engagementLetterService.update(originalId, updatedEngagementLetter);
 

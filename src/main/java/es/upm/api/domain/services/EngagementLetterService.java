@@ -5,14 +5,13 @@ import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -52,6 +51,7 @@ public class EngagementLetterService {
         engagementLetter.setOwner(
                 this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
+        engagementLetter.setCreationDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
             engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
         }
@@ -149,9 +149,59 @@ public class EngagementLetterService {
             List<UUID> ids = this.userWebClient.findNullSafe(criteria.getOwner()).stream()
                     .map(UserDto::getId).toList();
             return this.engagementLetterPersistence.findNullSafe(criteria)
-                    .filter(engagementLetter -> {
-                        return ids.contains(engagementLetter.getOwner().getId());
-                    });
+                    .filter(engagementLetter -> ids.contains(engagementLetter.getOwner().getId()));
         }
+    }
+
+    public byte[] generatePdf(UUID engagementLetterId) {
+        EngagementLetter letter = this.readById(engagementLetterId);
+        TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.txt");
+
+        PdfBuilder pdf = new PdfBuilder()
+                .header()
+                .space(2)
+                .title(dict.getTitle("hoja"))
+                .paragraphBold(letter.buildCreationDate(), Element.ALIGN_RIGHT)
+                .space();
+        pdf.paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
+        pdf.section(dict.getText("servicios"));
+        for (LegalProcedure procedure : letter.getLegalProcedures()) {
+            String budget = procedure.buildFormatBudget();
+            pdf.twoColumns(
+                    left -> left.paragraphBold(procedure.getTitle()),
+                    right -> right.paragraphBold(budget, Element.ALIGN_RIGHT));
+            pdf.list(procedure.getLegalTasks());
+            pdf.space();
+        }
+        if (letter.getLegalClause() != null) {
+            pdf.space().paragraph(letter.getLegalClause()).space();
+        }
+        pdf.space()
+                .paragraphBold(dict.getText("ejecucion_trabajos")).space()
+                .section(dict.getTitle("pagos"))
+                .list(letter.getPaymentMethods().stream().map(PaymentMethod::toString).toList())
+                .section(dict.getTitle("bancos"))
+                .list(dict.getList("banco"))
+                .section(dict.getTitle("combinacion_vias"))
+                .paragraph(dict.getText("combinacion_vias"))
+                .section(dict.getTitle("condiciones_generales"))
+                .paragraphs(dict.getText("condiciones_generales"))
+                .paragraphBold(dict.getText("nota_solidaridad")).space()
+                .paragraph(dict.getText("desavenencias")).space()
+                .paragraphBold(dict.getTitle("advertencias"))
+                .numberedList(dict.getList("advertencia"))
+                .section(dict.getTitle("seguro_rc"))
+                .paragraph(dict.getText("seguro_rc"))
+                .section(dict.getTitle("comunicaciones"))
+                .paragraph(dict.getText("comunicaciones"))
+                .section(dict.getTitle("proteccion_datos"))
+                .paragraph(dict.getText("proteccion_datos"))
+                .section(dict.getTitle("jurisdiccion"))
+                .paragraph(dict.getText("jurisdiccion")).space(3)
+                .paragraphBold(dict.getTitle("aviso_importante"))
+                .paragraph(dict.getText("aviso_importante")).space(3)
+                .multiSignature(letter.buildClientsName(), "Nuria Ocaña Pérez")
+                .footer();
+        return pdf.build();
     }
 }

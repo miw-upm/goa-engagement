@@ -6,6 +6,7 @@ import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.infrastructure.dtos.CommentDto;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
@@ -99,6 +101,17 @@ public class EventService {
         }
 
         this.eventPersistence.deleteComment(eventId, commentToDelete);
+    }
+    public List<CommentDto> getComments(UUID eventId) {
+        Event event = this.eventPersistence.readById(eventId);
+
+        return event.getComments().stream()
+                .map(comment -> CommentDto.builder()
+                        .authorId(comment.getAuthorId())
+                        .createdDate(comment.getCreatedDate())
+                        .content(comment.getContent())
+                        .build())
+                .toList();
     }
 
     public Stream<Event> findByEngagementLetterId(UUID engagementLetterId) {

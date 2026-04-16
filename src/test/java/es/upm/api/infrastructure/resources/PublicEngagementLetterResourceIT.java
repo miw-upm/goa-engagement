@@ -50,7 +50,7 @@ class PublicEngagementLetterResourceIT {
                                 .budget(BigDecimal.TEN)
                                 .legalTasks(List.of("task"))
                                 .build()))
-                        .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage(100).build()))
+                        .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
                         .build());
 
         this.mockMvc.perform(get(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCESS)
