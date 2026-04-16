@@ -39,6 +39,7 @@ public class LegalTaskResource {
         this.legalTaskService.create(legalTask);
     }
 
+    @PreAuthorize(Security.ADMIN)
     @DeleteMapping(ID_ID)
     public void deleteByID(@PathVariable UUID id) {
         this.legalTaskService.deleteById(id);
