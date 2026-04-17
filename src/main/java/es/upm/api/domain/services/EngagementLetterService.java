@@ -156,26 +156,51 @@ public class EngagementLetterService {
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
         TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.txt");
-
+        boolean isBudgetOnly = Boolean.TRUE.equals(letter.getBudgetOnly());
         PdfBuilder pdf = new PdfBuilder()
                 .header()
                 .space(2)
-                .title(dict.getTitle("hoja"))
+                .title(dict.getTitle(isBudgetOnly ? "presupuesto" : "hoja"))
+                .space()
                 .paragraphBold(letter.buildCreationDate(), Element.ALIGN_RIGHT)
                 .space();
-        pdf.paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
-        pdf.section(dict.getText("servicios"));
-        for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            String budget = procedure.buildFormatBudget();
-            pdf.twoColumns(
-                    left -> left.paragraphBold(procedure.getTitle()),
-                    right -> right.paragraphBold(budget, Element.ALIGN_RIGHT));
-            pdf.list(procedure.getLegalTasks());
-            pdf.space();
+        if (isBudgetOnly) {
+            pdf.paragraphBold(dict.getText("responsable", Map.of("solicitante", letter.getOwner().getFirstName())));
+        } else {
+            pdf.paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
         }
+        buildServicesSection(pdf, dict, letter);
         if (letter.getLegalClause() != null) {
             pdf.space().paragraph(letter.getLegalClause()).space();
         }
+        if (isBudgetOnly) {
+            buildBudgetFooter(pdf, dict);
+        } else {
+            buildEngagementLetterFooter(pdf, dict, letter);
+        }
+        return pdf.footer().build();
+    }
+
+    private void buildServicesSection(PdfBuilder pdf, TextDictionary dict, EngagementLetter letter) {
+        pdf.section(dict.getText("servicios"));
+        for (LegalProcedure procedure : letter.getLegalProcedures()) {
+            pdf.twoColumns(
+                            left -> left.paragraphBold(procedure.getTitle()),
+                            right -> right.paragraphBold(procedure.buildFormatBudget(), Element.ALIGN_RIGHT))
+                    .list(procedure.getLegalTasks())
+                    .space();
+        }
+    }
+
+    private void buildBudgetFooter(PdfBuilder pdf, TextDictionary dict) {
+        pdf.space()
+                .paragraphBold(dict.getTitle("aviso_presupuesto"))
+                .paragraph(dict.getText("aviso_presupuesto"))
+                .space(3)
+                .signatureLine("Dña. Nuria Ocaña Pérez");
+    }
+
+    private void buildEngagementLetterFooter(PdfBuilder pdf, TextDictionary dict, EngagementLetter letter) {
         pdf.space()
                 .paragraphBold(dict.getText("ejecucion_trabajos")).space()
                 .section(dict.getTitle("pagos"))
@@ -199,9 +224,7 @@ public class EngagementLetterService {
                 .section(dict.getTitle("jurisdiccion"))
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
-                .paragraph(dict.getText("aviso_importante")).space(3)
-                .multiSignature(letter.buildClientsName(), "Nuria Ocaña Pérez")
-                .footer();
-        return pdf.build();
+                .paragraph(dict.getText("aviso_hoja")).space(3)
+                .multiSignature(letter.buildClientsName(), "Dña. Nuria Ocaña Pérez");
     }
 }
