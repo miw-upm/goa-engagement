@@ -1,6 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.PendingAlertNotification;
@@ -112,6 +113,27 @@ public class AlertService {
                                 .build()))
                 .sorted((left, right) -> left.getNotification().getTriggerAt().compareTo(right.getNotification().getTriggerAt()))
                 .toList();
+    }
+
+    public void markNotificationAsShown(UUID notificationId) {
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Alert alert : this.alertPersistence.findAll()) {
+            for (AlertNotification notification : this.notificationsOrEmpty(alert)) {
+                if (notificationId.equals(notification.getId())) {
+                    if (!Status.PENDING.equals(notification.getStatus())) {
+                        throw new BadRequestException("Only pending notifications can be marked as shown");
+                    }
+                    notification.setStatus(Status.COMPLETED);
+                    notification.setShownAt(now);
+                    notification.setUpdatedAt(now);
+                    this.alertPersistence.update(alert);
+                    return;
+                }
+            }
+        }
+
+        throw new NotFoundException("The AlertNotification ID doesn't exist: " + notificationId);
     }
 
     public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {

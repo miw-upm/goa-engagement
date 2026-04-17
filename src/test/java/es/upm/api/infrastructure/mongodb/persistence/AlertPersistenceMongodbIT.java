@@ -119,6 +119,7 @@ class AlertPersistenceMongodbIT {
         LocalDateTime initialDueDate = LocalDateTime.of(2026, 4, 20, 10, 0);
         LocalDateTime updatedDueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
         LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 13, 12, 30);
+        LocalDateTime shownAt = LocalDateTime.of(2026, 4, 13, 12, 0);
 
         AlertNotification notification = AlertNotification.builder()
                 .id(UUID.randomUUID())
@@ -155,6 +156,8 @@ class AlertPersistenceMongodbIT {
                 toUpdate.getNotifications().stream()
                         .peek(n -> {
                             n.setTriggerAt(updatedDueDate.plusMinutes(n.getOffsetMinutes()));
+                            n.setStatus(Status.COMPLETED);
+                            n.setShownAt(shownAt);
                             n.setUpdatedAt(updatedAt);
                         })
                         .toList()
@@ -177,6 +180,8 @@ class AlertPersistenceMongodbIT {
         assertThat(updated.getNotifications()).hasSize(1);
         assertThat(updated.getNotifications().getFirst().getTriggerAt())
                 .isEqualTo(updatedDueDate.plusMinutes(-120));
+        assertThat(updated.getNotifications().getFirst().getStatus()).isEqualTo(Status.COMPLETED);
+        assertThat(updated.getNotifications().getFirst().getShownAt()).isEqualTo(shownAt);
         assertThat(updated.getNotifications().getFirst().getUpdatedAt()).isEqualTo(updatedAt);
     }
 
