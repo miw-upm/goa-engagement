@@ -3,6 +3,7 @@ package es.upm.api.infrastructure.mappers;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.domain.model.AlertNotification;
+import es.upm.api.domain.model.PendingAlertNotification;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -48,6 +49,29 @@ public class AlertMapper {
                 .createdBy(alert.getCreatedBy())
                 .updatedBy(alert.getUpdatedBy())
                 .notifications(toNotificationDtoList(alert.getNotifications()))
+                .build();
+    }
+
+    public AlertNotificationPendingDto toPendingNotificationDto(PendingAlertNotification pendingAlertNotification) {
+        if (pendingAlertNotification == null
+                || pendingAlertNotification.getAlert() == null
+                || pendingAlertNotification.getNotification() == null) {
+            return null;
+        }
+
+        Alert alert = pendingAlertNotification.getAlert();
+        AlertNotification notification = pendingAlertNotification.getNotification();
+
+        return AlertNotificationPendingDto.builder()
+                .notificationId(notification.getId())
+                .alertId(alert.getId())
+                .offsetMinutes(notification.getOffsetMinutes())
+                .triggerAt(notification.getTriggerAt())
+                .status(notification.getStatus())
+                .title(alert.getTitle())
+                .description(alert.getDescription())
+                .dueDate(alert.getDueDate())
+                .engagementLetterId(alert.getEngagementLetterId())
                 .build();
     }
 
