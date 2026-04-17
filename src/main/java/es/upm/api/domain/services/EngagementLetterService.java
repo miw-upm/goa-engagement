@@ -197,7 +197,7 @@ public class EngagementLetterService {
                 .paragraphBold(dict.getTitle("aviso_presupuesto"))
                 .paragraph(dict.getText("aviso_presupuesto"))
                 .space(3)
-                .signatureLine("Dña. Nuria Ocaña Pérez");
+                .signatureLine(dict.getText("firma_nuria"));
     }
 
     private void buildEngagementLetterFooter(PdfBuilder pdf, TextDictionary dict, EngagementLetter letter) {
@@ -225,6 +225,6 @@ public class EngagementLetterService {
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
                 .paragraph(dict.getText("aviso_hoja")).space(3)
-                .multiSignature(letter.buildClientsName(), "Dña. Nuria Ocaña Pérez");
+                .multiSignature(letter.buildClientsName(),dict.getText("firma_nuria"));
     }
 }
