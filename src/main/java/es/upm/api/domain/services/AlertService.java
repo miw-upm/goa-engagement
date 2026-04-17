@@ -3,11 +3,13 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
+import es.upm.api.domain.model.PendingAlertNotification;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.persistence.AlertPersistence;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -99,6 +101,19 @@ public class AlertService {
         return existingAlert;
     }
 
+    public List<PendingAlertNotification> findPendingNotifications() {
+        LocalDateTime now = LocalDateTime.now();
+        return this.alertPersistence.findAll().stream()
+                .flatMap(alert -> this.notificationsOrEmpty(alert).stream()
+                        .filter(notification -> this.isPendingNotification(notification, now))
+                        .map(notification -> PendingAlertNotification.builder()
+                                .alert(alert)
+                                .notification(notification)
+                                .build()))
+                .sorted((left, right) -> left.getNotification().getTriggerAt().compareTo(right.getNotification().getTriggerAt()))
+                .toList();
+    }
+
     public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {
         this.engagementLetterService.readById(engagementLetterId);
         return this.alertPersistence.findByEngagementLetterId(engagementLetterId);
@@ -163,5 +178,16 @@ public class AlertService {
         if (offsetMinutes.stream().distinct().count() != offsetMinutes.size()) {
             throw new BadRequestException("Offset minutes cannot be duplicated");
         }
+    }
+
+    private List<AlertNotification> notificationsOrEmpty(Alert alert) {
+        return alert.getNotifications() == null ? Collections.emptyList() : alert.getNotifications();
+    }
+
+    private boolean isPendingNotification(AlertNotification notification, LocalDateTime now) {
+        return notification != null
+                && Status.PENDING.equals(notification.getStatus())
+                && notification.getTriggerAt() != null
+                && !notification.getTriggerAt().isAfter(now);
     }
 }

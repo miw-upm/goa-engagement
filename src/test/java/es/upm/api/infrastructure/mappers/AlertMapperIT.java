@@ -2,8 +2,10 @@ package es.upm.api.infrastructure.mappers;
 
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
+import es.upm.api.domain.model.PendingAlertNotification;
 import es.upm.api.domain.model.Status;
 import es.upm.api.infrastructure.dtos.AlertCreateDto;
+import es.upm.api.infrastructure.dtos.AlertNotificationPendingDto;
 import es.upm.api.infrastructure.dtos.AlertResponseDto;
 import es.upm.api.infrastructure.dtos.AlertSummaryDto;
 import es.upm.api.infrastructure.dtos.AlertUpdateDto;
@@ -118,6 +120,51 @@ class AlertMapperIT {
         assertThat(dto.getNotifications().get(1).getTriggerAt())
                 .isEqualTo(LocalDateTime.of(2026, 4, 25, 16, 0));
         assertThat(dto.getNotifications().get(1).getStatus()).isEqualTo(Status.PENDING);
+    }
+
+    @Test
+    void testToPendingNotificationDto() {
+        UUID alertId = UUID.randomUUID();
+        UUID notificationId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime triggerAt = LocalDateTime.of(2026, 4, 24, 18, 0);
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .build();
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(notificationId)
+                .offsetMinutes(-1440)
+                .triggerAt(triggerAt)
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.of(2026, 4, 10, 9, 0))
+                .updatedAt(LocalDateTime.of(2026, 4, 12, 10, 30))
+                .build();
+
+        PendingAlertNotification pendingAlertNotification = PendingAlertNotification.builder()
+                .alert(alert)
+                .notification(notification)
+                .build();
+
+        AlertNotificationPendingDto dto = this.alertMapper.toPendingNotificationDto(pendingAlertNotification);
+
+        assertThat(dto).isNotNull();
+        assertThat(dto.getNotificationId()).isEqualTo(notificationId);
+        assertThat(dto.getAlertId()).isEqualTo(alertId);
+        assertThat(dto.getOffsetMinutes()).isEqualTo(-1440);
+        assertThat(dto.getTriggerAt()).isEqualTo(triggerAt);
+        assertThat(dto.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(dto.getTitle()).isEqualTo("Alert title");
+        assertThat(dto.getDescription()).isEqualTo("Alert description");
+        assertThat(dto.getDueDate()).isEqualTo(dueDate);
+        assertThat(dto.getEngagementLetterId()).isEqualTo(engagementLetterId);
     }
 
     @Test

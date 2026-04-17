@@ -14,5 +14,7 @@ public interface AlertPersistence {
 
     void update(Alert alert);
 
+    List<Alert> findAll();
+
     List<Alert> findByEngagementLetterId(UUID engagementLetterId);
 }

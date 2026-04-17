@@ -247,6 +247,46 @@ class AlertPersistenceMongodbIT {
     }
 
     @Test
+    void testFindAll() {
+        UUID engagementLetterId1 = UUID.randomUUID();
+        UUID engagementLetterId2 = UUID.randomUUID();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .description("Description 1")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .engagementLetterId(engagementLetterId1)
+                .status(Status.PENDING)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .description("Description 2")
+                .dueDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+                .engagementLetterId(engagementLetterId2)
+                .status(Status.CANCELLED)
+                .build();
+
+        this.alertPersistence.create(alert1);
+        this.alertPersistence.create(alert2);
+
+        List<Alert> result = this.alertPersistence.findAll();
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Alert::getTitle)
+                .containsExactlyInAnyOrder("Alert 1", "Alert 2");
+        assertThat(result)
+                .extracting(Alert::getDescription)
+                .containsExactlyInAnyOrder("Description 1", "Description 2");
+        assertThat(result)
+                .extracting(Alert::getEngagementLetterId)
+                .containsExactlyInAnyOrder(engagementLetterId1, engagementLetterId2);
+    }
+
+    @Test
     void testFindByEngagementLetterId() {
         UUID engagementLetterId1 = UUID.randomUUID();
         UUID engagementLetterId2 = UUID.randomUUID();

@@ -39,6 +39,13 @@ public class AlertPersistenceMongodb implements AlertPersistence {
     }
 
     @Override
+    public List<Alert> findAll() {
+        return this.alertRepository.findAll().stream()
+                .map(AlertEntity::toAlert)
+                .toList();
+    }
+
+    @Override
     public List<Alert> findByEngagementLetterId(UUID engagementLetterId) {
         return this.alertRepository.findByEngagementLetterId(engagementLetterId).stream()
                 .map(AlertEntity::toAlert)
