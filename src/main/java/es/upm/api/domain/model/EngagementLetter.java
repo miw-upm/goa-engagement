@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 public class EngagementLetter {
     private UUID id;
+    private Boolean budgetOnly;
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate creationDate;
     @Min(0)
