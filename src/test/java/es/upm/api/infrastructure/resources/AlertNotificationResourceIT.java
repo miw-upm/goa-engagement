@@ -1,5 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
+import es.upm.api.domain.exceptions.BadRequestException;
+import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.PendingAlertNotification;
@@ -19,7 +21,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -94,5 +98,42 @@ class AlertNotificationResourceIT {
         this.mockMvc.perform(get(AlertNotificationResource.ALERT_NOTIFICATIONS + "/pending"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("[]"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldMarkNotificationAsShown() throws Exception {
+        UUID notificationId = UUID.randomUUID();
+
+        BDDMockito.willDoNothing().given(this.alertService).markNotificationAsShown(notificationId);
+
+        this.mockMvc.perform(patch(AlertNotificationResource.ALERT_NOTIFICATIONS + "/{notificationId}/shown", notificationId))
+                .andExpect(status().isOk());
+
+        verify(this.alertService).markNotificationAsShown(notificationId);
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldReturnNotFoundWhenNotificationDoesNotExist() throws Exception {
+        UUID notificationId = UUID.randomUUID();
+
+        BDDMockito.willThrow(new NotFoundException("The AlertNotification ID doesn't exist: " + notificationId))
+                .given(this.alertService).markNotificationAsShown(notificationId);
+
+        this.mockMvc.perform(patch(AlertNotificationResource.ALERT_NOTIFICATIONS + "/{notificationId}/shown", notificationId))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldReturnBadRequestWhenNotificationStatusIsInvalid() throws Exception {
+        UUID notificationId = UUID.randomUUID();
+
+        BDDMockito.willThrow(new BadRequestException("Only pending notifications can be marked as shown"))
+                .given(this.alertService).markNotificationAsShown(notificationId);
+
+        this.mockMvc.perform(patch(AlertNotificationResource.ALERT_NOTIFICATIONS + "/{notificationId}/shown", notificationId))
+                .andExpect(status().isBadRequest());
     }
 }
