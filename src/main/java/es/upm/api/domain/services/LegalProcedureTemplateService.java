@@ -31,8 +31,8 @@ public class LegalProcedureTemplateService {
         this.legalProcedureTemplatePersistence.update(id, legalProcedureTemplate);
     }
 
-    public Stream<LegalProcedureTemplate> findNullSafe(String title) {
-        return this.legalProcedureTemplatePersistence.findNullSafe(title);
+    public Stream<LegalProcedureTemplate> searchByTitleAndTaskTitleNullSafe(String title, String task) {
+        return this.legalProcedureTemplatePersistence.searchByTitleAndTaskTitleNullSafe(title, task);
     }
 
     public LegalProcedureTemplate readById(UUID id) {

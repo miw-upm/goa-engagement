@@ -164,6 +164,7 @@ public class AlertService {
         notification.setUpdatedAt(now);
         return notification;
     }
+
     private AlertNotification buildNotification(Alert alert, Integer offsetMinutes, LocalDateTime now) {
         return AlertNotification.builder()
                 .id(UUID.randomUUID())
@@ -184,7 +185,7 @@ public class AlertService {
         return notification;
     }
 
-    private AlertNotification recalculateNotificationTrigger(AlertNotification notification,LocalDateTime newDueDate, LocalDateTime now) {
+    private AlertNotification recalculateNotificationTrigger(AlertNotification notification, LocalDateTime newDueDate, LocalDateTime now) {
         notification.setTriggerAt(newDueDate.plusMinutes(notification.getOffsetMinutes()));
         notification.setUpdatedAt(now);
         return notification;

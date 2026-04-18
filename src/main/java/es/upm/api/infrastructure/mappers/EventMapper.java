@@ -98,6 +98,7 @@ public class EventMapper {
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
+
     public TimelineEventDto toTimelineDto(Event event) {
         if (event == null) {
             return null;

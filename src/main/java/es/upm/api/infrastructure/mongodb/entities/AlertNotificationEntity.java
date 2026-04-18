@@ -2,11 +2,7 @@ package es.upm.api.infrastructure.mongodb.entities;
 
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.Status;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;

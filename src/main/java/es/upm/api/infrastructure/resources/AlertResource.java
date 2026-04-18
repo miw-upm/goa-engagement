@@ -2,11 +2,7 @@ package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.services.AlertService;
-import es.upm.api.infrastructure.dtos.AlertCreateDto;
-import es.upm.api.infrastructure.dtos.AlertNotificationConfigDto;
-import es.upm.api.infrastructure.dtos.AlertResponseDto;
-import es.upm.api.infrastructure.dtos.AlertSummaryDto;
-import es.upm.api.infrastructure.dtos.AlertUpdateDto;
+import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.AlertMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;

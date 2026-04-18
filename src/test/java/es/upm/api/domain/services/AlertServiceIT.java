@@ -2,11 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.exceptions.NotFoundException;
-import es.upm.api.domain.model.Alert;
-import es.upm.api.domain.model.AlertNotification;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.PendingAlertNotification;
-import es.upm.api.domain.model.Status;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.AlertPersistence;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -17,9 +13,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.Arrays;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;

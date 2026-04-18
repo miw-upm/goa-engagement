@@ -23,7 +23,7 @@ public class EventResource {
     public static final String ID_ID = "/{id}";
     public static final String ID_COMMENTS = "/{eventId}/comments";
     public static final String ENGAGEMENT_LETTER_ID = "/engagement-letter/{engagementLetterId}";
-    private static final String TIMELINE_BY_ENGAGEMENT =  "/engagement-letter/{engagementLetterId}/timeline-events";
+    private static final String TIMELINE_BY_ENGAGEMENT = "/engagement-letter/{engagementLetterId}/timeline-events";
 
     private final EventService eventService;
     private final EventMapper eventMapper;
@@ -101,6 +101,7 @@ public class EventResource {
         List<Event> events = this.eventService.findByEngagementLetterId(engagementLetterId).toList();
         return this.eventMapper.toDtoList(events);
     }
+
     @GetMapping("/{eventId}/comments")
     @ResponseStatus(HttpStatus.OK)
     public List<CommentDto> getComments(@PathVariable UUID eventId) {
@@ -114,10 +115,10 @@ public class EventResource {
             @PathVariable UUID engagementLetterId,
             @RequestParam(required = false, defaultValue = "false") Boolean ascending) {
 
-         List <Event> events = eventService.findTimelineEventsByEngagementLetterId(
+        List<Event> events = eventService.findTimelineEventsByEngagementLetterId(
                 engagementLetterId,
                 ascending
         );
-         return this.eventMapper.toTimelineDtoList(events);
+        return this.eventMapper.toTimelineDtoList(events);
     }
 }
