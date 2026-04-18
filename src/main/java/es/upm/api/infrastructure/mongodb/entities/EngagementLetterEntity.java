@@ -19,6 +19,7 @@ import java.util.UUID;
 public class EngagementLetterEntity {
     @Id
     private UUID id;
+    private Boolean budgetOnly;
     private Integer discount;
     private LocalDate creationDate;
     private LocalDate closingDate;

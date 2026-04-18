@@ -1,9 +1,14 @@
+#presupuesto:PRESUPUESTO DE HONORARIOS
+
 #hoja:HOJA DE ENCARGO PROFESIONAL
 
 #intervinientes:
 {{clientes}}, en su nombre y derecho, encarga profesionalmente a la abogada Nuria Ocaña Pérez con número de
 D.N.I. n.º 46.882.956-D y número de colegiada 135.280 del ICAM con despacho profesional sito en el Paseo de la
 Castellana, 93 – 2º planta de Madrid la realización de los siguientes trabajos profesionales.
+
+#responsable:
+Por solicitud de {{solicitante}}, se realiza el siguiente presupuesto:
 
 #servicios:Servicios Contratados
 
@@ -82,10 +87,18 @@ oposición, limitación y portabilidad en derecho@ocanabogados.es. Más informac
 Las partes se someten expresamente a la legislación española, sometiéndose a la jurisdicción de los Juzgados y Tribunales
 de Madrid.
 
-#aviso_importante:AVISO IMPORTANTE
+#aviso_presupuesto:AVISO
+La validez del presente presupuesto es de 30 días naturales a contar desde su emisión.
+
+
+#aviso_hoja:AVISO IMPORTANTE
 La validez de la presente hoja de encargo profesional es de 30 días naturales a contar desde su emisión. Cualquier
 modificación sustancial en las actuaciones del procedimiento será tenida en cuenta para una valoración de liquidación
 final, así como la existencia de nuevas actuaciones o procedimientos judiciales no contemplados en el presente presupuesto
 será origen de solicitud por parte del despacho de una nueva provisión de fondos.
 
 En virtud de lo expuesto y en prueba de conformidad, se firma el presente encargo, en las fechas indicadas.
+
+#firma_nuria:
+Dña. Nuria Ocaña Pérez
+

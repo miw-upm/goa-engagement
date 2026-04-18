@@ -647,6 +647,7 @@ class EventServiceIT {
         // Assert
         assertThat(events).isEmpty();
     }
+
     @Test
     void testDeleteCommentSuccessfully() {
         // Arrange - Create event with comments
@@ -885,6 +886,7 @@ class EventServiceIT {
         Event eventAfterDeletion = eventPersistence.readById(createdEvent.getId());
         assertThat(eventAfterDeletion.getComments()).isEmpty();
     }
+
     @Test
     void testDeleteCommentWithDifferentAuthor() {
         // Arrange - Create event with a comment
@@ -921,6 +923,7 @@ class EventServiceIT {
         ).isInstanceOf(es.upm.api.domain.exceptions.NotFoundException.class)
                 .hasMessageContaining("The comment doesn't exist in the event");
     }
+
     @Test
     void testDeleteCommentWithNullCommentsList() {
         // Arrange

@@ -25,7 +25,7 @@ public class EventResource {
     public static final String ID_ID = "/{id}";
     public static final String ID_COMMENTS = "/{eventId}/comments";
     public static final String ENGAGEMENT_LETTER_ID = "/engagement-letter/{engagementLetterId}";
-    private static final String TIMELINE_BY_ENGAGEMENT =  "/engagement-letter/{engagementLetterId}/timeline-events";
+    private static final String TIMELINE_BY_ENGAGEMENT = "/engagement-letter/{engagementLetterId}/timeline-events";
 
     private final EventService eventService;
     private final EventMapper eventMapper;

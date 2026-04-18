@@ -2,10 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.exceptions.NotFoundException;
-import es.upm.api.domain.model.Alert;
-import es.upm.api.domain.model.AlertNotification;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.Status;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.AlertPersistence;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -16,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -248,6 +246,461 @@ class AlertServiceIT {
                 .isEqualTo(newDueDate.plusMinutes(-1440));
         assertThat(persistedAlert.getNotifications().get(1).getTriggerAt())
                 .isEqualTo(newDueDate.plusMinutes(-120));
+    }
+
+    @Test
+    void testConfigureNotificationsSuccess() {
+        UUID alertId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification previousNotification = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-60)
+                .triggerAt(dueDate.plusMinutes(-60))
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(previousNotification))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+        BDDMockito.willDoNothing().given(this.alertPersistence).update(any(Alert.class));
+
+        Alert configuredAlert = this.alertService.configureNotifications(alertId, List.of(-4320, -1440, -120), "admin");
+
+        assertThat(configuredAlert).isNotNull();
+        assertThat(configuredAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(configuredAlert.getUpdatedAt()).isNotNull();
+        assertThat(configuredAlert.getNotifications()).hasSize(3);
+        assertThat(configuredAlert.getNotifications())
+                .extracting(AlertNotification::getOffsetMinutes)
+                .containsExactly(-4320, -1440, -120);
+        assertThat(configuredAlert.getNotifications())
+                .extracting(AlertNotification::getTriggerAt)
+                .containsExactly(
+                        dueDate.plusMinutes(-4320),
+                        dueDate.plusMinutes(-1440),
+                        dueDate.plusMinutes(-120)
+                );
+        assertThat(configuredAlert.getNotifications())
+                .extracting(AlertNotification::getStatus)
+                .containsOnly(Status.PENDING);
+        assertThat(configuredAlert.getNotifications())
+                .extracting(AlertNotification::getId)
+                .doesNotContain(previousNotification.getId());
+
+        ArgumentCaptor<Alert> captor = ArgumentCaptor.forClass(Alert.class);
+        verify(this.alertPersistence).update(captor.capture());
+
+        Alert persistedAlert = captor.getValue();
+        assertThat(persistedAlert.getUpdatedBy()).isEqualTo("admin");
+        assertThat(persistedAlert.getUpdatedAt()).isNotNull();
+        assertThat(persistedAlert.getNotifications()).hasSize(3);
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getOffsetMinutes)
+                .containsExactly(-4320, -1440, -120);
+        assertThat(persistedAlert.getNotifications())
+                .extracting(AlertNotification::getTriggerAt)
+                .containsExactly(
+                        dueDate.plusMinutes(-4320),
+                        dueDate.plusMinutes(-1440),
+                        dueDate.plusMinutes(-120)
+                );
+    }
+
+    @Test
+    void testConfigureNotificationsWhenOffsetIsNotNegative() {
+        UUID alertId = UUID.randomUUID();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of())
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+
+        assertThatThrownBy(() -> this.alertService.configureNotifications(alertId, List.of(-120, 0), "admin"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Offset minutes must be negative");
+    }
+
+    @Test
+    void testConfigureNotificationsWhenOffsetIsNull() {
+        UUID alertId = UUID.randomUUID();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of())
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+
+        assertThatThrownBy(() -> this.alertService.configureNotifications(alertId, Arrays.asList(-120, null), "admin"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Offset minutes must be negative");
+    }
+
+    @Test
+    void testConfigureNotificationsWhenOffsetsAreDuplicated() {
+        UUID alertId = UUID.randomUUID();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of())
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+
+        assertThatThrownBy(() -> this.alertService.configureNotifications(alertId, List.of(-120, -120), "admin"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Offset minutes cannot be duplicated");
+    }
+
+    @Test
+    void testConfigureNotificationsWhenAlertIsCancelled() {
+        UUID alertId = UUID.randomUUID();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(LocalDateTime.now().plusDays(3))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.CANCELLED)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .build();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId)).willReturn(existingAlert);
+
+        assertThatThrownBy(() -> this.alertService.configureNotifications(alertId, List.of(-4320, -1440, -120), "admin"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Cancelled alerts cannot be configured");
+    }
+
+    @Test
+    void testConfigureNotificationsWhenAlertDoesNotExist() {
+        UUID alertId = UUID.randomUUID();
+
+        BDDMockito.given(this.alertPersistence.readById(alertId))
+                .willThrow(new NotFoundException("The Alert ID doesn't exist: " + alertId));
+
+        assertThatThrownBy(() -> this.alertService.configureNotifications(alertId, List.of(-4320, -1440, -120), "admin"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(alertId.toString());
+    }
+
+    @Test
+    void testFindPendingNotificationsSuccess() {
+        LocalDateTime now = LocalDateTime.now();
+        UUID engagementLetterId1 = UUID.randomUUID();
+        UUID engagementLetterId2 = UUID.randomUUID();
+
+        AlertNotification pendingLater = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(now.minusMinutes(10))
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(1))
+                .updatedAt(now.minusDays(1))
+                .build();
+
+        AlertNotification pendingSooner = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(now.minusHours(2))
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(1))
+                .updatedAt(now.minusDays(1))
+                .build();
+
+        AlertNotification futurePending = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-60)
+                .triggerAt(now.plusMinutes(30))
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(1))
+                .updatedAt(now.minusDays(1))
+                .build();
+
+        AlertNotification completedNotification = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-30)
+                .triggerAt(now.minusMinutes(20))
+                .status(Status.COMPLETED)
+                .createdAt(now.minusDays(1))
+                .updatedAt(now.minusDays(1))
+                .build();
+
+        AlertNotification cancelledNotification = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-15)
+                .triggerAt(now.minusMinutes(5))
+                .status(Status.CANCELLED)
+                .createdAt(now.minusDays(1))
+                .updatedAt(now.minusDays(1))
+                .build();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .description("Description 1")
+                .dueDate(now.plusDays(1))
+                .engagementLetterId(engagementLetterId1)
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(2))
+                .updatedAt(now.minusDays(1))
+                .createdBy("creator1")
+                .updatedBy("creator1")
+                .notifications(List.of(pendingLater, futurePending, completedNotification))
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .description("Description 2")
+                .dueDate(now.plusDays(2))
+                .engagementLetterId(engagementLetterId2)
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(2))
+                .updatedAt(now.minusDays(1))
+                .createdBy("creator2")
+                .updatedBy("creator2")
+                .notifications(List.of(cancelledNotification, pendingSooner))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of(alert1, alert2));
+
+        List<PendingAlertNotification> result = this.alertService.findPendingNotifications();
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getAlert().getId()).isEqualTo(alert2.getId());
+        assertThat(result.get(0).getNotification().getId()).isEqualTo(pendingSooner.getId());
+        assertThat(result.get(0).getNotification().getTriggerAt()).isEqualTo(pendingSooner.getTriggerAt());
+        assertThat(result.get(1).getAlert().getId()).isEqualTo(alert1.getId());
+        assertThat(result.get(1).getNotification().getId()).isEqualTo(pendingLater.getId());
+        assertThat(result.get(1).getNotification().getTriggerAt()).isEqualTo(pendingLater.getTriggerAt());
+        assertThat(result)
+                .extracting(item -> item.getNotification().getStatus())
+                .containsOnly(Status.PENDING);
+    }
+
+    @Test
+    void testFindPendingNotificationsWithoutNotifications() {
+        LocalDateTime now = LocalDateTime.now();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .description("Description 1")
+                .dueDate(now.plusDays(1))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(2))
+                .updatedAt(now.minusDays(1))
+                .createdBy("creator1")
+                .updatedBy("creator1")
+                .notifications(null)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .description("Description 2")
+                .dueDate(now.plusDays(2))
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(now.minusDays(2))
+                .updatedAt(now.minusDays(1))
+                .createdBy("creator2")
+                .updatedBy("creator2")
+                .notifications(List.of())
+                .build();
+
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of(alert1, alert2));
+
+        List<PendingAlertNotification> result = this.alertService.findPendingNotifications();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testFindPendingNotificationsWithoutAlerts() {
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of());
+
+        List<PendingAlertNotification> result = this.alertService.findPendingNotifications();
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void testMarkNotificationAsShownSuccess() {
+        UUID alertId = UUID.randomUUID();
+        UUID notificationId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(notificationId)
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.PENDING)
+                .shownAt(null)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(2))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of(existingAlert));
+        BDDMockito.willDoNothing().given(this.alertPersistence).update(any(Alert.class));
+
+        this.alertService.markNotificationAsShown(notificationId);
+
+        ArgumentCaptor<Alert> captor = ArgumentCaptor.forClass(Alert.class);
+        verify(this.alertPersistence).update(captor.capture());
+
+        Alert persistedAlert = captor.getValue();
+        assertThat(persistedAlert.getNotifications()).hasSize(1);
+        assertThat(persistedAlert.getNotifications().getFirst().getStatus()).isEqualTo(Status.COMPLETED);
+        assertThat(persistedAlert.getNotifications().getFirst().getShownAt()).isNotNull();
+        assertThat(persistedAlert.getNotifications().getFirst().getUpdatedAt()).isNotNull();
+    }
+
+    @Test
+    void testMarkNotificationAsShownWhenNotificationDoesNotExist() {
+        UUID notificationId = UUID.randomUUID();
+
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of());
+
+        assertThatThrownBy(() -> this.alertService.markNotificationAsShown(notificationId))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(notificationId.toString());
+    }
+
+    @Test
+    void testMarkNotificationAsShownWhenNotificationIsCompleted() {
+        UUID notificationId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(notificationId)
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.COMPLETED)
+                .shownAt(LocalDateTime.now().minusDays(1))
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of(existingAlert));
+
+        assertThatThrownBy(() -> this.alertService.markNotificationAsShown(notificationId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Only pending notifications can be marked as shown");
+    }
+
+    @Test
+    void testMarkNotificationAsShownWhenNotificationIsCancelled() {
+        UUID notificationId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+
+        AlertNotification notification = AlertNotification.builder()
+                .id(notificationId)
+                .offsetMinutes(-120)
+                .triggerAt(dueDate.plusMinutes(-120))
+                .status(Status.CANCELLED)
+                .shownAt(null)
+                .createdAt(LocalDateTime.now().minusDays(2))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .build();
+
+        Alert existingAlert = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(UUID.randomUUID())
+                .status(Status.PENDING)
+                .createdAt(LocalDateTime.now().minusDays(5))
+                .updatedAt(LocalDateTime.now().minusDays(1))
+                .createdBy("creator")
+                .updatedBy("creator")
+                .notifications(List.of(notification))
+                .build();
+
+        BDDMockito.given(this.alertPersistence.findAll()).willReturn(List.of(existingAlert));
+
+        assertThatThrownBy(() -> this.alertService.markNotificationAsShown(notificationId))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("Only pending notifications can be marked as shown");
     }
 
     @Test

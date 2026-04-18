@@ -2,10 +2,7 @@ package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.services.AlertService;
-import es.upm.api.infrastructure.dtos.AlertCreateDto;
-import es.upm.api.infrastructure.dtos.AlertResponseDto;
-import es.upm.api.infrastructure.dtos.AlertSummaryDto;
-import es.upm.api.infrastructure.dtos.AlertUpdateDto;
+import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.AlertMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -49,6 +46,17 @@ public class AlertResource {
                                    Authentication authentication) {
         Alert alert = this.alertMapper.toEntity(alertUpdateDto);
         Alert updatedAlert = this.alertService.update(alertId, alert, authentication.getName());
+        return this.alertMapper.toDto(updatedAlert);
+    }
+
+    @PutMapping("/{alertId}/notifications")
+    @ResponseStatus(HttpStatus.OK)
+    @Operation(summary = "Configure alert notifications")
+    public AlertResponseDto configureNotifications(@PathVariable UUID alertId,
+                                                   @Valid @RequestBody AlertNotificationConfigDto alertNotificationConfigDto,
+                                                   Authentication authentication) {
+        List<Integer> offsetMinutes = this.alertMapper.toOffsetMinutes(alertNotificationConfigDto);
+        Alert updatedAlert = this.alertService.configureNotifications(alertId, offsetMinutes, authentication.getName());
         return this.alertMapper.toDto(updatedAlert);
     }
 

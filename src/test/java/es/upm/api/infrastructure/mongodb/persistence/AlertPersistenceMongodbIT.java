@@ -119,6 +119,7 @@ class AlertPersistenceMongodbIT {
         LocalDateTime initialDueDate = LocalDateTime.of(2026, 4, 20, 10, 0);
         LocalDateTime updatedDueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
         LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 13, 12, 30);
+        LocalDateTime shownAt = LocalDateTime.of(2026, 4, 13, 12, 0);
 
         AlertNotification notification = AlertNotification.builder()
                 .id(UUID.randomUUID())
@@ -155,6 +156,8 @@ class AlertPersistenceMongodbIT {
                 toUpdate.getNotifications().stream()
                         .peek(n -> {
                             n.setTriggerAt(updatedDueDate.plusMinutes(n.getOffsetMinutes()));
+                            n.setStatus(Status.COMPLETED);
+                            n.setShownAt(shownAt);
                             n.setUpdatedAt(updatedAt);
                         })
                         .toList()
@@ -177,6 +180,8 @@ class AlertPersistenceMongodbIT {
         assertThat(updated.getNotifications()).hasSize(1);
         assertThat(updated.getNotifications().getFirst().getTriggerAt())
                 .isEqualTo(updatedDueDate.plusMinutes(-120));
+        assertThat(updated.getNotifications().getFirst().getStatus()).isEqualTo(Status.COMPLETED);
+        assertThat(updated.getNotifications().getFirst().getShownAt()).isEqualTo(shownAt);
         assertThat(updated.getNotifications().getFirst().getUpdatedAt()).isEqualTo(updatedAt);
     }
 
@@ -244,6 +249,46 @@ class AlertPersistenceMongodbIT {
         assertThat(result.getNotifications().get(1).getOffsetMinutes()).isEqualTo(-120);
         assertThat(result.getNotifications().get(1).getTriggerAt())
                 .isEqualTo(LocalDateTime.of(2026, 4, 25, 16, 0));
+    }
+
+    @Test
+    void testFindAll() {
+        UUID engagementLetterId1 = UUID.randomUUID();
+        UUID engagementLetterId2 = UUID.randomUUID();
+
+        Alert alert1 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 1")
+                .description("Description 1")
+                .dueDate(LocalDateTime.of(2026, 4, 25, 18, 0))
+                .engagementLetterId(engagementLetterId1)
+                .status(Status.PENDING)
+                .build();
+
+        Alert alert2 = Alert.builder()
+                .id(UUID.randomUUID())
+                .title("Alert 2")
+                .description("Description 2")
+                .dueDate(LocalDateTime.of(2026, 4, 28, 10, 30))
+                .engagementLetterId(engagementLetterId2)
+                .status(Status.CANCELLED)
+                .build();
+
+        this.alertPersistence.create(alert1);
+        this.alertPersistence.create(alert2);
+
+        List<Alert> result = this.alertPersistence.findAll();
+
+        assertThat(result).hasSize(2);
+        assertThat(result)
+                .extracting(Alert::getTitle)
+                .containsExactlyInAnyOrder("Alert 1", "Alert 2");
+        assertThat(result)
+                .extracting(Alert::getDescription)
+                .containsExactlyInAnyOrder("Description 1", "Description 2");
+        assertThat(result)
+                .extracting(Alert::getEngagementLetterId)
+                .containsExactlyInAnyOrder(engagementLetterId1, engagementLetterId2);
     }
 
     @Test

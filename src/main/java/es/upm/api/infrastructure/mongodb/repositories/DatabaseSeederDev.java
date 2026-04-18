@@ -115,16 +115,21 @@ public class DatabaseSeederDev {
 
         EngagementLetterEntity[] encargos = {
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+                        .budgetOnly(true)
                         .discount(10).creationDate(LocalDate.now().minusDays(5))
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
-                        .legalClause(" Clausula especial legal!!!")
+                        .legalClause("Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
+                                + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
+                                + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
+                                + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!.")
                         .acceptanceDocumentEntity(AcceptanceDocumentEntity.builder()
                                 .signatureDate(LocalDateTime.now()).build())
-                        .legalProcedureEntities(List.of(procedimientos[0])).build(),
+                        .legalProcedureEntities(List.of(procedimientos[0], procedimientos[2])).build(),
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
+                        .budgetOnly(false)
                         .discount(20).creationDate(LocalDate.now())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
@@ -134,10 +139,15 @@ public class DatabaseSeederDev {
                                 .signatureDate(LocalDateTime.now()).build())
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2])).build(),
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"))
+                        .budgetOnly(false)
                         .discount(15)
+                        .legalClause("Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
+                                + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
+                                + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
+                                + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!.")
                         .creationDate(LocalDate.now())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006"))
-                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007"))
+                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
                         .paymentMethodEntity(PaymentMethodEntity.builder()
                                 .description("A la firma de la carta de encargo")
                                 .percentage("50%").build())

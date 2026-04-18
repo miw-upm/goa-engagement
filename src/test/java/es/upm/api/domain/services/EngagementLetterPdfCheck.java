@@ -26,7 +26,27 @@ class EngagementLetterPdfCheck {
     private UserWebClient userWebClient;
 
     @Test
-    void testGeneratePdfCheck() throws Exception {
+    void testGeneratePresupuestoPdfCheck() throws Exception {
+        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+                .willReturn(UserDto.builder()
+                        .id(UUID.randomUUID())
+                        .firstName("María")
+                        .familyName("García López")
+                        .mobile("612345678")
+                        .documentType("DNI")
+                        .identity("43234543V")
+                        .build());
+
+        byte[] pdf = this.engagementLetterService.generatePdf(
+                UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"));
+
+        Path output = Path.of("target", "presupuesto-check.pdf");
+        Files.write(output, pdf);
+        System.out.println("PDF generado en: " + output.toAbsolutePath());
+    }
+
+    @Test
+    void testGenerateHojaPdfCheck() throws Exception {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willReturn(UserDto.builder()
                         .id(UUID.randomUUID())
@@ -40,7 +60,7 @@ class EngagementLetterPdfCheck {
         byte[] pdf = this.engagementLetterService.generatePdf(
                 UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"));
 
-        Path output = Path.of("target", "carta-encargo-check.pdf");
+        Path output = Path.of("target", "hoja-check.pdf");
         Files.write(output, pdf);
         System.out.println("PDF generado en: " + output.toAbsolutePath());
     }

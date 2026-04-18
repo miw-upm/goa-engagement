@@ -6,6 +6,7 @@ import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.services.AlertService;
 import es.upm.api.infrastructure.dtos.AlertCreateDto;
+import es.upm.api.infrastructure.dtos.AlertNotificationConfigDto;
 import es.upm.api.infrastructure.dtos.AlertUpdateDto;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -40,6 +41,79 @@ class AlertResourceIT {
 
     @MockitoBean
     private AlertService alertService;
+
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldConfigureAlertNotifications() throws Exception {
+        UUID alertId = UUID.randomUUID();
+        UUID engagementLetterId = UUID.randomUUID();
+        LocalDateTime dueDate = LocalDateTime.of(2026, 4, 25, 18, 0);
+        LocalDateTime createdAt = LocalDateTime.of(2026, 4, 10, 9, 0);
+        LocalDateTime updatedAt = LocalDateTime.of(2026, 4, 12, 10, 30);
+
+        AlertNotificationConfigDto dto = AlertNotificationConfigDto.builder()
+                .offsetMinutes(List.of(-4320, -1440, -120))
+                .build();
+
+        AlertNotification notification1 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-4320)
+                .triggerAt(LocalDateTime.of(2026, 4, 22, 18, 0))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification2 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-1440)
+                .triggerAt(LocalDateTime.of(2026, 4, 24, 18, 0))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        AlertNotification notification3 = AlertNotification.builder()
+                .id(UUID.randomUUID())
+                .offsetMinutes(-120)
+                .triggerAt(LocalDateTime.of(2026, 4, 25, 16, 0))
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .build();
+
+        Alert alert = Alert.builder()
+                .id(alertId)
+                .title("Alert title")
+                .description("Alert description")
+                .dueDate(dueDate)
+                .engagementLetterId(engagementLetterId)
+                .status(Status.PENDING)
+                .createdAt(createdAt)
+                .updatedAt(updatedAt)
+                .createdBy("creator")
+                .updatedBy("admin")
+                .notifications(List.of(notification1, notification2, notification3))
+                .build();
+
+        BDDMockito.given(this.alertService.configureNotifications(eq(alertId), eq(List.of(-4320, -1440, -120)), eq("admin")))
+                .willReturn(alert);
+
+        this.mockMvc.perform(put(AlertResource.ALERTS + "/{alertId}/notifications", alertId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(dto)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(alertId.toString()))
+                .andExpect(jsonPath("$.title").value("Alert title"))
+                .andExpect(jsonPath("$.description").value("Alert description"))
+                .andExpect(jsonPath("$.dueDate").value("2026-04-25T18:00:00"))
+                .andExpect(jsonPath("$.engagementLetterId").value(engagementLetterId.toString()))
+                .andExpect(jsonPath("$.status").value("PENDING"))
+                .andExpect(jsonPath("$.updatedBy").value("admin"))
+                .andExpect(jsonPath("$.notifications.length()").value(3))
+                .andExpect(jsonPath("$.notifications[0].offsetMinutes").value(-4320))
+                .andExpect(jsonPath("$.notifications[0].triggerAt").value("2026-04-22T18:00:00"));
+    }
 
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})

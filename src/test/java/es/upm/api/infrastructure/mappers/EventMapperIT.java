@@ -858,7 +858,6 @@ class EventMapperIT {
     }
 
 
-
     @Test
     void testToTimelineDtoList() {
 

@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -103,6 +103,7 @@ public class EventService {
 
         this.eventPersistence.deleteComment(eventId, commentToDelete);
     }
+
     public List<CommentDto> getComments(UUID eventId) {
         Event event = this.eventPersistence.readById(eventId);
 
