@@ -1218,7 +1218,7 @@ class EventServiceIT {
         );
 
         assertThat(result).hasSize(1);
-        assertThat(result.get(0).getType()).isEqualTo(EventType.MILESTONE);
+        assertThat(result.getFirst().getType()).isEqualTo(EventType.MILESTONE);
     }
     @Test
     void testFindTimelineEventsByEngagementLetterId_FilterByStatus() {

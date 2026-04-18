@@ -1,7 +1,6 @@
 package es.upm.api.infrastructure.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.model.UserDto;
@@ -23,7 +22,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
