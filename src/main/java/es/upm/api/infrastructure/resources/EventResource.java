@@ -1,6 +1,8 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.Event;
+import es.upm.api.domain.model.EventType;
+import es.upm.api.domain.model.Status;
 import es.upm.api.domain.services.EventService;
 import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.EventMapper;
@@ -101,7 +103,6 @@ public class EventResource {
         List<Event> events = this.eventService.findByEngagementLetterId(engagementLetterId).toList();
         return this.eventMapper.toDtoList(events);
     }
-
     @GetMapping("/{eventId}/comments")
     @ResponseStatus(HttpStatus.OK)
     public List<CommentDto> getComments(@PathVariable UUID eventId) {
@@ -113,10 +114,14 @@ public class EventResource {
     @ResponseStatus(HttpStatus.OK)
     public List<TimelineEventDto> getTimelineEvents(
             @PathVariable UUID engagementLetterId,
-            @RequestParam(required = false, defaultValue = "false") Boolean ascending) {
+            @RequestParam(required = false, defaultValue = "false") Boolean ascending,
+            @RequestParam(required = false) EventType type,
+            @RequestParam(required = false) Status status) {
 
-        List<Event> events = eventService.findTimelineEventsByEngagementLetterId(
+        List <Event> events = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
                 engagementLetterId,
+                type,
+                status,
                 ascending
         );
         return this.eventMapper.toTimelineDtoList(events);
