@@ -1,10 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.NotFoundException;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.LegalProcedure;
-import es.upm.api.domain.model.PaymentMethod;
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +31,6 @@ class EngagementLetterServiceIT {
     private UserWebClient userWebClient;
     private EngagementLetter engagementLetter;
 
-
     @BeforeEach
     void setUpEngagementLetter() {
         this.engagementLetter = EngagementLetter.builder()
@@ -51,6 +47,8 @@ class EngagementLetterServiceIT {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserDto.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
+        BDDMockito.given(this.userWebClient.findNullSafe(any(String.class)))
+                .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
     }
 
@@ -113,4 +111,122 @@ class EngagementLetterServiceIT {
                 .hasMessageContaining(engagementLetterId.toString());
     }
 
+    @Test
+    void testSearchNullSafeReturnsAllWhenCriteriaEmpty() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results).hasSizeGreaterThanOrEqualTo(4);
+    }
+
+    @Test
+    void testSearchNullSafeFiltersByOpenedTrue() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setOpened(true);
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .allSatisfy(letter -> assertThat(letter.getClosingDate()).isNull());
+    }
+
+    @Test
+    void testSearchNullSafeFiltersByOpenedFalse() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setOpened(false);
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .allSatisfy(letter -> assertThat(letter.getClosingDate()).isNotNull());
+    }
+
+    @Test
+    void testSearchNullSafeFiltersByLegalProcedureTitle() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setLegalProcedureTitle("herencia");
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
+                        .anyMatch(proc -> proc.getTitle().toLowerCase().contains("herencia")));
+    }
+
+    @Test
+    void testSearchNullSafeFiltersByTaskTitle() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setTaskTitle("asesoramiento");
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
+                        .anyMatch(proc -> proc.getLegalTasks().stream()
+                                .anyMatch(task -> task.toLowerCase().contains("asesoramiento"))));
+    }
+
+    @Test
+    void testSearchNullSafeIgnoresCase() {
+        EngagementLetterCriteria criteriaUpper = new EngagementLetterCriteria();
+        criteriaUpper.setLegalProcedureTitle("HERENCIA");
+
+        EngagementLetterCriteria criteriaLower = new EngagementLetterCriteria();
+        criteriaLower.setLegalProcedureTitle("herencia");
+
+        List<EngagementLetter> upper = engagementLetterService.searchNullSafe(criteriaUpper).toList();
+        List<EngagementLetter> lower = engagementLetterService.searchNullSafe(criteriaLower).toList();
+
+        assertThat(upper)
+                .isNotEmpty()
+                .hasSameSizeAs(lower);
+    }
+
+    @Test
+    void testSearchNullSafeReturnsEmptyWhenNoMatch() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setLegalProcedureTitle("xyznoexiste999");
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    void testSearchNullSafeCombinesFilters() {
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setOpened(true);
+        criteria.setLegalProcedureTitle("herencia");
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .allSatisfy(letter -> {
+                    assertThat(letter.getClosingDate()).isNull();
+                    assertThat(letter.getLegalProcedures())
+                            .anyMatch(proc -> proc.getTitle().toLowerCase().contains("herencia"));
+                });
+    }
+
+    @Test
+    void testSearchNullSafeFiltersByOwner() {
+        UUID ownerId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
+        BDDMockito.given(this.userWebClient.findNullSafe("test"))
+                .willReturn(List.of(UserDto.builder().id(ownerId).build()));
+
+        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        criteria.setOwner("test");
+
+        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .allSatisfy(letter -> assertThat(letter.getOwner().getId()).isEqualTo(ownerId));
+    }
 }

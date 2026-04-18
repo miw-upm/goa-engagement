@@ -2,7 +2,6 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.LegalProcedureTemplate;
-import es.upm.api.domain.model.LegalTask;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -156,6 +156,15 @@ public class DatabaseSeederDev {
                                 .percentage("50%").build())
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
                         .build(),
+                EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
+                        .budgetOnly(false)
+                        .discount(10)
+                        .creationDate(LocalDate.now().minusDays(30))
+                        .closingDate(LocalDate.now().minusDays(5))  // CERRADO
+                        .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Completo").percentage("100%").build())
+                        .legalProcedureEntities(List.of(procedimientos[0]))
+                        .build(),
         };
         this.engagementLetterRepository.saveAll(List.of(encargos));
         log.warn("        ------- Hojas de encargo ------------------------------------------------------------------");

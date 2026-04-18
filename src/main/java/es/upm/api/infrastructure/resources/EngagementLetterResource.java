@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.EngagementLetterCriteria;
 import es.upm.api.domain.services.EngagementLetterService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,8 +29,8 @@ public class EngagementLetterResource {
     }
 
     @GetMapping
-    public List<EngagementLetter> findNullSafe(@ModelAttribute EngagementLetterFindCriteria criteria) {
-        return this.engagementLetterService.findNullSafe(criteria).toList();
+    public List<EngagementLetter> searchNullSafe(@ModelAttribute EngagementLetterCriteria criteria) {
+        return this.engagementLetterService.searchNullSafe(criteria).toList();
     }
 
     @PostMapping
