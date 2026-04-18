@@ -25,8 +25,8 @@ public class LegalProcedureTemplateResource {
     }
 
     @GetMapping
-    public List<LegalProcedureTemplate> findNullSafe(@RequestParam(required = false) String title) {
-        return this.legalProcedureTemplateService.findNullSafe(title).toList();
+    public List<LegalProcedureTemplate> searchByTitleAndTaskTitleNullSafe(@RequestParam(required = false) String title, @RequestParam(required = false) String task) {
+        return this.legalProcedureTemplateService.searchByTitleAndTaskTitleNullSafe(title, task).toList();
     }
 
     @GetMapping(ID_ID)

@@ -225,6 +225,6 @@ public class EngagementLetterService {
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
                 .paragraph(dict.getText("aviso_hoja")).space(3)
-                .multiSignature(letter.buildClientsName(),dict.getText("firma_nuria"));
+                .multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
     }
 }

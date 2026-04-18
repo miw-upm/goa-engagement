@@ -11,7 +11,7 @@ import java.util.UUID;
 
 public interface LegalProcedureRepository extends MongoRepository<LegalProcedureTemplateEntity, UUID> {
     @Query("{ 'title': { $regex: ?0, $options: 'i' } }")
-    List<LegalProcedureTemplateEntity> findByTitleContainingIgnoreCase(String title, Sort sort);
+    List<LegalProcedureTemplateEntity> searchByTitleContainingIgnoreCase(String title, Sort sort);
 
     Optional<LegalProcedureTemplateEntity> findByTitle(String title);
 }

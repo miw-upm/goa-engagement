@@ -10,11 +10,9 @@ import es.upm.api.infrastructure.dtos.CommentCreateDto;
 import es.upm.api.infrastructure.dtos.CommentDto;
 import es.upm.api.infrastructure.dtos.EventCreateDto;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -951,8 +949,6 @@ class EventResourceIT {
     }
 
 
-
-
     @Test
     @WithMockUser(username = "600000001", authorities = {"ROLE_admin"})
     void testDeleteCommentMultipleCommentsRemovesOnlyOne() throws Exception {
@@ -1107,8 +1103,6 @@ class EventResourceIT {
     }
 
 
-
-
     @Test
     void testDeleteCommentWithoutAuthenticationShouldFail() throws Exception {
         // Arrange
@@ -1139,9 +1133,6 @@ class EventResourceIT {
                         .param("createdDate", fakeDate))
                 .andExpect(status().isUnauthorized());
     }
-
-
-
 
 
 }

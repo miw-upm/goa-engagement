@@ -1,9 +1,9 @@
 package es.upm.api.infrastructure.mappers;
 
 import es.upm.api.domain.model.Alert;
-import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.PendingAlertNotification;
+import es.upm.api.infrastructure.dtos.*;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;

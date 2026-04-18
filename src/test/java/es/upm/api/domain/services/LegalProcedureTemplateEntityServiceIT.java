@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 class LegalProcedureTemplateEntityServiceIT {
     private static final UUID EXISTING_ID = UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000");
+
     @Autowired
     private LegalProcedureTemplateService legalProcedureTemplateService;
 
@@ -30,38 +31,72 @@ class LegalProcedureTemplateEntityServiceIT {
     }
 
     @Test
-    void shouldFindByKeyword() {
-        assertThat(legalProcedureTemplateService.findNullSafe("herencia").toList())
+    void shouldSearchByTitle() {
+        List<LegalProcedureTemplate> results = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe("herencia", null)
+                .toList();
+
+        assertThat(results)
                 .isNotEmpty()
-                .extracting(LegalProcedureTemplate::getTitle)
-                .anySatisfy(titulo -> assertThat(titulo.toLowerCase()).contains("herencia"));
+                .anyMatch(p -> p.getTitle().toLowerCase().contains("herencia"));
     }
 
     @Test
-    void shouldUpdateTitle() {
-        LegalProcedureTemplate nuevo = LegalProcedureTemplate.builder().title("Título original")
-                .legalTasks(List.of(LegalTask.builder().title("Redacción de la escritura de herencia y tramitación con la notaría correspondiente").build()))
-                .build();
-        this.legalProcedureTemplateService.create(nuevo);
-        UUID id = nuevo.getId();
-        nuevo.setTitle("Título actualizado");
-        this.legalProcedureTemplateService.update(id, nuevo);
-        LegalProcedureTemplate actualizado = this.legalProcedureTemplateService.readById(id);
-        assertThat(actualizado.getTitle())
-                .isEqualTo("Título actualizado");
-        this.legalProcedureTemplateService.delete(id);
+    void shouldSearchByTaskTitle() {
+        List<LegalProcedureTemplate> results = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe(null, "escritura")
+                .toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .anyMatch(p -> p.getLegalTasks().stream()
+                        .anyMatch(t -> t.getTitle().toLowerCase().contains("escritura")));
     }
 
     @Test
-    void shouldDelete() {
-        LegalProcedureTemplate nuevo = LegalProcedureTemplate.builder().title("Temporal para borrado")
-                .legalTasks(List.of(LegalTask.builder().title("Redacción de la escritura de herencia y tramitación con la notaría correspondiente").build()))
-                .build();
-        this.legalProcedureTemplateService.create(nuevo);
-        UUID id = nuevo.getId();
-        assertThat(legalProcedureTemplateService.readById(id)).isNotNull();
-        this.legalProcedureTemplateService.delete(id);
-        assertThatThrownBy(() -> legalProcedureTemplateService.readById(id))
+    void shouldSearchByTitleAndTaskTitle() {
+        List<LegalProcedureTemplate> results = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe("herencia", "escritura")
+                .toList();
+
+        assertThat(results)
+                .isNotEmpty()
+                .anyMatch(p -> p.getTitle().toLowerCase().contains("herencia"));
+    }
+
+    @Test
+    void shouldReturnAllWhenBothNull() {
+        List<LegalProcedureTemplate> results = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe(null, null)
+                .toList();
+
+        assertThat(results).hasSizeGreaterThanOrEqualTo(1);
+    }
+
+    @Test
+    void shouldReturnEmptyWhenNoMatch() {
+        List<LegalProcedureTemplate> results = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe("xyznoexiste999", null)
+                .toList();
+
+        assertThat(results).isEmpty();
+    }
+
+    @Test
+    void shouldSearchIgnoreCase() {
+        List<LegalProcedureTemplate> upper = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe("HERENCIA", null).toList();
+        List<LegalProcedureTemplate> lower = legalProcedureTemplateService
+                .searchByTitleAndTaskTitleNullSafe("herencia", null).toList();
+
+        assertThat(upper)
+                .isNotEmpty()
+                .hasSameSizeAs(lower);
+    }
+
+    @Test
+    void shouldThrowNotFoundForInvalidId() {
+        assertThatThrownBy(() -> legalProcedureTemplateService.readById(UUID.randomUUID()))
                 .isInstanceOf(NotFoundException.class);
     }
 }

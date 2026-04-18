@@ -12,6 +12,7 @@ import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
@@ -64,12 +65,20 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
     }
 
     @Override
-    public Stream<LegalProcedureTemplate> findNullSafe(String title) {
-        if (title == null || title.isBlank()) {
-            return this.findAll();
+    public Stream<LegalProcedureTemplate> searchByTitleAndTaskTitleNullSafe(String title, String taskTitle) {
+        Stream<LegalProcedureTemplateEntity> templates = StringUtils.hasText(title)
+                ? this.procedureRepository.searchByTitleContainingIgnoreCase(title, Sort.by("title")).stream()
+                : this.procedureRepository.findAll(Sort.by("title")).stream();
+
+        if (StringUtils.hasText(taskTitle)) {
+            String taskTitleLower = taskTitle.toLowerCase();
+            templates = templates.filter(template -> template.getLegalTaskEntities() != null &&
+                    template.getLegalTaskEntities().stream()
+                            .anyMatch(task -> task.getTitle() != null &&
+                                    task.getTitle().toLowerCase().contains(taskTitleLower)));
         }
-        return this.procedureRepository.findByTitleContainingIgnoreCase(title, Sort.by(Sort.Direction.ASC, "title"))
-                .stream().map(LegalProcedureTemplateEntity::toLegalProcedureTemplate);
+
+        return templates.map(LegalProcedureTemplateEntity::toLegalProcedureTemplate);
     }
 
     @Override
