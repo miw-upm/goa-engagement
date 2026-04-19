@@ -26,6 +26,7 @@ spring:
           jwk-set-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/jwks
 
 app:
+  hosting: localhost
   oauth2:
     token-uri: ${BASE_URL:http://localhost:8080}/api/goa-user/oauth2/token
     api-client-id: ${API_CLIENT_ID:api-client-id}
