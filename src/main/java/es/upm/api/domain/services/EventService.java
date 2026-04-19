@@ -6,11 +6,13 @@ import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
 import es.upm.api.domain.model.Status;
+import es.upm.api.domain.model.events.EngagementLetterDeletedEvent;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.CommentDto;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -56,6 +58,10 @@ public class EventService {
 
     public void delete(UUID id) {
         this.eventPersistence.delete(id);
+    }
+
+    public void deleteByEngagementLetterId(UUID engagementLetterId) {
+        this.eventPersistence.deleteByEngagementLetterId(engagementLetterId);
     }
 
     public Event update(UUID id, EventUpdateDto eventUpdateDto) {
@@ -137,6 +143,15 @@ public class EventService {
                         )
                 )
                 .toList();
+    }
+
+    /**
+     * Escucha el evento de eliminación de EngagementLetter y borra todos los eventos asociados.
+     * Esto permite el borrado en cascada sin acoplamiento directo entre servicios.
+     */
+    @EventListener
+    public void onEngagementLetterDeleted(EngagementLetterDeletedEvent event) {
+        this.eventPersistence.deleteByEngagementLetterId(event.getEngagementLetterId());
     }
 
 }
