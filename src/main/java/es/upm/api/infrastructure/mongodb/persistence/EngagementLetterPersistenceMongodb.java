@@ -2,7 +2,7 @@ package es.upm.api.infrastructure.mongodb.persistence;
 
 import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.EngagementLetterCriteria;
 import es.upm.api.domain.model.UserDto;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.infrastructure.mongodb.entities.AcceptanceDocumentEntity;
@@ -11,9 +11,10 @@ import es.upm.api.infrastructure.mongodb.entities.LegalProcedureEntity;
 import es.upm.api.infrastructure.mongodb.entities.PaymentMethodEntity;
 import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -77,24 +78,34 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
     }
 
     @Override
-    public Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria) {
-        List<EngagementLetterEntity> result;
-        if (Boolean.TRUE.equals(criteria.getOpened())) {
-            result = this.engagementLetterRepository.findByOpened();
-        } else {
-            result = this.engagementLetterRepository.findByClosed();
-        }
-        if (criteria.getLegalProcedureTitle() != null) {
-            return result.stream()
-                    .filter(engagement -> engagement.getLegalProcedureEntities().stream()
-                            .anyMatch(procedure -> procedure.getTitle().toLowerCase()
-                                    .contains(criteria.getLegalProcedureTitle().toLowerCase())))
-                    .map(EngagementLetterEntity::toEngagementLetter);
-        } else {
-            return result.stream()
-                    .map(EngagementLetterEntity::toEngagementLetter);
+    public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
+        Stream<EngagementLetterEntity> letters = this.engagementLetterRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "creationDate")).stream();
+
+        if (criteria.getOpened() != null) {
+            letters = letters
+                    .filter(letter -> criteria.getOpened() == (letter.getClosingDate() == null));
         }
 
+        if (StringUtils.hasText(criteria.getLegalProcedureTitle())) {
+            String titleLower = criteria.getLegalProcedureTitle().toLowerCase();
+            letters = letters.filter(letter -> letter.getLegalProcedureEntities() != null &&
+                    letter.getLegalProcedureEntities().stream()
+                            .anyMatch(proc -> proc.getTitle() != null &&
+                                    proc.getTitle().toLowerCase().contains(titleLower)));
+        }
+
+        if (StringUtils.hasText(criteria.getTaskTitle())) {
+            String taskLower = criteria.getTaskTitle().toLowerCase();
+            letters = letters.filter(letter -> letter.getLegalProcedureEntities() != null &&
+                    letter.getLegalProcedureEntities().stream()
+                            .anyMatch(proc -> proc.getLegalTasks() != null &&
+                                    proc.getLegalTasks().stream()
+                                            .anyMatch(task -> task != null &&
+                                                    task.toLowerCase().contains(taskLower))));
+        }
+
+        return letters.map(EngagementLetterEntity::toEngagementLetter);
     }
 
     @Override

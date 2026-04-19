@@ -12,6 +12,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserDto {
+    public static final String SIN_DEFINIR = "(___SIN DEFINIR___)";
     private UUID id;
     private String mobile;
     private String firstName;
@@ -20,15 +21,21 @@ public class UserDto {
     private String identity;
 
     public String toFullName() {
-        return "D./Dña. " + firstName + " " + familyName;
+        return "D./Dña. " + firstName + " " + valueOrUndefined(familyName);
     }
 
     public String toFullNameAndIdentity() {
-        return this.toFullName() + " con " + formatDocumentType() + " nº " + this.identity;
+        return this.toFullName() + " con " + formatDocumentType() + " nº " + valueOrUndefined(identity);
     }
 
     private String formatDocumentType() {
+        if (documentType == null) {
+            return SIN_DEFINIR;
+        }
         return String.join(".", documentType.toUpperCase().split("")) + ".";
     }
 
+    private String valueOrUndefined(String value) {
+        return value != null ? value : SIN_DEFINIR;
+    }
 }

@@ -8,6 +8,7 @@ import es.upm.api.domain.webclients.UserWebClient;
 import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -142,15 +143,17 @@ public class EngagementLetterService {
         return publicAccessToken;
     }
 
-    public Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria) {
-        if (criteria.getOwner() == null) {
-            return this.engagementLetterPersistence.findNullSafe(criteria);
-        } else {
+    public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
+        Stream<EngagementLetter> letters = this.engagementLetterPersistence.searchNullSafe(criteria);
+
+        if (StringUtils.hasText(criteria.getOwner())) {
             List<UUID> ids = this.userWebClient.findNullSafe(criteria.getOwner()).stream()
-                    .map(UserDto::getId).toList();
-            return this.engagementLetterPersistence.findNullSafe(criteria)
-                    .filter(engagementLetter -> ids.contains(engagementLetter.getOwner().getId()));
+                    .map(UserDto::getId)
+                    .toList();
+            letters = letters.filter(letter -> ids.contains(letter.getOwner().getId()));
         }
+
+        return letters;
     }
 
     public byte[] generatePdf(UUID engagementLetterId) {

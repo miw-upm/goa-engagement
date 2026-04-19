@@ -1,7 +1,7 @@
 package es.upm.api.domain.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.EngagementLetterCriteria;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -17,5 +17,5 @@ public interface EngagementLetterPersistence {
 
     void update(UUID id, EngagementLetter engagementLetter);
 
-    Stream<EngagementLetter> findNullSafe(EngagementLetterFindCriteria criteria);
+    Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria);
 }
