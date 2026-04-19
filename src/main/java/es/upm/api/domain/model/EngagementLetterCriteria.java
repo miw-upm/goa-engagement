@@ -15,7 +15,7 @@ public class EngagementLetterCriteria {
     private String taskTitle;
 
     public boolean all() {
-        return opened == null && client == null && legalProcedureTitle == null;
+        return opened == null && budgetOnly == null && client == null && legalProcedureTitle == null && taskTitle == null;
     }
 
 }
