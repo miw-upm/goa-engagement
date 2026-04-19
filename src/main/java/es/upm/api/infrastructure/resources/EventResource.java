@@ -103,6 +103,7 @@ public class EventResource {
         List<Event> events = this.eventService.findByEngagementLetterId(engagementLetterId).toList();
         return this.eventMapper.toDtoList(events);
     }
+
     @GetMapping("/{eventId}/comments")
     @ResponseStatus(HttpStatus.OK)
     public List<CommentDto> getComments(@PathVariable UUID eventId) {
@@ -118,7 +119,7 @@ public class EventResource {
             @RequestParam(required = false) EventType type,
             @RequestParam(required = false) Status status) {
 
-        List <Event> events = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
+        List<Event> events = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
                 engagementLetterId,
                 type,
                 status,

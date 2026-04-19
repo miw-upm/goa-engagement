@@ -255,11 +255,7 @@ public class PdfBuilder {
 
     public PdfBuilder signatureLine(String label) {
         return this.add("signature", () -> {
-            document.add(Chunk.NEWLINE);
-            document.add(Chunk.NEWLINE);
-            addStamp(document.leftMargin() + 5);
-            document.add(Chunk.NEWLINE);
-            document.add(Chunk.NEWLINE);
+            addStamp();
             Paragraph p = new Paragraph();
             p.add(new Chunk("_".repeat(40) + "\n", FONT_NORMAL));
             p.add(new Chunk(label, FONT_SMALL));
@@ -269,10 +265,6 @@ public class PdfBuilder {
 
     public PdfBuilder multiSignature(java.util.List<String> leftLabels, String rightLabel) {
         return this.add("multi signature", () -> {
-            document.add(Chunk.NEWLINE);
-            document.add(Chunk.NEWLINE);
-            addStamp(document.right() - 100);
-
             PdfPTable table = this.createTable(2);
 
             PdfPCell leftCell = this.noBorderCell();
@@ -286,9 +278,10 @@ public class PdfBuilder {
             table.addCell(leftCell);
 
             PdfPCell rightCell = this.noBorderCell();
+            rightCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            addStampToCell(rightCell);
             Paragraph right = new Paragraph();
             right.setAlignment(Element.ALIGN_RIGHT);
-            right.add(new Chunk("\n\n"));
             right.add(new Chunk("_".repeat(30) + "\n", FONT_NORMAL));
             right.add(new Chunk(rightLabel, FONT_SMALL));
             rightCell.addElement(right);
@@ -298,14 +291,26 @@ public class PdfBuilder {
         });
     }
 
-    private void addStamp(float x) {
+    private void addStamp() {
         try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(STAMP_PATH)) {
             if (is != null) {
                 Image stamp = Image.getInstance(is.readAllBytes());
-                stamp.scaleToFit(100, 100);
-                float y = writer.getVerticalPosition(true) - 50;
-                stamp.setAbsolutePosition(x, y);
-                writer.getDirectContent().addImage(stamp);
+                stamp.scaleToFit(80, 80);
+                stamp.setAlignment(Element.ALIGN_LEFT);
+                document.add(stamp);
+            }
+        } catch (Exception e) {
+            throw this.onError("loading stamp", e);
+        }
+    }
+
+    private void addStampToCell(PdfPCell cell) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(STAMP_PATH)) {
+            if (is != null) {
+                Image stamp = Image.getInstance(is.readAllBytes());
+                stamp.scaleToFit(80, 80);
+                stamp.setAlignment(Element.ALIGN_RIGHT);
+                cell.addElement(stamp);
             }
         } catch (Exception e) {
             throw this.onError("loading stamp", e);

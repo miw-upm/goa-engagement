@@ -1104,7 +1104,7 @@ class EventServiceIT {
         eventService.create(event2);
         eventService.create(event3);
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null,null,true);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null, null, true);
 
         assertThat(timelineEvents).hasSize(3);
         assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
@@ -1116,7 +1116,7 @@ class EventServiceIT {
     void testFindTimelineEventsByEngagementLetterId_EmptyList() {
         UUID nonExistentId = UUID.randomUUID();
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(nonExistentId, null,null,false);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(nonExistentId, null, null, false);
 
         assertThat(timelineEvents).isEmpty();
     }
@@ -1137,7 +1137,7 @@ class EventServiceIT {
 
         eventService.create(event);
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId,null,null,false);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null, null, false);
 
         assertThat(timelineEvents).hasSize(1);
         assertThat(timelineEvents.getFirst().getTitle()).isEqualTo("Single Event");
@@ -1175,20 +1175,21 @@ class EventServiceIT {
         eventService.create(eventAfternoon);
         eventService.create(eventEvening);
 
-        List<Event> descendingEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null,null,false);
+        List<Event> descendingEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null, null, false);
 
         assertThat(descendingEvents).hasSize(3);
         assertThat(descendingEvents.get(0).getTitle()).isEqualTo("Evening Call");
         assertThat(descendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
         assertThat(descendingEvents.get(2).getTitle()).isEqualTo("Morning Meeting");
 
-        List<Event> ascendingEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null,null,true);
+        List<Event> ascendingEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null, null, true);
 
         assertThat(ascendingEvents).hasSize(3);
         assertThat(ascendingEvents.get(0).getTitle()).isEqualTo("Morning Meeting");
         assertThat(ascendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
         assertThat(ascendingEvents.get(2).getTitle()).isEqualTo("Evening Call");
     }
+
     @Test
     void testFindTimelineEventsByEngagementLetterId_FilterByType() {
 
@@ -1223,6 +1224,7 @@ class EventServiceIT {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getType()).isEqualTo(EventType.MILESTONE);
     }
+
     @Test
     void testFindTimelineEventsByEngagementLetterId_FilterByStatus() {
 
@@ -1257,6 +1259,7 @@ class EventServiceIT {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getStatus()).isEqualTo(Status.COMPLETED);
     }
+
     @Test
     void testFindTimelineEventsByEngagementLetterId_FilterByTypeAndStatus() {
 
@@ -1300,6 +1303,7 @@ class EventServiceIT {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getTitle()).isEqualTo("Valid Event");
     }
+
     @Test
     void testFindTimelineEventsByEngagementLetterId_FilterReturnsEmpty() {
 
@@ -1323,6 +1327,7 @@ class EventServiceIT {
 
         assertThat(result).isEmpty();
     }
+
     @Test
     void testFindTimelineEventsByEngagementLetterId_AllNullFilters() {
 
