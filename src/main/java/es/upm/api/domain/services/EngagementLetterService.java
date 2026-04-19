@@ -146,8 +146,8 @@ public class EngagementLetterService {
     public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
         Stream<EngagementLetter> letters = this.engagementLetterPersistence.searchNullSafe(criteria);
 
-        if (StringUtils.hasText(criteria.getOwner())) {
-            List<UUID> ids = this.userWebClient.findNullSafe(criteria.getOwner()).stream()
+        if (StringUtils.hasText(criteria.getClient())) {
+            List<UUID> ids = this.userWebClient.findNullSafe(criteria.getClient()).stream()
                     .map(UserDto::getId)
                     .toList();
             letters = letters.filter(letter -> ids.contains(letter.getOwner().getId()));

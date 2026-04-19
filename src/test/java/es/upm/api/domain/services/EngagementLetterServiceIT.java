@@ -221,7 +221,7 @@ class EngagementLetterServiceIT {
                 .willReturn(List.of(UserDto.builder().id(ownerId).build()));
 
         EngagementLetterCriteria criteria = new EngagementLetterCriteria();
-        criteria.setOwner("test");
+        criteria.setClient("test");
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
 
