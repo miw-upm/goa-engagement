@@ -4,6 +4,8 @@ import es.upm.api.domain.exceptions.ForbiddenException;
 import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
+import es.upm.api.domain.model.EventType;
+import es.upm.api.domain.model.Status;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.CommentDto;
@@ -118,20 +120,23 @@ public class EventService {
         return this.eventPersistence.findByEngagementLetterId(engagementLetterId);
     }
 
-    public List<Event> findTimelineEventsByEngagementLetterId(
+    public List<Event> findTimelineEventsByEngagementLetterIdWithFilters(
             UUID engagementId,
+            EventType type,
+            Status status,
             Boolean ascending) {
 
-        List<Event> events = eventPersistence.findByEngagementLetterId(engagementId).toList();
-
-        Comparator<Event> comparator = Comparator.comparing(Event::getEventDate);
-
-        if (!ascending) {
-            comparator = comparator.reversed();
-        }
-
-        return events.stream()
-                .sorted(comparator)
+        return eventPersistence.findByEngagementLetterId(engagementId)
+                .filter(event -> type == null || event.getType() == type)
+                .filter(event -> status == null || event.getStatus() == status)
+                .sorted(
+                        Comparator.comparing(Event::getEventDate,
+                                Boolean.FALSE.equals(ascending)
+                                        ? Comparator.reverseOrder()
+                                        : Comparator.naturalOrder()
+                        )
+                )
                 .toList();
     }
+
 }

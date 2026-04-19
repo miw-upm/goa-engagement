@@ -1064,7 +1064,7 @@ class EventServiceIT {
         eventService.create(event2);
         eventService.create(event3);
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null, null, false);
 
         assertThat(timelineEvents).hasSize(3);
         assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
@@ -1104,7 +1104,7 @@ class EventServiceIT {
         eventService.create(event2);
         eventService.create(event3);
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, true);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null,null,true);
 
         assertThat(timelineEvents).hasSize(3);
         assertThat(timelineEvents.get(0).getTitle()).isEqualTo("Event 2");
@@ -1116,7 +1116,7 @@ class EventServiceIT {
     void testFindTimelineEventsByEngagementLetterId_EmptyList() {
         UUID nonExistentId = UUID.randomUUID();
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(nonExistentId, false);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(nonExistentId, null,null,false);
 
         assertThat(timelineEvents).isEmpty();
     }
@@ -1137,7 +1137,7 @@ class EventServiceIT {
 
         eventService.create(event);
 
-        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+        List<Event> timelineEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId,null,null,false);
 
         assertThat(timelineEvents).hasSize(1);
         assertThat(timelineEvents.getFirst().getTitle()).isEqualTo("Single Event");
@@ -1175,20 +1175,178 @@ class EventServiceIT {
         eventService.create(eventAfternoon);
         eventService.create(eventEvening);
 
-        List<Event> descendingEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, false);
+        List<Event> descendingEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null,null,false);
 
         assertThat(descendingEvents).hasSize(3);
         assertThat(descendingEvents.get(0).getTitle()).isEqualTo("Evening Call");
         assertThat(descendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
         assertThat(descendingEvents.get(2).getTitle()).isEqualTo("Morning Meeting");
 
-        List<Event> ascendingEvents = eventService.findTimelineEventsByEngagementLetterId(engagementId, true);
+        List<Event> ascendingEvents = eventService.findTimelineEventsByEngagementLetterIdWithFilters(engagementId, null,null,true);
 
         assertThat(ascendingEvents).hasSize(3);
         assertThat(ascendingEvents.get(0).getTitle()).isEqualTo("Morning Meeting");
         assertThat(ascendingEvents.get(1).getTitle()).isEqualTo("Afternoon Review");
         assertThat(ascendingEvents.get(2).getTitle()).isEqualTo("Evening Call");
     }
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_FilterByType() {
+
+        UUID engagementId = UUID.randomUUID();
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Milestone Event")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.PHASES)
+                .title("Phases Event")
+                .status(Status.IN_PROGRESS)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+
+        List<Event> result = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
+                engagementId,
+                EventType.MILESTONE,
+                null,
+                true
+        );
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getType()).isEqualTo(EventType.MILESTONE);
+    }
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_FilterByStatus() {
+
+        UUID engagementId = UUID.randomUUID();
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .title("Event 1")
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.PHASES)
+                .title("Event 2")
+                .status(Status.COMPLETED)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+
+        List<Event> result = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
+                engagementId,
+                null,
+                Status.COMPLETED,
+                true
+        );
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getStatus()).isEqualTo(Status.COMPLETED);
+    }
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_FilterByTypeAndStatus() {
+
+        UUID engagementId = UUID.randomUUID();
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate.plusDays(1))
+                .type(EventType.MILESTONE)
+                .status(Status.PENDING)
+                .title("Valid Event")
+                .engagementLetterId(engagementId)
+                .build();
+
+        Event event2 = Event.builder()
+                .eventDate(eventDate.plusDays(2))
+                .type(EventType.MILESTONE)
+                .status(Status.COMPLETED)
+                .title("Wrong Status")
+                .engagementLetterId(engagementId)
+                .build();
+
+        Event event3 = Event.builder()
+                .eventDate(eventDate.plusDays(3))
+                .type(EventType.PHASES)
+                .status(Status.PENDING)
+                .title("Wrong Type")
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+        eventService.create(event2);
+        eventService.create(event3);
+
+        List<Event> result = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
+                engagementId,
+                EventType.MILESTONE,
+                Status.PENDING,
+                true
+        );
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().getTitle()).isEqualTo("Valid Event");
+    }
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_FilterReturnsEmpty() {
+
+        UUID engagementId = UUID.randomUUID();
+
+        Event event1 = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event1);
+
+        List<Event> result = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
+                engagementId,
+                EventType.PHASES,
+                Status.COMPLETED,
+                true
+        );
+
+        assertThat(result).isEmpty();
+    }
+    @Test
+    void testFindTimelineEventsByEngagementLetterId_AllNullFilters() {
+
+        UUID engagementId = UUID.randomUUID();
+
+        Event event = Event.builder()
+                .eventDate(eventDate)
+                .type(EventType.MILESTONE)
+                .status(Status.PENDING)
+                .engagementLetterId(engagementId)
+                .build();
+
+        eventService.create(event);
+
+        List<Event> result = eventService.findTimelineEventsByEngagementLetterIdWithFilters(
+                engagementId,
+                null,
+                null,
+                true
+        );
+
+        assertThat(result).hasSize(1);
+    }
+
 
 }
 
