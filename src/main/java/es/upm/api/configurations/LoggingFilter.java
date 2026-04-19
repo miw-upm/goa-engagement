@@ -54,19 +54,14 @@ public class LoggingFilter extends OncePerRequestFilter {
             return new String(response.getContentAsByteArray(), response.getCharacterEncoding());
         }
         String baseType = contentType.split(";")[0].trim().toLowerCase();
-
-        if (baseType.equals("application/pdf")) {
-            return "[PDF - " + response.getContentSize() + " bytes]";
-        }
-        if (baseType.startsWith("image/")) {
-            return "[Imagen " + baseType.substring(6).toUpperCase() + " - " + response.getContentSize() + " bytes]";
-        }
-        if (baseType.equals("text/html")) {
-            return "[HTML - " + response.getContentSize() + " bytes]";
-        }
-        if (baseType.equals("text/css")) {
-            return "[CSS - " + response.getContentSize() + " bytes]";
-        }
-        return new String(response.getContentAsByteArray(), response.getCharacterEncoding());
+        String label = switch (baseType) {
+            case "application/pdf" -> "PDF";
+            case "text/html" -> "HTML";
+            case "text/css" -> "CSS";
+            default -> baseType.startsWith("image/") ? "Imagen " + baseType.substring(6).toUpperCase() : null;
+        };
+        return label != null
+                ? "[" + label + " - " + response.getContentSize() + " bytes]"
+                : new String(response.getContentAsByteArray(), response.getCharacterEncoding());
     }
 }
