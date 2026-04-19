@@ -146,14 +146,25 @@ public class EngagementLetterService {
     public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
         Stream<EngagementLetter> letters = this.engagementLetterPersistence.searchNullSafe(criteria);
 
-        if (StringUtils.hasText(criteria.getOwner())) {
-            List<UUID> ids = this.userWebClient.findNullSafe(criteria.getOwner()).stream()
+        if (StringUtils.hasText(criteria.getClient())) {
+            List<UUID> clientIds = this.userWebClient.findNullSafe(criteria.getClient()).stream()
                     .map(UserDto::getId)
                     .toList();
-            letters = letters.filter(letter -> ids.contains(letter.getOwner().getId()));
+            letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
         }
 
         return letters;
+    }
+
+    private boolean isClientInLetter(EngagementLetter letter, List<UUID> clientIds) {
+        if (letter.getOwner() != null && clientIds.contains(letter.getOwner().getId())) {
+            return true;
+        }
+        if (letter.getAttachments() != null) {
+            return letter.getAttachments().stream()
+                    .anyMatch(attachment -> clientIds.contains(attachment.getId()));
+        }
+        return false;
     }
 
     public byte[] generatePdf(UUID engagementLetterId) {

@@ -9,11 +9,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class EngagementLetterCriteria {
     private Boolean opened;
-    private String owner;
+    private Boolean budgetOnly;
+    private String client;
     private String legalProcedureTitle;
     private String taskTitle;
 
     public boolean all() {
-        return opened == null && owner == null && legalProcedureTitle == null;
+        return opened == null && budgetOnly == null && client == null && legalProcedureTitle == null && taskTitle == null;
     }
+
 }

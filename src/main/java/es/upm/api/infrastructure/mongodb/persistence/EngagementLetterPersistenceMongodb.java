@@ -83,8 +83,11 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
                 .findAll(Sort.by(Sort.Direction.DESC, "creationDate")).stream();
 
         if (criteria.getOpened() != null) {
-            letters = letters
-                    .filter(letter -> criteria.getOpened() == (letter.getClosingDate() == null));
+            letters = letters.filter(letter -> criteria.getOpened() == (letter.getClosingDate() == null));
+        }
+
+        if (criteria.getBudgetOnly() != null) {
+            letters = letters.filter(letter -> criteria.getBudgetOnly().equals(letter.getBudgetOnly()));
         }
 
         if (StringUtils.hasText(criteria.getLegalProcedureTitle())) {
