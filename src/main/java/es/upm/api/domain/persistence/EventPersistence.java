@@ -22,4 +22,6 @@ public interface EventPersistence {
     void deleteComment(UUID eventId, Comment comment);
 
     Stream<Event> findByEngagementLetterId(UUID engagementLetterId);
+
+    void deleteByEngagementLetterId(UUID engagementLetterId);
 }

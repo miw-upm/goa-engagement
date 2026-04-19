@@ -96,4 +96,9 @@ public class EventPersistenceMongodb implements EventPersistence {
         return this.eventRepository.findByEngagementLetterIdOrderByEventDateAsc(engagementLetterId).stream()
                 .map(EventEntity::toEvent);
     }
+
+    @Override
+    public void deleteByEngagementLetterId(UUID engagementLetterId) {
+        this.eventRepository.deleteByEngagementLetterId(engagementLetterId);
+    }
 }

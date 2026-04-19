@@ -2,11 +2,13 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.model.*;
+import es.upm.api.domain.model.events.EngagementLetterDeletedEvent;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -23,14 +25,17 @@ public class EngagementLetterService {
     private final EngagementLetterPersistence engagementLetterPersistence;
     private final PublicAccessTokenPersistence publicAccessTokenPersistence;
     private final UserWebClient userWebClient;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     public EngagementLetterService(EngagementLetterPersistence engagementLetterPersistence,
                                    PublicAccessTokenPersistence publicAccessTokenPersistence,
-                                   UserWebClient userWebClient) {
+                                   UserWebClient userWebClient,
+                                   ApplicationEventPublisher eventPublisher) {
         this.engagementLetterPersistence = engagementLetterPersistence;
         this.publicAccessTokenPersistence = publicAccessTokenPersistence;
         this.userWebClient = userWebClient;
+        this.eventPublisher = eventPublisher;
     }
 
     public EngagementLetter readById(UUID id) {
@@ -60,6 +65,9 @@ public class EngagementLetterService {
     }
 
     public void delete(UUID id) {
+        // Publicar evento de eliminación (permite que otros servicios reaccionen)
+        this.eventPublisher.publishEvent(new EngagementLetterDeletedEvent(this, id));
+        // Luego eliminar el encargo
         this.engagementLetterPersistence.delete(id);
     }
 

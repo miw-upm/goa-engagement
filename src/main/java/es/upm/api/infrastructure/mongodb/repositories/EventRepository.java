@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface EventRepository extends MongoRepository<EventEntity, UUID> {
 
     List<EventEntity> findByEngagementLetterIdOrderByEventDateAsc(UUID engagementLetterId);
+
+    void deleteByEngagementLetterId(UUID engagementLetterId);
 }
