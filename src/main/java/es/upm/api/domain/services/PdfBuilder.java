@@ -33,6 +33,7 @@ public class PdfBuilder {
     private static final String COMPANY_EMAIL = "nuria@ocanabogados.es";
     private static final String COMPANY_WEB = "www.ocanabogados.es";
     private static final String LOGO_PATH = "images/oa.png";
+    private static final String STAMP_PATH = "images/stamp.png";
 
     private final Document document;
     private final ByteArrayOutputStream outputStream;
@@ -256,6 +257,9 @@ public class PdfBuilder {
         return this.add("signature", () -> {
             document.add(Chunk.NEWLINE);
             document.add(Chunk.NEWLINE);
+            addStamp(document.leftMargin() + 5);
+            document.add(Chunk.NEWLINE);
+            document.add(Chunk.NEWLINE);
             Paragraph p = new Paragraph();
             p.add(new Chunk("_".repeat(40) + "\n", FONT_NORMAL));
             p.add(new Chunk(label, FONT_SMALL));
@@ -267,6 +271,7 @@ public class PdfBuilder {
         return this.add("multi signature", () -> {
             document.add(Chunk.NEWLINE);
             document.add(Chunk.NEWLINE);
+            addStamp(document.right() - 100);
 
             PdfPTable table = this.createTable(2);
 
@@ -291,6 +296,20 @@ public class PdfBuilder {
 
             document.add(table);
         });
+    }
+
+    private void addStamp(float x) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream(STAMP_PATH)) {
+            if (is != null) {
+                Image stamp = Image.getInstance(is.readAllBytes());
+                stamp.scaleToFit(100, 100);
+                float y = writer.getVerticalPosition(true) - 50;
+                stamp.setAbsolutePosition(x, y);
+                writer.getDirectContent().addImage(stamp);
+            }
+        } catch (Exception e) {
+            throw this.onError("loading stamp", e);
+        }
     }
 
     public PdfBuilder twoColumnSignature(String leftLabel, String rightLabel) {

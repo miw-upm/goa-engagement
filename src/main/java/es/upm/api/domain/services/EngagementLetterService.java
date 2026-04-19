@@ -199,7 +199,6 @@ public class EngagementLetterService {
         pdf.space()
                 .paragraphBold(dict.getTitle("aviso_presupuesto"))
                 .paragraph(dict.getText("aviso_presupuesto"))
-                .space(3)
                 .signatureLine(dict.getText("firma_nuria"));
     }
 
