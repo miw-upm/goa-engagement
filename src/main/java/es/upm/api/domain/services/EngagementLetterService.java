@@ -7,6 +7,8 @@ import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.miw.pdf.PdfBuilder;
+import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
 import org.springframework.context.ApplicationEventPublisher;
