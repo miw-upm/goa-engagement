@@ -2,61 +2,18 @@ package es.upm.api.domain.services;
 
 import org.yaml.snakeyaml.Yaml;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TextDictionary {
 
-    private static final Pattern BLOCK_PATTERN = Pattern.compile("^#([a-z_0-9]+):(.*)$", Pattern.MULTILINE);
-    private static final Pattern LIST_PATTERN = Pattern.compile("^#([a-z_0-9]+)\\*:(.*)$", Pattern.MULTILINE);
+    private static final Entry EMPTY_ENTRY = new Entry(null, null, List.of());
 
-    private final Map<String, String> titles = new HashMap<>();
-    private final Map<String, String> texts = new HashMap<>();
-    private final Map<String, List<String>> lists = new HashMap<>();
+    private final Map<String, Entry> entries = new HashMap<>();
 
     public TextDictionary(String templatePath) {
-        String content = TemplateReader.read(templatePath);
-        if (this.isYamlTemplate(templatePath)) {
-            this.parseYaml(content);
-        } else {
-            this.parseLegacy(content);
-        }
-    }
-
-    private boolean isYamlTemplate(String templatePath) {
-        String lowerCasePath = templatePath.toLowerCase();
-        return lowerCasePath.endsWith(".yml") || lowerCasePath.endsWith(".yaml");
-    }
-
-    private void parseLegacy(String content) {
-        Matcher listMatcher = LIST_PATTERN.matcher(content);
-        while (listMatcher.find()) {
-            String key = listMatcher.group(1);
-            String value = normalize(listMatcher.group(2).trim());
-            lists.computeIfAbsent(key, k -> new ArrayList<>()).add(value);
-        }
-        content = LIST_PATTERN.matcher(content).replaceAll("");
-        Matcher matcher = BLOCK_PATTERN.matcher(content);
-        int lastStart = -1;
-        String lastId = null;
-
-        while (matcher.find()) {
-            if (lastId != null) {
-                texts.put(lastId, normalize(content.substring(lastStart, matcher.start()).trim()));
-            }
-            lastId = matcher.group(1);
-            String title = matcher.group(2).trim();
-            titles.put(lastId, title.isEmpty() ? null : title);
-            lastStart = matcher.end() + 1;
-        }
-
-        if (lastId != null && lastStart < content.length()) {
-            texts.put(lastId, normalize(content.substring(lastStart).trim()));
-        }
+        this.parseYaml(TemplateReader.read(templatePath));
     }
 
     private void parseYaml(String content) {
@@ -64,70 +21,59 @@ public class TextDictionary {
         if (!(parsed instanceof Map<?, ?> map)) {
             return;
         }
-
         for (Map.Entry<?, ?> entry : map.entrySet()) {
             String key = String.valueOf(entry.getKey());
-            Object value = entry.getValue();
-            this.parseYamlEntry(key, value);
+            this.entries.put(key, this.parseEntry(entry.getValue()));
         }
     }
 
-    private void parseYamlEntry(String key, Object value) {
+    private Entry parseEntry(Object value) {
         if (value instanceof String textValue) {
-            this.putNormalizedText(key, textValue);
-            return;
+            return new Entry(null, this.normalize(textValue), List.of());
         }
 
         if (!(value instanceof Map<?, ?> node)) {
-            return;
+            return new Entry(null, null, List.of());
         }
 
-        this.putNormalizedTitle(key, node.get("title"));
-        this.putNormalizedText(key, node.get("text"));
-        this.putNormalizedList(key, node.get("list"));
+        String title = this.normalizeNullable(node.get("title"));
+        String text = this.normalizeNullable(node.get("text"));
+        List<String> list = this.normalizeList(node.get("list"));
+        return new Entry(title, text, list);
     }
 
-    private void putNormalizedTitle(String key, Object titleValue) {
-        if (titleValue == null) {
-            return;
+    private String normalizeNullable(Object value) {
+        if (value == null) {
+            return null;
         }
-        String normalized = normalize(String.valueOf(titleValue));
-        if (!normalized.isEmpty()) {
-            titles.put(key, normalized);
-        }
+        String normalized = this.normalize(String.valueOf(value));
+        return normalized.isBlank() ? null : normalized;
     }
 
-    private void putNormalizedText(String key, Object textValue) {
-        if (textValue == null) {
-            return;
+    private List<String> normalizeList(Object value) {
+        if (!(value instanceof List<?> values)) {
+            return List.of();
         }
-        String normalized = normalize(String.valueOf(textValue));
-        if (!normalized.isEmpty()) {
-            texts.put(key, normalized);
-        }
-    }
-
-    private void putNormalizedList(String key, Object listValue) {
-        if (!(listValue instanceof List<?> values)) {
-            return;
-        }
-        for (Object value : values) {
-            if (value == null) {
+        List<String> normalized = new java.util.ArrayList<>();
+        for (Object item : values) {
+            if (item == null) {
                 continue;
             }
-            String normalized = normalize(String.valueOf(value));
-            if (!normalized.isEmpty()) {
-                lists.computeIfAbsent(key, k -> new ArrayList<>()).add(normalized);
+            String normalizedValue = this.normalize(String.valueOf(item));
+            if (!normalizedValue.isBlank()) {
+                normalized.add(normalizedValue);
             }
         }
+        return normalized;
     }
 
     public String getTitle(String id) {
-        return titles.get(id);
+        return this.getEntry(id).title();
     }
 
     public String getText(String id) {
-        return texts.getOrDefault(id, "");
+        Entry entry = this.getEntry(id);
+        return entry.text() == null ? "" : entry.text();
     }
 
     public String getText(String id, Map<String, String> variables) {
@@ -135,7 +81,11 @@ public class TextDictionary {
     }
 
     public List<String> getList(String id) {
-        return lists.getOrDefault(id, List.of());
+        return this.getEntry(id).list();
+    }
+
+    private Entry getEntry(String id) {
+        return this.entries.getOrDefault(id, EMPTY_ENTRY);
     }
 
     private String normalize(String text) {
@@ -145,5 +95,8 @@ public class TextDictionary {
         text = text.replace("{{BREAK}}", "\n\n");
         text = text.replaceAll(" +", " ");
         return text.trim();
+    }
+
+    private record Entry(String title, String text, List<String> list) {
     }
 }
