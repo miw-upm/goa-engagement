@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.adapter.out.user.feign.UserWebClient;
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +29,12 @@ class EngagementLetterResourceIT {
     @Autowired
     private MockMvc mockMvc;
     @MockitoBean
-    private UserWebClient userWebClient;
+    private UserFinderClient userFinderClient;
 
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
-        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
         mockMvc.perform(get(es.upm.api.infrastructure.resources.EngagementLetterResource.ENGAGEMENT_LETTER + es.upm.api.infrastructure.resources.EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))

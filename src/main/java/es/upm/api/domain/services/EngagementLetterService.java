@@ -6,7 +6,7 @@ import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
-import es.upm.api.adapter.out.user.feign.UserWebClient;
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
 import org.springframework.context.ApplicationEventPublisher;
@@ -24,18 +24,18 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class EngagementLetterService {
     private final EngagementLetterGateway engagementLetterGateway;
-    private final UserWebClient userWebClient;
+    private final UserFinderClient userFinderClient;
     private final ApplicationEventPublisher eventPublisher;
 
     public EngagementLetter readById(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
         engagementLetter.setOwner(
-                this.userWebClient.readUserById(engagementLetter.getOwner().getId())
+                this.userFinderClient.readUserById(engagementLetter.getOwner().getId())
         );
         Optional.ofNullable(engagementLetter.getAttachments())
                 .ifPresent(attachments -> engagementLetter.setAttachments(
                         attachments.stream()
-                                .map(userDto -> this.userWebClient.readUserById(userDto.getId()))
+                                .map(userDto -> this.userFinderClient.readUserById(userDto.getId()))
                                 .toList()
                 ));
         return engagementLetter;
@@ -44,11 +44,11 @@ public class EngagementLetterService {
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
         engagementLetter.setOwner(
-                this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
+                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
         engagementLetter.setLastUpdatedDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
-            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
+            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
         }
         this.engagementLetterGateway.create(engagementLetter);
     }
@@ -67,7 +67,7 @@ public class EngagementLetterService {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.searchNullSafe(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userWebClient.findNullSafe(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinderClient.findNullSafe(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));

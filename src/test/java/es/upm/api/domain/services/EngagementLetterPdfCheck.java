@@ -1,7 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.adapter.out.user.feign.UserWebClient;
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +23,11 @@ class EngagementLetterPdfCheck {
     private EngagementLetterService engagementLetterService;
 
     @MockitoBean
-    private UserWebClient userWebClient;
+    private UserFinderClient userFinderClient;
 
     @Test
     void testGeneratePresupuestoPdfCheck() throws Exception {
-        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(UserSnapshot.builder()
                         .id(UUID.randomUUID())
                         .firstName("María")
@@ -47,7 +47,7 @@ class EngagementLetterPdfCheck {
 
     @Test
     void testGenerateHojaPdfCheck() throws Exception {
-        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(UserSnapshot.builder()
                         .id(UUID.randomUUID())
                         .firstName("María")

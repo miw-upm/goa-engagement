@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class LegalTaskGatewayMongodb implements LegalTaskGateway {
+public class LegalTaskMongoRepository implements LegalTaskGateway {
     public static final Sort TITLE = Sort.by(Sort.Direction.ASC, "title");
     private final LegalTaskRepository legalTaskRepository;
 

@@ -11,7 +11,7 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class UserFinderAdapter implements UserFinder {
-    private final UserWebClient userFeignClient;
+    private final UserFinderClient userFeignClient;
 
     @Override
     public UserSnapshot readById(UUID id) {

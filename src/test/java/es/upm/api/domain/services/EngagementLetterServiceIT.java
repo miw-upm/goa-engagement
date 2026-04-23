@@ -3,7 +3,7 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.adapter.out.user.feign.UserWebClient;
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +30,7 @@ class EngagementLetterServiceIT {
     private EngagementLetterService engagementLetterService;
 
     @MockitoBean
-    private UserWebClient userWebClient;
+    private UserFinderClient userFinderClient;
     private EngagementLetter engagementLetter;
 
     @BeforeEach
@@ -46,13 +46,13 @@ class EngagementLetterServiceIT {
                 .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
                 .build();
 
-        BDDMockito.given(this.userWebClient.readUserByMobile(any(String.class)))
+        BDDMockito.given(this.userFinderClient.readUserByMobile(any(String.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(this.engagementLetter.getOwner().getId()).mobile(invocation.getArgument(0)).firstName("mock").build());
-        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
-        BDDMockito.given(this.userWebClient.findNullSafe(any(String.class)))
+        BDDMockito.given(this.userFinderClient.findNullSafe(any(String.class)))
                 .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
     }
@@ -223,7 +223,7 @@ class EngagementLetterServiceIT {
     @Test
     void testSearchNullSafeFiltersByOwner() {
         UUID ownerId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
-        BDDMockito.given(this.userWebClient.findNullSafe("test"))
+        BDDMockito.given(this.userFinderClient.findNullSafe("test"))
                 .willReturn(List.of(UserSnapshot.builder().id(ownerId).build()));
 
         EngagementLetterCriteria criteria = new EngagementLetterCriteria();

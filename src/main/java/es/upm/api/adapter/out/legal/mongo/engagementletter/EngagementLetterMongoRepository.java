@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class EngagementLetterPersistenceMongodb implements EngagementLetterGateway {
+public class EngagementLetterMongoRepository implements EngagementLetterGateway {
 
     private final EngagementLetterRepository engagementLetterRepository;
 

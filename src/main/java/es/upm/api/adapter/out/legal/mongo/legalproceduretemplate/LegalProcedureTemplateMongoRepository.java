@@ -19,7 +19,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureTemplateGateway {
+public class LegalProcedureTemplateMongoRepository implements LegalProcedureTemplateGateway {
 
     private final LegalProcedureRepository procedureRepository;
     private final LegalTaskRepository taskRepository;

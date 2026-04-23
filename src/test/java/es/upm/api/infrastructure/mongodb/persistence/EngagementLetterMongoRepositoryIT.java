@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterPersistenceMongodb;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterMongoRepository;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
 import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterRepository;
@@ -20,16 +20,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataMongoTest
 @ActiveProfiles("test")
-class EngagementLetterPersistenceMongodbIT {
+class EngagementLetterMongoRepositoryIT {
 
     @Autowired
     private EngagementLetterRepository engagementLetterRepository;
 
-    private EngagementLetterPersistenceMongodb engagementLetterPersistence;
+    private EngagementLetterMongoRepository engagementLetterPersistence;
 
     @BeforeEach
     void setUp() {
-        this.engagementLetterPersistence = new EngagementLetterPersistenceMongodb(this.engagementLetterRepository);
+        this.engagementLetterPersistence = new EngagementLetterMongoRepository(this.engagementLetterRepository);
         this.engagementLetterRepository.deleteAll();
     }
 
