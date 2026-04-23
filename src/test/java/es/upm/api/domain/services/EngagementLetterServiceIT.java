@@ -1,8 +1,8 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.*;
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -119,7 +119,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeReturnsAllWhenCriteriaEmpty() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
 
@@ -128,7 +128,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeFiltersByOpenedTrue() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(true);
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
@@ -140,7 +140,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeFiltersByOpenedFalse() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(false);
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
@@ -152,7 +152,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeFiltersByLegalProcedureTitle() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setLegalProcedureTitle("herencia");
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
@@ -165,7 +165,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeFiltersByTaskTitle() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setTaskTitle("asesoramiento");
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
@@ -179,10 +179,10 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeIgnoresCase() {
-        EngagementLetterCriteria criteriaUpper = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteriaUpper = new EngagementLetterFindCriteria();
         criteriaUpper.setLegalProcedureTitle("HERENCIA");
 
-        EngagementLetterCriteria criteriaLower = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteriaLower = new EngagementLetterFindCriteria();
         criteriaLower.setLegalProcedureTitle("herencia");
 
         List<EngagementLetter> upper = engagementLetterService.searchNullSafe(criteriaUpper).toList();
@@ -195,7 +195,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeReturnsEmptyWhenNoMatch() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setLegalProcedureTitle("xyznoexiste999");
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
@@ -205,7 +205,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testSearchNullSafeCombinesFilters() {
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(true);
         criteria.setLegalProcedureTitle("herencia");
 
@@ -226,7 +226,7 @@ class EngagementLetterServiceIT {
         BDDMockito.given(this.userFinderClient.findNullSafe("test"))
                 .willReturn(List.of(UserSnapshot.builder().id(ownerId).build()));
 
-        EngagementLetterCriteria criteria = new EngagementLetterCriteria();
+        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setClient("test");
 
         List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();

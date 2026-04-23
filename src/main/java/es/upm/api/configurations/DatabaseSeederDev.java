@@ -1,7 +1,7 @@
 package es.upm.api.configurations;
 
 import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
-import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureRepository;
+import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
@@ -20,12 +20,12 @@ import java.util.UUID;
 @Profile({"dev", "test"})
 public class DatabaseSeederDev {
     private final LegalTaskRepository legalTaskRepository;
-    private final LegalProcedureRepository legalProcedureRepository;
+    private final LegalProcedureTemplateRepository legalProcedureTemplateRepository;
     private final EngagementLetterRepository engagementLetterRepository;
 
-    public DatabaseSeederDev(LegalTaskRepository legalTaskRepository, LegalProcedureRepository legalProcedureRepository, EngagementLetterRepository engagementLetterRepository) {
+    public DatabaseSeederDev(LegalTaskRepository legalTaskRepository, LegalProcedureTemplateRepository legalProcedureTemplateRepository, EngagementLetterRepository engagementLetterRepository) {
         this.legalTaskRepository = legalTaskRepository;
-        this.legalProcedureRepository = legalProcedureRepository;
+        this.legalProcedureTemplateRepository = legalProcedureTemplateRepository;
         this.engagementLetterRepository = engagementLetterRepository;
         this.deleteAllAndInitializeAndSeedDataBase();
     }
@@ -37,7 +37,7 @@ public class DatabaseSeederDev {
 
     private void deleteAllAndInitialize() {
         this.engagementLetterRepository.deleteAll();
-        this.legalProcedureRepository.deleteAll();
+        this.legalProcedureTemplateRepository.deleteAll();
         this.legalTaskRepository.deleteAll();
         log.warn("------- Delete All -----------");
     }
@@ -96,7 +96,7 @@ public class DatabaseSeederDev {
                         .title("Procedimiento de ejecución hipotecaria").legalTaskEntities(List.of(tareas[0], tareas[1], tareas[13]))
                         .budget(new BigDecimal("4000")).build(),
         };
-        this.legalProcedureRepository.saveAll(List.of(plantillaProcedimientos));
+        this.legalProcedureTemplateRepository.saveAll(List.of(plantillaProcedimientos));
         log.warn("        ------- plantilla de procedimientos legales -----------------------------------------------");
 
         LegalProcedureEntity[] procedimientos = {

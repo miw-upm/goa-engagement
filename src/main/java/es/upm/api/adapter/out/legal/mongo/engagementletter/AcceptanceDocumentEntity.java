@@ -1,7 +1,7 @@
 package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 import es.upm.api.domain.model.AcceptanceEngagement;
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.external.UserSnapshot;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

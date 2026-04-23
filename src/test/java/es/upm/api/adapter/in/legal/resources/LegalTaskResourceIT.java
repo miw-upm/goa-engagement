@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.resources;
+package es.upm.api.adapter.in.legal.resources;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class LegalTaskResourceIT {
 
     @Autowired
-    LegalTaskResource legalTaskResource;
+    es.upm.api.infrastructure.resources.LegalTaskResource legalTaskResource;
 
     @Autowired
     private MockMvc mockMvc;
@@ -26,7 +26,7 @@ class LegalTaskResourceIT {
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
-        mockMvc.perform(get(LegalTaskResource.LEGAL_TASKS + LegalTaskResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+        mockMvc.perform(get(es.upm.api.infrastructure.resources.LegalTaskResource.LEGAL_TASKS + es.upm.api.infrastructure.resources.LegalTaskResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Estudio de antecedentes y documentación"));
     }

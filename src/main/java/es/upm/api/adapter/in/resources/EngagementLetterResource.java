@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.miw.security.Security;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ public class EngagementLetterResource {
     private final EngagementLetterService engagementLetterService;
 
     @GetMapping
-    public List<EngagementLetter> searchNullSafe(@ModelAttribute EngagementLetterCriteria criteria) {
+    public List<EngagementLetter> searchNullSafe(@ModelAttribute EngagementLetterFindCriteria criteria) {
         return this.engagementLetterService.searchNullSafe(criteria).toList();
     }
 

@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EngagementLetterCriteria {
+public class EngagementLetterFindCriteria {
     private Boolean opened;
     private Boolean budgetOnly;
     private String client;

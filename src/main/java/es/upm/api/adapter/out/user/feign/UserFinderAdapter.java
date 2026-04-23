@@ -1,6 +1,6 @@
 package es.upm.api.adapter.out.user.feign;
 
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.user.UserFinder;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

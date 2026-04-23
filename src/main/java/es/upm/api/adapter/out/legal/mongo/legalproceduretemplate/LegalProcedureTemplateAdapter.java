@@ -19,9 +19,9 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class LegalProcedureTemplateMongoRepository implements LegalProcedureTemplateGateway {
+public class LegalProcedureTemplateAdapter implements LegalProcedureTemplateGateway {
 
-    private final LegalProcedureRepository procedureRepository;
+    private final LegalProcedureTemplateRepository procedureRepository;
     private final LegalTaskRepository taskRepository;
 
     @Override

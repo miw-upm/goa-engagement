@@ -1,9 +1,7 @@
-package es.upm.api.infrastructure.mongodb.persistence;
+package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
-import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterMongoRepository;
 import es.upm.api.domain.model.*;
-import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterRepository;
+import es.upm.api.domain.model.external.UserSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,16 +18,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @DataMongoTest
 @ActiveProfiles("test")
-class EngagementLetterMongoRepositoryIT {
+class EngagementLetterAdapterIT {
 
     @Autowired
     private EngagementLetterRepository engagementLetterRepository;
 
-    private EngagementLetterMongoRepository engagementLetterPersistence;
+    private EngagementLetterAdapter engagementLetterPersistence;
 
     @BeforeEach
     void setUp() {
-        this.engagementLetterPersistence = new EngagementLetterMongoRepository(this.engagementLetterRepository);
+        this.engagementLetterPersistence = new EngagementLetterAdapter(this.engagementLetterRepository);
         this.engagementLetterRepository.deleteAll();
     }
 

@@ -1,7 +1,7 @@
 package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.external.UserSnapshot;
 import lombok.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;

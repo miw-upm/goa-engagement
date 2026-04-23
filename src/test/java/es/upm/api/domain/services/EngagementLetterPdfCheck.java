@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;

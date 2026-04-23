@@ -1,8 +1,8 @@
 package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +16,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class EngagementLetterMongoRepository implements EngagementLetterGateway {
+public class EngagementLetterAdapter implements EngagementLetterGateway {
 
     private final EngagementLetterRepository engagementLetterRepository;
 
@@ -68,7 +68,7 @@ public class EngagementLetterMongoRepository implements EngagementLetterGateway 
     }
 
     @Override
-    public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
+    public Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria) {
         Stream<EngagementLetterEntity> letters = this.engagementLetterRepository
                 .findAll(Sort.by(Sort.Direction.DESC, "creationDate")).stream();
 

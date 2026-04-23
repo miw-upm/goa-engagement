@@ -1,7 +1,7 @@
 package es.upm.api.domain.ports.out.legal;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -17,5 +17,5 @@ public interface EngagementLetterGateway {
 
     void update(UUID id, EngagementLetter engagementLetter);
 
-    Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria);
+    Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria);
 }

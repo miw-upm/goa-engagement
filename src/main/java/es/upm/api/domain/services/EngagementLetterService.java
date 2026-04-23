@@ -3,8 +3,8 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
-import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.snapshots.UserSnapshot;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class EngagementLetterService {
         this.engagementLetterGateway.update(id, engagementLetter);
     }
 
-    public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
+    public Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria) {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.searchNullSafe(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
