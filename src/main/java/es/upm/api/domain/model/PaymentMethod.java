@@ -17,5 +17,4 @@ public class PaymentMethod {
     public String toString() {
         return percentage + ":  " + description;
     }
-
 }

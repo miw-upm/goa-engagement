@@ -7,7 +7,6 @@ import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 

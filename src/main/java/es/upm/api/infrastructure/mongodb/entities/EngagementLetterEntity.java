@@ -21,7 +21,7 @@ public class EngagementLetterEntity {
     private UUID id;
     private Boolean budgetOnly;
     private Integer discount;
-    private LocalDate creationDate;
+    private LocalDate lastUpdatedDate;
     private LocalDate closingDate;
     private UUID ownerId;
     @Singular

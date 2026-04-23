@@ -46,7 +46,7 @@ public class EngagementLetterService {
         engagementLetter.setOwner(
                 this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
-        engagementLetter.setCreationDate(LocalDate.now());
+        engagementLetter.setLastUpdatedDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
             engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
         }
@@ -58,6 +58,8 @@ public class EngagementLetterService {
     }
 
     public void update(UUID id, EngagementLetter engagementLetter) {
+        engagementLetter.setLastUpdatedDate(LocalDate.now());
+        engagementLetter.setId(id);
         this.engagementLetterPersistence.update(id, engagementLetter);
     }
 

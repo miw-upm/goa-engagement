@@ -112,7 +112,7 @@ public class DatabaseSeederDev {
         EngagementLetterEntity[] encargos = {
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                         .budgetOnly(true)
-                        .discount(10).creationDate(LocalDate.now().minusDays(5))
+                        .discount(10).lastUpdatedDate(LocalDate.now().minusDays(5))
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
@@ -126,7 +126,7 @@ public class DatabaseSeederDev {
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[2])).build(),
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
                         .budgetOnly(false)
-                        .discount(20).creationDate(LocalDate.now())
+                        .discount(20).lastUpdatedDate(LocalDate.now())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
@@ -141,7 +141,7 @@ public class DatabaseSeederDev {
                                 + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
                                 + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
                                 + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!.")
-                        .creationDate(LocalDate.now())
+                        .lastUpdatedDate(LocalDate.now())
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006"))
                         .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
                         .paymentMethodEntity(PaymentMethodEntity.builder()
@@ -155,7 +155,7 @@ public class DatabaseSeederDev {
                 EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0003"))
                         .budgetOnly(false)
                         .discount(10)
-                        .creationDate(LocalDate.now().minusDays(30))
+                        .lastUpdatedDate(LocalDate.now().minusDays(30))
                         .closingDate(LocalDate.now().minusDays(5))  // CERRADO
                         .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Completo").percentage("100%").build())

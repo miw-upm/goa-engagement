@@ -42,7 +42,7 @@ class EngagementLetterPersistenceMongodbIT {
 
         EngagementLetter engagementLetter = EngagementLetter.builder()
                 .id(engagementLetterId)
-                .creationDate(creationDate)
+                .lastUpdatedDate(creationDate)
                 .discount(10)
                 .owner(UserSnapshot.builder().id(ownerId).build())
                 .legalProcedures(List.of(LegalProcedure.builder()
@@ -66,7 +66,7 @@ class EngagementLetterPersistenceMongodbIT {
         this.engagementLetterPersistence.update(engagementLetterId, toUpdate);
 
         EngagementLetter updated = this.engagementLetterPersistence.readById(engagementLetterId);
-        assertThat(updated.getCreationDate()).isEqualTo(creationDate);
+        assertThat(updated.getLastUpdatedDate()).isEqualTo(creationDate);
         assertThat(updated.getAcceptanceEngagements()).hasSize(1);
         assertThat(updated.getAcceptanceEngagements().get(0).getSignatureDate()).isEqualTo(signatureDate);
         assertThat(updated.getAcceptanceEngagements().get(0).getSigner().getId()).isEqualTo(signerId);

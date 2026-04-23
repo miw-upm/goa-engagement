@@ -27,7 +27,7 @@ public class EngagementLetter {
     private UUID id;
     private Boolean budgetOnly;
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate creationDate;
+    private LocalDate lastUpdatedDate;
     @Min(0)
     @Max(100)
     private Integer discount;
@@ -65,7 +65,7 @@ public class EngagementLetter {
     }
 
     public String buildCreationDate() {
-        return "En Madrid, a " + creationDate
+        return "En Madrid, a " + lastUpdatedDate
                 .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES")));
     }
 }

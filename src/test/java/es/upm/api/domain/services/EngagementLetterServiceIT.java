@@ -39,7 +39,10 @@ class EngagementLetterServiceIT {
                 .discount(15)
                 .owner(UserSnapshot.builder().id(UUID.randomUUID()).mobile("123456789").firstName("John").build())
                 .legalProcedures(List.of(LegalProcedure.builder()
-                        .title("procedimiento").budget(BigDecimal.TEN).legalTasks(List.of("tarea")).build()))
+                        .title("procedimiento")
+                        .budget(BigDecimal.TEN)
+                        .legalTasks(List.of("tarea"))
+                        .build()))
                 .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
                 .build();
 
@@ -67,12 +70,11 @@ class EngagementLetterServiceIT {
 
     @Test
     void testCreateSuccess() {
-        assertThat(this.engagementLetter.getId()).isNotNull();
         EngagementLetter engagementLetterDb = this.engagementLetterService.readById(engagementLetter.getId());
         assertThat(engagementLetterDb)
                 .isNotNull()
                 .satisfies(engagement -> {
-                    assertThat(engagement.getCreationDate()).isEqualTo(LocalDate.now());
+                    assertThat(engagement.getLastUpdatedDate()).isEqualTo(LocalDate.now());
                     assertThat(engagement.getDiscount()).isEqualTo(15);
                     assertThat(engagement.getPaymentMethods()).hasSize(1);
                     assertThat(engagement.getPaymentMethods().getFirst().getDescription()).isEqualTo("Todo");
@@ -87,6 +89,7 @@ class EngagementLetterServiceIT {
         UUID originalId = this.engagementLetter.getId();
         EngagementLetter updatedEngagementLetter = EngagementLetter.builder()
                 .id(originalId)
+                .lastUpdatedDate(LocalDate.of(2000, 1, 1))
                 .discount(30)
                 .owner(engagementLetter.getOwner())
                 .legalProcedures(engagementLetter.getLegalProcedures())
@@ -98,6 +101,7 @@ class EngagementLetterServiceIT {
         assertThat(retrieved)
                 .isNotNull()
                 .satisfies(letter -> {
+                    assertThat(letter.getLastUpdatedDate()).isEqualTo(LocalDate.now());
                     assertThat(letter.getDiscount()).isEqualTo(30);
                     assertThat(letter.getPaymentMethods()).hasSize(1);
                     assertThat(letter.getPaymentMethods().getFirst().getDescription()).isEqualTo("Actualizado");

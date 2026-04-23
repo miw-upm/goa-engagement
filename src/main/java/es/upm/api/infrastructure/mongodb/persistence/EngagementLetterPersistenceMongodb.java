@@ -67,9 +67,8 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
 
     @Override
     public void update(UUID id, EngagementLetter engagementLetter) {
-        EngagementLetter engagementLetterBd = this.readById(id);
+        this.readById(id);
         engagementLetter.setId(id);
-        engagementLetter.setCreationDate(engagementLetterBd.getCreationDate());
         this.engagementLetterRepository.save(this.convertToEngagementLetterEntity(engagementLetter));
     }
 
