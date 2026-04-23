@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.UserSnapshot;
 import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -28,7 +28,7 @@ class EngagementLetterPdfCheck {
     @Test
     void testGeneratePresupuestoPdfCheck() throws Exception {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
-                .willReturn(UserDto.builder()
+                .willReturn(UserSnapshot.builder()
                         .id(UUID.randomUUID())
                         .firstName("María")
                         .familyName("García López")
@@ -48,7 +48,7 @@ class EngagementLetterPdfCheck {
     @Test
     void testGenerateHojaPdfCheck() throws Exception {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
-                .willReturn(UserDto.builder()
+                .willReturn(UserSnapshot.builder()
                         .id(UUID.randomUUID())
                         .firstName("María")
                         .familyName("García López")

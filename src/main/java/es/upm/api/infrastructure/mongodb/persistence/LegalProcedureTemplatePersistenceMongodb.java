@@ -10,6 +10,7 @@ import es.upm.api.infrastructure.mongodb.repositories.LegalProcedureRepository;
 import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -20,16 +21,11 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
+@RequiredArgsConstructor
 public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureTemplatePersistence {
 
     private final LegalProcedureRepository procedureRepository;
     private final LegalTaskRepository taskRepository;
-
-    @Autowired
-    public LegalProcedureTemplatePersistenceMongodb(LegalProcedureRepository procedureRepository, LegalTaskRepository taskRepository) {
-        this.procedureRepository = procedureRepository;
-        this.taskRepository = taskRepository;
-    }
 
     @Override
     public void create(LegalProcedureTemplate procedure) {

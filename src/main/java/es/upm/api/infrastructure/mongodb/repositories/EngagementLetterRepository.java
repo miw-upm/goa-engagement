@@ -9,14 +9,10 @@ import java.util.List;
 import java.util.UUID;
 
 public interface EngagementLetterRepository extends MongoRepository<EngagementLetterEntity, UUID> {
-
-
     @Query("{'closingDate': null}")
     List<EngagementLetterEntity> findByOpened();
 
     @Query("{'closingDate': { $ne: null } }")
     List<EngagementLetterEntity> findByClosed();
-
-
 }
 

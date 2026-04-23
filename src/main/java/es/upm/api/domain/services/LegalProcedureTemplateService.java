@@ -3,21 +3,17 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.model.LegalProcedureTemplate;
 import es.upm.api.domain.model.criteria.LegalProcedureTemplateFindCriteria;
 import es.upm.api.domain.persistence.LegalProcedureTemplatePersistence;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class LegalProcedureTemplateService {
 
     private final LegalProcedureTemplatePersistence legalProcedureTemplatePersistence;
-
-    @Autowired
-    public LegalProcedureTemplateService(LegalProcedureTemplatePersistence legalProcedureTemplatePersistence) {
-        this.legalProcedureTemplatePersistence = legalProcedureTemplatePersistence;
-    }
 
     public void create(LegalProcedureTemplate legalProcedureTemplate) {
         legalProcedureTemplate.setId(UUID.randomUUID());

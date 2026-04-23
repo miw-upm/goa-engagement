@@ -11,6 +11,6 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccessLinkDto {
+public class AccessLinkSnapshot {
     UUID id;
 }

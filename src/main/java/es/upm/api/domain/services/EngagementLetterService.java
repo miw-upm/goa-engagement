@@ -6,25 +6,19 @@ import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 
 import es.upm.api.domain.webclients.UserWebClient;
-import es.upm.miw.exception.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
-    public static final int PUBLIC_ACCESS_TOKEN_EXPIRY_DAYS = 5;
-    public static final int PUBLIC_ACCESS_TOKEN_MAX_USES = 5;
-
     private final EngagementLetterPersistence engagementLetterPersistence;
     private final UserWebClient userWebClient;
     private final ApplicationEventPublisher eventPublisher;
@@ -68,7 +62,7 @@ public class EngagementLetterService {
 
         if (StringUtils.hasText(criteria.getClient())) {
             List<UUID> clientIds = this.userWebClient.findNullSafe(criteria.getClient()).stream()
-                    .map(UserDto::getId)
+                    .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
         }

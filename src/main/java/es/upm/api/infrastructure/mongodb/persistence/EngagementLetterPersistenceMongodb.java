@@ -2,7 +2,7 @@ package es.upm.api.infrastructure.mongodb.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.UserSnapshot;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.infrastructure.mongodb.entities.AcceptanceDocumentEntity;
 import es.upm.api.infrastructure.mongodb.entities.EngagementLetterEntity;
@@ -10,6 +10,7 @@ import es.upm.api.infrastructure.mongodb.entities.LegalProcedureEntity;
 import es.upm.api.infrastructure.mongodb.entities.PaymentMethodEntity;
 import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository;
 import es.upm.miw.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -20,14 +21,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
+@RequiredArgsConstructor
 public class EngagementLetterPersistenceMongodb implements EngagementLetterPersistence {
 
     private final EngagementLetterRepository engagementLetterRepository;
-
-    @Autowired
-    public EngagementLetterPersistenceMongodb(EngagementLetterRepository engagementLetterRepository) {
-        this.engagementLetterRepository = engagementLetterRepository;
-    }
 
     @Override
     public void create(EngagementLetter engagementLetter) {
@@ -41,7 +38,7 @@ public class EngagementLetterPersistenceMongodb implements EngagementLetterPersi
         Optional.ofNullable(engagementLetter.getAttachments())
                 .ifPresent(attachments -> engagementLetterEntity.setAttachmentIds(
                         attachments.stream()
-                                .map(UserDto::getId)
+                                .map(UserSnapshot::getId)
                                 .toList()
                 ));
         engagementLetterEntity.setLegalProcedureEntities(

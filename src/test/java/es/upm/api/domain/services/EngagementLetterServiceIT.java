@@ -36,7 +36,7 @@ class EngagementLetterServiceIT {
     void setUpEngagementLetter() {
         this.engagementLetter = EngagementLetter.builder()
                 .discount(15)
-                .owner(UserDto.builder().id(UUID.randomUUID()).mobile("123456789").firstName("John").build())
+                .owner(UserSnapshot.builder().id(UUID.randomUUID()).mobile("123456789").firstName("John").build())
                 .legalProcedures(List.of(LegalProcedure.builder()
                         .title("procedimiento").budget(BigDecimal.TEN).legalTasks(List.of("tarea")).build()))
                 .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
@@ -44,10 +44,10 @@ class EngagementLetterServiceIT {
 
         BDDMockito.given(this.userWebClient.readUserByMobile(any(String.class)))
                 .willAnswer(invocation ->
-                        UserDto.builder().id(this.engagementLetter.getOwner().getId()).mobile(invocation.getArgument(0)).firstName("mock").build());
+                        UserSnapshot.builder().id(this.engagementLetter.getOwner().getId()).mobile(invocation.getArgument(0)).firstName("mock").build());
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
-                        UserDto.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
+                        UserSnapshot.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
         BDDMockito.given(this.userWebClient.findNullSafe(any(String.class)))
                 .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
@@ -219,7 +219,7 @@ class EngagementLetterServiceIT {
     void testSearchNullSafeFiltersByOwner() {
         UUID ownerId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
         BDDMockito.given(this.userWebClient.findNullSafe("test"))
-                .willReturn(List.of(UserDto.builder().id(ownerId).build()));
+                .willReturn(List.of(UserSnapshot.builder().id(ownerId).build()));
 
         EngagementLetterCriteria criteria = new EngagementLetterCriteria();
         criteria.setClient("test");

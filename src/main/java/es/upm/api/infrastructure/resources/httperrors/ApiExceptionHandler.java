@@ -3,6 +3,7 @@ package es.upm.api.infrastructure.resources.httperrors;
 import es.upm.miw.exception.*;
 import feign.FeignException;
 import feign.RetryableException;
+import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -16,15 +17,10 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
+@RequiredArgsConstructor
 public class ApiExceptionHandler {
 
-
     private final Environment environment;
-
-    @Autowired
-    public ApiExceptionHandler(Environment environment) {
-        this.environment = environment;
-    }
 
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler({

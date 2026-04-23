@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AcceptanceEngagement {
     private LocalDateTime signatureDate;
-    private UserDto signer;
-    private AccessLinkDto accessLinkDto;
+    private UserSnapshot signer;
+    private AccessLinkSnapshot accessLinkSnapshot;
 }
 
