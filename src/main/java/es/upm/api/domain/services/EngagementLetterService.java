@@ -3,6 +3,7 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.*;
 
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 
 import es.upm.api.domain.webclients.UserWebClient;

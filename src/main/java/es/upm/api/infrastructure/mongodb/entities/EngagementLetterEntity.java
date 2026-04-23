@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.mongodb.entities;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.UserSnapshot;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import lombok.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;

@@ -2,7 +2,7 @@ package es.upm.api.infrastructure.mongodb.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.UserSnapshot;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.infrastructure.mongodb.entities.AcceptanceDocumentEntity;
 import es.upm.api.infrastructure.mongodb.entities.EngagementLetterEntity;
@@ -11,7 +11,6 @@ import es.upm.api.infrastructure.mongodb.entities.PaymentMethodEntity;
 import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;

@@ -1,5 +1,7 @@
 package es.upm.api.domain.model;
 
+import es.upm.api.domain.model.snapshos.AccessLinkSnapshot;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
