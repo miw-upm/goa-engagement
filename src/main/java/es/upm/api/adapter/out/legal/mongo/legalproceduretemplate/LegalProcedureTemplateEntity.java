@@ -34,10 +34,10 @@ public class LegalProcedureTemplateEntity {
         BeanUtils.copyProperties(legalProcedureTemplate, this);
     }
 
-    public LegalProcedureTemplate toLegalProcedureTemplate() {
+    public LegalProcedureTemplate toDomain() {
         LegalProcedureTemplate legalProcedureTemplate = new LegalProcedureTemplate();
         BeanUtils.copyProperties(this, legalProcedureTemplate);
-        legalProcedureTemplate.setLegalTasks(legalTaskEntities.stream().map(LegalTaskEntity::toLegalTask).toList());
+        legalProcedureTemplate.setLegalTasks(legalTaskEntities.stream().map(LegalTaskEntity::toDomain).toList());
         return legalProcedureTemplate;
     }
 }

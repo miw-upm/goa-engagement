@@ -54,7 +54,7 @@ public class LegalProcedureTemplateAdapter implements LegalProcedureTemplateGate
     public LegalProcedureTemplate read(UUID id) {
         return this.procedureRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("LegalProcedureTemplate id not found: " + id))
-                .toLegalProcedureTemplate();
+                .toDomain();
 
     }
 
@@ -72,12 +72,12 @@ public class LegalProcedureTemplateAdapter implements LegalProcedureTemplateGate
                                     task.getTitle().toLowerCase().contains(taskTitleLower)));
         }
 
-        return templates.map(LegalProcedureTemplateEntity::toLegalProcedureTemplate);
+        return templates.map(LegalProcedureTemplateEntity::toDomain);
     }
 
     @Override
     public Stream<LegalProcedureTemplate> findAll() {
-        return this.procedureRepository.findAll().stream().map(LegalProcedureTemplateEntity::toLegalProcedureTemplate);
+        return this.procedureRepository.findAll().stream().map(LegalProcedureTemplateEntity::toDomain);
     }
 
     @Override

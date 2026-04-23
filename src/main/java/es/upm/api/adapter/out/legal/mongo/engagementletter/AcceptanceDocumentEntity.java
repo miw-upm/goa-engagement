@@ -27,7 +27,7 @@ public class AcceptanceDocumentEntity {
         }
     }
 
-    public AcceptanceEngagement toAcceptanceDocument() {
+    public AcceptanceEngagement toDomain() {
         AcceptanceEngagement acceptance = new AcceptanceEngagement();
         BeanUtils.copyProperties(this, acceptance, "signer");
         acceptance.setSigner(UserSnapshot.builder().id(this.signer).build());

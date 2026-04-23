@@ -27,7 +27,7 @@ public class LegalTaskEntity {
         BeanUtils.copyProperties(legalTask, this);
     }
 
-    public LegalTask toLegalTask() {
+    public LegalTask toDomain() {
         LegalTask legalTask = new LegalTask();
         BeanUtils.copyProperties(this, legalTask);
         return legalTask;

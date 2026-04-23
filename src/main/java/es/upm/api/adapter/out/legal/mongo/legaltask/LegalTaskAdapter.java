@@ -38,7 +38,7 @@ public class LegalTaskAdapter implements LegalTaskGateway {
     public LegalTask read(UUID id) {
         return this.legalTaskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Legal task not found, id:" + id))
-                .toLegalTask();
+                .toDomain();
     }
 
     @Override
@@ -47,14 +47,14 @@ public class LegalTaskAdapter implements LegalTaskGateway {
             return this.findAll();
         } else {
             return this.legalTaskRepository.findByTitleContainingIgnoreCase(title, TITLE).stream()
-                    .map(LegalTaskEntity::toLegalTask);
+                    .map(LegalTaskEntity::toDomain);
         }
     }
 
     @Override
     public Stream<LegalTask> findAll() {
         return this.legalTaskRepository.findAll(TITLE).stream()
-                .map(LegalTaskEntity::toLegalTask);
+                .map(LegalTaskEntity::toDomain);
     }
 
     @Override

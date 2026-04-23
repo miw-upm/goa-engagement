@@ -98,14 +98,14 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
                                                     task.toLowerCase().contains(taskLower))));
         }
 
-        return letters.map(EngagementLetterEntity::toEngagementLetter);
+        return letters.map(EngagementLetterEntity::toDomain);
     }
 
     @Override
     public EngagementLetter readById(UUID id) {
         return this.engagementLetterRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("The EngagementLetter ID doesn't exist: " + id))
-                .toEngagementLetter();
+                .toDomain();
     }
 
 }

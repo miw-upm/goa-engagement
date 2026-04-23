@@ -39,7 +39,7 @@ public class EngagementLetterEntity {
         this.ownerId = engagementLetter.getOwner().getId();
     }
 
-    public EngagementLetter toEngagementLetter() {
+    public EngagementLetter toDomain() {
         EngagementLetter engagementLetter = new EngagementLetter();
         BeanUtils.copyProperties(this, engagementLetter);
         engagementLetter.setOwner(UserSnapshot.builder().id(this.getOwnerId()).build());
@@ -51,14 +51,14 @@ public class EngagementLetterEntity {
         }
         if (this.acceptanceDocumentEntities != null) {
             engagementLetter.setAcceptanceEngagements(this.acceptanceDocumentEntities.stream()
-                    .map(AcceptanceDocumentEntity::toAcceptanceDocument)
+                    .map(AcceptanceDocumentEntity::toDomain)
                     .toList());
         }
         engagementLetter.setPaymentMethods(this.paymentMethodEntities.stream()
-                .map(PaymentMethodEntity::toPaymentMethod)
+                .map(PaymentMethodEntity::toDomain)
                 .toList());
         engagementLetter.setLegalProcedures(this.legalProcedureEntities.stream()
-                .map(LegalProcedureEntity::toLegalProcedure)
+                .map(LegalProcedureEntity::toDomain)
                 .toList());
         return engagementLetter;
     }

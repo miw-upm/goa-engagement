@@ -19,7 +19,7 @@ public class PaymentMethodEntity {
         BeanUtils.copyProperties(paymentMethod, this);
     }
 
-    public PaymentMethod toPaymentMethod() {
+    public PaymentMethod toDomain() {
         PaymentMethod paymentMethod = new PaymentMethod();
         BeanUtils.copyProperties(this, paymentMethod);
         return paymentMethod;
