@@ -121,17 +121,17 @@ class EngagementLetterServiceIT {
     void testSearchNullSafeReturnsAllWhenCriteriaEmpty() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results).hasSizeGreaterThanOrEqualTo(4);
     }
 
     @Test
-    void testSearchNullSafeFiltersByOpenedTrue() {
+    void testFindFiltersByOpenedTrue() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(true);
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results)
                 .isNotEmpty()
@@ -139,11 +139,11 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testSearchNullSafeFiltersByOpenedFalse() {
+    void testFindFiltersByOpenedFalse() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(false);
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results)
                 .isNotEmpty()
@@ -151,11 +151,11 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testSearchNullSafeFiltersByLegalProcedureTitle() {
+    void testFindFiltersByLegalProcedureTitle() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setLegalProcedureTitle("herencia");
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results)
                 .isNotEmpty()
@@ -164,11 +164,11 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testSearchNullSafeFiltersByTaskTitle() {
+    void testFindFiltersByTaskTitle() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setTaskTitle("asesoramiento");
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results)
                 .isNotEmpty()
@@ -185,8 +185,8 @@ class EngagementLetterServiceIT {
         EngagementLetterFindCriteria criteriaLower = new EngagementLetterFindCriteria();
         criteriaLower.setLegalProcedureTitle("herencia");
 
-        List<EngagementLetter> upper = engagementLetterService.searchNullSafe(criteriaUpper).toList();
-        List<EngagementLetter> lower = engagementLetterService.searchNullSafe(criteriaLower).toList();
+        List<EngagementLetter> upper = engagementLetterService.find(criteriaUpper).toList();
+        List<EngagementLetter> lower = engagementLetterService.find(criteriaLower).toList();
 
         assertThat(upper)
                 .isNotEmpty()
@@ -198,18 +198,18 @@ class EngagementLetterServiceIT {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setLegalProcedureTitle("xyznoexiste999");
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results).isEmpty();
     }
 
     @Test
-    void testSearchNullSafeCombinesFilters() {
+    void testFindCombinesFilters() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(true);
         criteria.setLegalProcedureTitle("herencia");
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results)
                 .isNotEmpty()
@@ -221,7 +221,7 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testSearchNullSafeFiltersByOwner() {
+    void testFindFiltersByOwner() {
         UUID ownerId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
         BDDMockito.given(this.userFinderClient.findNullSafe("test"))
                 .willReturn(List.of(UserSnapshot.builder().id(ownerId).build()));
@@ -229,7 +229,7 @@ class EngagementLetterServiceIT {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setClient("test");
 
-        List<EngagementLetter> results = engagementLetterService.searchNullSafe(criteria).toList();
+        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
 
         assertThat(results)
                 .isNotEmpty()

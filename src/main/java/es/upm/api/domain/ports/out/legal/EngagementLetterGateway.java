@@ -17,5 +17,5 @@ public interface EngagementLetterGateway {
 
     void update(UUID id, EngagementLetter engagementLetter);
 
-    Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria);
+    Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria);
 }
