@@ -1,8 +1,9 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
+import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterPersistenceMongodb;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

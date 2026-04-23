@@ -5,8 +5,8 @@ import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.domain.persistence.EngagementLetterPersistence;
-import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
+import es.upm.api.adapter.out.user.feign.UserWebClient;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
 import org.springframework.context.ApplicationEventPublisher;
@@ -23,12 +23,12 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
-    private final EngagementLetterPersistence engagementLetterPersistence;
+    private final EngagementLetterGateway engagementLetterGateway;
     private final UserWebClient userWebClient;
     private final ApplicationEventPublisher eventPublisher;
 
     public EngagementLetter readById(UUID id) {
-        EngagementLetter engagementLetter = this.engagementLetterPersistence.readById(id);
+        EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
         engagementLetter.setOwner(
                 this.userWebClient.readUserById(engagementLetter.getOwner().getId())
         );
@@ -50,21 +50,21 @@ public class EngagementLetterService {
         if (engagementLetter.getAttachments() != null) {
             engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
         }
-        this.engagementLetterPersistence.create(engagementLetter);
+        this.engagementLetterGateway.create(engagementLetter);
     }
 
     public void delete(UUID id) {
-        this.engagementLetterPersistence.delete(id);
+        this.engagementLetterGateway.delete(id);
     }
 
     public void update(UUID id, EngagementLetter engagementLetter) {
         engagementLetter.setLastUpdatedDate(LocalDate.now());
         engagementLetter.setId(id);
-        this.engagementLetterPersistence.update(id, engagementLetter);
+        this.engagementLetterGateway.update(id, engagementLetter);
     }
 
     public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
-        Stream<EngagementLetter> letters = this.engagementLetterPersistence.searchNullSafe(criteria);
+        Stream<EngagementLetter> letters = this.engagementLetterGateway.searchNullSafe(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
             List<UUID> clientIds = this.userWebClient.findNullSafe(criteria.getClient()).stream()

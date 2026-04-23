@@ -1,14 +1,9 @@
-package es.upm.api.infrastructure.mongodb.persistence;
+package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.domain.persistence.EngagementLetterPersistence;
-import es.upm.api.infrastructure.mongodb.entities.AcceptanceDocumentEntity;
-import es.upm.api.infrastructure.mongodb.entities.EngagementLetterEntity;
-import es.upm.api.infrastructure.mongodb.entities.LegalProcedureEntity;
-import es.upm.api.infrastructure.mongodb.entities.PaymentMethodEntity;
-import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository;
+import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -21,7 +16,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class EngagementLetterPersistenceMongodb implements EngagementLetterPersistence {
+public class EngagementLetterPersistenceMongodb implements EngagementLetterGateway {
 
     private final EngagementLetterRepository engagementLetterRepository;
 

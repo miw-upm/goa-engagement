@@ -1,4 +1,4 @@
-package es.upm.api.domain.persistence;
+package es.upm.api.domain.ports.out.legal;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
-public interface EngagementLetterPersistence {
+public interface EngagementLetterGateway {
     EngagementLetter readById(UUID id);
 
     void create(EngagementLetter engagementLetter);

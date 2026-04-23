@@ -1,7 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.adapter.out.user.feign.UserWebClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,13 +1,11 @@
-package es.upm.api.infrastructure.mongodb.persistence;
+package es.upm.api.adapter.out.legal.mongo.legalproceduretemplate;
 
 import es.upm.api.domain.model.LegalProcedureTemplate;
 import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.model.criteria.LegalProcedureTemplateFindCriteria;
-import es.upm.api.domain.persistence.LegalProcedureTemplatePersistence;
-import es.upm.api.infrastructure.mongodb.entities.LegalProcedureTemplateEntity;
-import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
-import es.upm.api.infrastructure.mongodb.repositories.LegalProcedureRepository;
-import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
+import es.upm.api.domain.ports.out.legal.LegalProcedureTemplateGateway;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +19,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureTemplatePersistence {
+public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureTemplateGateway {
 
     private final LegalProcedureRepository procedureRepository;
     private final LegalTaskRepository taskRepository;

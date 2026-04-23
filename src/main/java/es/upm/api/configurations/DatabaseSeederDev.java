@@ -1,6 +1,10 @@
-package es.upm.api.infrastructure.mongodb.repositories;
+package es.upm.api.configurations;
 
-import es.upm.api.infrastructure.mongodb.entities.*;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
+import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureRepository;
+import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;

@@ -1,6 +1,7 @@
 package es.upm.api.infrastructure.mongodb.repositories;
 
-import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -1,4 +1,4 @@
-package es.upm.api.domain.persistence;
+package es.upm.api.domain.ports.out.legal;
 
 import es.upm.api.domain.model.LegalTask;
 import org.springframework.stereotype.Repository;
@@ -7,7 +7,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
-public interface LegalTaskPersistence {
+public interface LegalTaskGateway {
     void create(LegalTask legalTask);
 
     void deleteById(UUID id);

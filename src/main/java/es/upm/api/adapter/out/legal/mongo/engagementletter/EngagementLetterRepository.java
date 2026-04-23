@@ -1,7 +1,6 @@
-package es.upm.api.infrastructure.mongodb.repositories;
+package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 
-import es.upm.api.infrastructure.mongodb.entities.EngagementLetterEntity;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 

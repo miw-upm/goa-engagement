@@ -1,9 +1,7 @@
-package es.upm.api.infrastructure.mongodb.persistence;
+package es.upm.api.adapter.out.legal.mongo.legaltask;
 
 import es.upm.api.domain.model.LegalTask;
-import es.upm.api.domain.persistence.LegalTaskPersistence;
-import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
-import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
+import es.upm.api.domain.ports.out.legal.LegalTaskGateway;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +13,7 @@ import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
-public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
+public class LegalTaskGatewayMongodb implements LegalTaskGateway {
     public static final Sort TITLE = Sort.by(Sort.Direction.ASC, "title");
     private final LegalTaskRepository legalTaskRepository;
 

@@ -1,7 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.LegalTask;
-import es.upm.api.domain.persistence.LegalTaskPersistence;
+import es.upm.api.domain.ports.out.legal.LegalTaskGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class LegalTaskService {
 
-    private final LegalTaskPersistence legalTaskPersistence;
+    private final LegalTaskGateway legalTaskPersistence;
     private final LegalProcedureTemplateService legalProcedureTemplateService;
 
     public void create(LegalTask legalTask) {

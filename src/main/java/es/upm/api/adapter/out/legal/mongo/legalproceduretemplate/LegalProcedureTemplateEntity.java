@@ -1,5 +1,6 @@
-package es.upm.api.infrastructure.mongodb.entities;
+package es.upm.api.adapter.out.legal.mongo.legalproceduretemplate;
 
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
 import es.upm.api.domain.model.LegalProcedureTemplate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

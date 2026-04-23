@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.snapshots.UserSnapshot;
-import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.adapter.out.user.feign.UserWebClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EngagementLetterResourceIT {
 
     @Autowired
-    EngagementLetterResource providerResource;
+    es.upm.api.infrastructure.resources.EngagementLetterResource providerResource;
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,7 +37,7 @@ class EngagementLetterResourceIT {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
-        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+        mockMvc.perform(get(es.upm.api.infrastructure.resources.EngagementLetterResource.ENGAGEMENT_LETTER + es.upm.api.infrastructure.resources.EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                 .andExpect(status().isOk());
 
     }

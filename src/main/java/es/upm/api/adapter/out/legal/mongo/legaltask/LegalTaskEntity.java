@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.mongodb.entities;
+package es.upm.api.adapter.out.legal.mongo.legaltask;
 
 import es.upm.api.domain.model.LegalTask;
 import lombok.AllArgsConstructor;

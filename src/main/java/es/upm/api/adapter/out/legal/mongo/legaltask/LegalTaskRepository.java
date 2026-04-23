@@ -1,6 +1,5 @@
-package es.upm.api.infrastructure.mongodb.repositories;
+package es.upm.api.adapter.out.legal.mongo.legaltask;
 
-import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;

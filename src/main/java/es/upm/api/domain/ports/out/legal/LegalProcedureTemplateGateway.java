@@ -1,4 +1,4 @@
-package es.upm.api.domain.persistence;
+package es.upm.api.domain.ports.out.legal;
 
 import es.upm.api.domain.model.LegalProcedureTemplate;
 import es.upm.api.domain.model.criteria.LegalProcedureTemplateFindCriteria;
@@ -8,7 +8,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
-public interface LegalProcedureTemplatePersistence {
+public interface LegalProcedureTemplateGateway {
 
     void create(LegalProcedureTemplate legalProcedureTemplate);
 

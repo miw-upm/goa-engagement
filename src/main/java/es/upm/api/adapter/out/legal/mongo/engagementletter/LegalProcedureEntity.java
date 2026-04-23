@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.mongodb.entities;
+package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 import es.upm.api.domain.model.LegalProcedure;
 import lombok.AllArgsConstructor;

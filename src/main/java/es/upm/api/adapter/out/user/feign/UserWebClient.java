@@ -1,4 +1,4 @@
-package es.upm.api.domain.webclients;
+package es.upm.api.adapter.out.user.feign;
 
 import es.upm.api.configurations.FeignConfig;
 import es.upm.api.domain.model.snapshots.UserSnapshot;
