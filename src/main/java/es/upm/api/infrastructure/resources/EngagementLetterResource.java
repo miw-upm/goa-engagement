@@ -49,11 +49,6 @@ public class EngagementLetterResource {
         this.engagementLetterService.update(id, engagementLetter);
     }
 
-    @PostMapping(ID_ID + PUBLIC_ACCESS_TOKEN)
-    public PublicAccessTokenResponse createPublicAccessToken(@PathVariable UUID id) {
-        return new PublicAccessTokenResponse(this.engagementLetterService.createPublicAccessToken(id));
-    }
-
     @PreAuthorize(Security.ADMIN)
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
