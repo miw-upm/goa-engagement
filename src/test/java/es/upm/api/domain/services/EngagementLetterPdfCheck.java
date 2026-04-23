@@ -1,7 +1,8 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.snapshos.UserSnapshot;
-import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
 
+@Log4j2
 @SpringBootTest
 @ActiveProfiles("test")
 class EngagementLetterPdfCheck {
@@ -23,11 +25,11 @@ class EngagementLetterPdfCheck {
     private EngagementLetterService engagementLetterService;
 
     @MockitoBean
-    private UserWebClient userWebClient;
+    private UserFinderClient userFinderClient;
 
     @Test
-    void testGeneratePresupuestoPdfCheck() throws Exception {
-        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+    void testGenerateBudgePdfCheck() throws Exception {
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(UserSnapshot.builder()
                         .id(UUID.randomUUID())
                         .firstName("María")
@@ -36,18 +38,16 @@ class EngagementLetterPdfCheck {
                         .documentType("DNI")
                         .identity("43234543V")
                         .build());
-
         byte[] pdf = this.engagementLetterService.generatePdf(
                 UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"));
-
         Path output = Path.of("target", "presupuesto-check.pdf");
         Files.write(output, pdf);
-        System.out.println("PDF generado en: " + output.toAbsolutePath());
+        log.info("PDF generado en: {}", output.toAbsolutePath());
     }
 
     @Test
-    void testGenerateHojaPdfCheck() throws Exception {
-        BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
+    void testGenerateLetterPdfCheck() throws Exception {
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(UserSnapshot.builder()
                         .id(UUID.randomUUID())
                         .firstName("María")
@@ -56,12 +56,10 @@ class EngagementLetterPdfCheck {
                         .documentType("DNI")
                         .identity("43234543V")
                         .build());
-
         byte[] pdf = this.engagementLetterService.generatePdf(
                 UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"));
-
         Path output = Path.of("target", "hoja-check.pdf");
         Files.write(output, pdf);
-        System.out.println("PDF generado en: " + output.toAbsolutePath());
+        log.info("PDF generado en: {}", output.toAbsolutePath());
     }
 }

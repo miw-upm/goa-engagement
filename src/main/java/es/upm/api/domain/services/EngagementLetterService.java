@@ -1,12 +1,14 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.*;
-
-import es.upm.api.domain.model.snapshos.UserSnapshot;
-import es.upm.api.domain.persistence.EngagementLetterPersistence;
-
-import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.LegalProcedure;
+import es.upm.api.domain.model.PaymentMethod;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.miw.pdf.PdfBuilder;
+import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
 import org.springframework.context.ApplicationEventPublisher;
@@ -14,25 +16,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
-    private final EngagementLetterPersistence engagementLetterPersistence;
-    private final UserWebClient userWebClient;
+    private final EngagementLetterGateway engagementLetterGateway;
+    private final UserFinderClient userFinderClient;
     private final ApplicationEventPublisher eventPublisher;
 
     public EngagementLetter readById(UUID id) {
-        EngagementLetter engagementLetter = this.engagementLetterPersistence.readById(id);
+        EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
         engagementLetter.setOwner(
-                this.userWebClient.readUserById(engagementLetter.getOwner().getId())
+                this.userFinderClient.readUserById(engagementLetter.getOwner().getId())
         );
         Optional.ofNullable(engagementLetter.getAttachments())
                 .ifPresent(attachments -> engagementLetter.setAttachments(
                         attachments.stream()
-                                .map(userDto -> this.userWebClient.readUserById(userDto.getId()))
+                                .map(userDto -> this.userFinderClient.readUserById(userDto.getId()))
                                 .toList()
                 ));
         return engagementLetter;
@@ -41,28 +46,30 @@ public class EngagementLetterService {
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
         engagementLetter.setOwner(
-                this.userWebClient.readUserByMobile(engagementLetter.getOwner().getMobile())
+                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
         );
-        engagementLetter.setCreationDate(LocalDate.now());
+        engagementLetter.setLastUpdatedDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
-            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userWebClient.readUserByMobile(attachment.getMobile()).getId()));
+            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
         }
-        this.engagementLetterPersistence.create(engagementLetter);
+        this.engagementLetterGateway.create(engagementLetter);
     }
 
     public void delete(UUID id) {
-        this.engagementLetterPersistence.delete(id);
+        this.engagementLetterGateway.delete(id);
     }
 
     public void update(UUID id, EngagementLetter engagementLetter) {
-        this.engagementLetterPersistence.update(id, engagementLetter);
+        engagementLetter.setLastUpdatedDate(LocalDate.now());
+        engagementLetter.setId(id);
+        this.engagementLetterGateway.update(id, engagementLetter);
     }
 
-    public Stream<EngagementLetter> searchNullSafe(EngagementLetterCriteria criteria) {
-        Stream<EngagementLetter> letters = this.engagementLetterPersistence.searchNullSafe(criteria);
+    public Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria) {
+        Stream<EngagementLetter> letters = this.engagementLetterGateway.searchNullSafe(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userWebClient.findNullSafe(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinderClient.findNullSafe(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
@@ -84,7 +91,7 @@ public class EngagementLetterService {
 
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
-        TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.txt");
+        TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.yml");
         boolean isBudgetOnly = Boolean.TRUE.equals(letter.getBudgetOnly());
         PdfBuilder pdf = new PdfBuilder()
                 .header()
@@ -113,9 +120,9 @@ public class EngagementLetterService {
     private void buildServicesSection(PdfBuilder pdf, TextDictionary dict, EngagementLetter letter) {
         pdf.section(dict.getText("servicios"));
         for (LegalProcedure procedure : letter.getLegalProcedures()) {
-            pdf.twoColumns(
-                            left -> left.paragraphBold(procedure.getTitle()),
-                            right -> right.paragraphBold(procedure.buildFormatBudget(), Element.ALIGN_RIGHT))
+            pdf
+                    .paragraphBold(procedure.getTitle())
+                    .paragraphBold(procedure.buildFormatBudget())
                     .list(procedure.getLegalTasks())
                     .space();
         }

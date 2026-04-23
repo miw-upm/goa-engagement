@@ -1,0 +1,65 @@
+package es.upm.api.adapter.out.legal.mongo.engagementletter;
+
+import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.external.UserSnapshot;
+import lombok.*;
+import org.springframework.beans.BeanUtils;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.UUID;
+
+@Builder
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Document
+public class EngagementLetterEntity {
+    @Id
+    private UUID id;
+    private Boolean budgetOnly;
+    private Integer discount;
+    private LocalDate lastUpdatedDate;
+    private LocalDate closingDate;
+    private UUID ownerId;
+    @Singular
+    private List<UUID> attachmentIds;
+    @Singular
+    private List<LegalProcedureEntity> legalProcedureEntities;
+    @Singular
+    private List<PaymentMethodEntity> paymentMethodEntities;
+    private String legalClause;
+    @Singular
+    private List<AcceptanceDocumentEntity> acceptanceDocumentEntities;
+
+    public EngagementLetterEntity(EngagementLetter engagementLetter) {
+        BeanUtils.copyProperties(engagementLetter, this);
+        this.ownerId = engagementLetter.getOwner().getId();
+    }
+
+    public EngagementLetter toDomain() {
+        EngagementLetter engagementLetter = new EngagementLetter();
+        BeanUtils.copyProperties(this, engagementLetter);
+        engagementLetter.setOwner(UserSnapshot.builder().id(this.getOwnerId()).build());
+
+        if (this.attachmentIds != null) {
+            engagementLetter.setAttachments(this.attachmentIds.stream()
+                    .map(attachmentId -> UserSnapshot.builder().id(attachmentId).build())
+                    .toList());
+        }
+        if (this.acceptanceDocumentEntities != null) {
+            engagementLetter.setAcceptanceEngagements(this.acceptanceDocumentEntities.stream()
+                    .map(AcceptanceDocumentEntity::toDomain)
+                    .toList());
+        }
+        engagementLetter.setPaymentMethods(this.paymentMethodEntities.stream()
+                .map(PaymentMethodEntity::toDomain)
+                .toList());
+        engagementLetter.setLegalProcedures(this.legalProcedureEntities.stream()
+                .map(LegalProcedureEntity::toDomain)
+                .toList());
+        return engagementLetter;
+    }
+}
