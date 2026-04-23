@@ -52,7 +52,7 @@ class EngagementLetterServiceIT {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
-        BDDMockito.given(this.userFinderClient.findNullSafe(any(String.class)))
+        BDDMockito.given(this.userFinderClient.find(any(String.class)))
                 .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
     }
@@ -223,7 +223,7 @@ class EngagementLetterServiceIT {
     @Test
     void testFindFiltersByOwner() {
         UUID ownerId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
-        BDDMockito.given(this.userFinderClient.findNullSafe("test"))
+        BDDMockito.given(this.userFinderClient.find("test"))
                 .willReturn(List.of(UserSnapshot.builder().id(ownerId).build()));
 
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();

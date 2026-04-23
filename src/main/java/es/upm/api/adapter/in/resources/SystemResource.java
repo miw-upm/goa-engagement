@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.resources;
+package es.upm.api.adapter.in.resources;
 
 import es.upm.miw.badge.ApplicationInfoDto;
 import es.upm.miw.badge.VersionBadgeGenerator;

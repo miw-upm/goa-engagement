@@ -24,6 +24,6 @@ public interface UserFinderClient {
     UserSnapshot readUserByMobile(@PathVariable String mobile);
 
     @GetMapping(USERS)
-    List<UserSnapshot> findNullSafe(@RequestParam(required = false) String attribute);
+    List<UserSnapshot> find(@RequestParam(required = false) String attribute);
 
 }

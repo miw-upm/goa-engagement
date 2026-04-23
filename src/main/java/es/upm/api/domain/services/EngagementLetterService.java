@@ -69,7 +69,7 @@ public class EngagementLetterService {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userFinderClient.findNullSafe(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinderClient.find(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));

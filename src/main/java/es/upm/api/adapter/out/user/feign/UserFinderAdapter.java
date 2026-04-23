@@ -25,6 +25,6 @@ public class UserFinderAdapter implements UserFinder {
 
     @Override
     public List<UserSnapshot> find(String attribute) {
-        return userFeignClient.findNullSafe(attribute);
+        return userFeignClient.find(attribute);
     }
 }
