@@ -89,7 +89,7 @@ public class EngagementLetterService {
 
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
-        TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.txt");
+        TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.yml");
         boolean isBudgetOnly = Boolean.TRUE.equals(letter.getBudgetOnly());
         PdfBuilder pdf = new PdfBuilder()
                 .header()

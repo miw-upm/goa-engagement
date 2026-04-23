@@ -1,5 +1,7 @@
 package es.upm.api.domain.services;
 
+import org.yaml.snakeyaml.Yaml;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,10 +19,20 @@ public class TextDictionary {
     private final Map<String, List<String>> lists = new HashMap<>();
 
     public TextDictionary(String templatePath) {
-        this.parse(TemplateReader.read(templatePath));
+        String content = TemplateReader.read(templatePath);
+        if (this.isYamlTemplate(templatePath)) {
+            this.parseYaml(content);
+        } else {
+            this.parseLegacy(content);
+        }
     }
 
-    private void parse(String content) {
+    private boolean isYamlTemplate(String templatePath) {
+        String lowerCasePath = templatePath.toLowerCase();
+        return lowerCasePath.endsWith(".yml") || lowerCasePath.endsWith(".yaml");
+    }
+
+    private void parseLegacy(String content) {
         Matcher listMatcher = LIST_PATTERN.matcher(content);
         while (listMatcher.find()) {
             String key = listMatcher.group(1);
@@ -44,6 +56,69 @@ public class TextDictionary {
 
         if (lastId != null && lastStart < content.length()) {
             texts.put(lastId, normalize(content.substring(lastStart).trim()));
+        }
+    }
+
+    private void parseYaml(String content) {
+        Object parsed = new Yaml().load(content);
+        if (!(parsed instanceof Map<?, ?> map)) {
+            return;
+        }
+
+        for (Map.Entry<?, ?> entry : map.entrySet()) {
+            String key = String.valueOf(entry.getKey());
+            Object value = entry.getValue();
+            this.parseYamlEntry(key, value);
+        }
+    }
+
+    private void parseYamlEntry(String key, Object value) {
+        if (value instanceof String textValue) {
+            this.putNormalizedText(key, textValue);
+            return;
+        }
+
+        if (!(value instanceof Map<?, ?> node)) {
+            return;
+        }
+
+        this.putNormalizedTitle(key, node.get("title"));
+        this.putNormalizedText(key, node.get("text"));
+        this.putNormalizedList(key, node.get("list"));
+    }
+
+    private void putNormalizedTitle(String key, Object titleValue) {
+        if (titleValue == null) {
+            return;
+        }
+        String normalized = normalize(String.valueOf(titleValue));
+        if (!normalized.isEmpty()) {
+            titles.put(key, normalized);
+        }
+    }
+
+    private void putNormalizedText(String key, Object textValue) {
+        if (textValue == null) {
+            return;
+        }
+        String normalized = normalize(String.valueOf(textValue));
+        if (!normalized.isEmpty()) {
+            texts.put(key, normalized);
+        }
+    }
+
+    private void putNormalizedList(String key, Object listValue) {
+        if (!(listValue instanceof List<?> values)) {
+            return;
+        }
+        for (Object value : values) {
+            if (value == null) {
+                continue;
+            }
+            String normalized = normalize(String.valueOf(value));
+            if (!normalized.isEmpty()) {
+                lists.computeIfAbsent(key, k -> new ArrayList<>()).add(normalized);
+            }
         }
     }
 

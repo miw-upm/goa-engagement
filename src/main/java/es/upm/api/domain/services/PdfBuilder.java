@@ -16,6 +16,12 @@ import java.util.function.Consumer;
 
 public class PdfBuilder {
 
+    private static final float PAGE_MARGIN_LEFT_RIGHT = 36f;
+    private static final float PAGE_MARGIN_TOP = 36f;
+    private static final float PAGE_MARGIN_BOTTOM = 72f;
+    private static final float FOOTER_TEXT_OFFSET = 22f;
+    private static final float FOOTER_SEPARATOR_OFFSET = 8f;
+
     private static final BaseFont BASE_FONT_HELVETICA = requiredBaseFont(BaseFont.HELVETICA);
     private static final BaseFont BASE_FONT_HELVETICA_BOLD = requiredBaseFont(BaseFont.HELVETICA_BOLD);
     private static final Font FONT_NORMAL = createFont(BASE_FONT_HELVETICA, 10, Font.NORMAL);
@@ -28,7 +34,7 @@ public class PdfBuilder {
 
     private static final String COMPANY_NAME = "Ocaña Abogados";
     private static final String COMPANY_NIF = "46882956D";
-    private static final String COMPANY_ADDRESS = "Paseo de la Castellana, 93-2º, 28046 Madrid";
+    private static final String COMPANY_ADDRESS = "Paseo de la Castellana, 93-2ª, 28046 Madrid";
     private static final String COMPANY_PHONE = "+34 644 993 593";
     private static final String COMPANY_EMAIL = "nuria@ocanabogados.es";
     private static final String COMPANY_WEB = "www.ocanabogados.es";
@@ -41,7 +47,13 @@ public class PdfBuilder {
 
     public PdfBuilder() {
         this.outputStream = new ByteArrayOutputStream();
-        this.document = new Document(PageSize.A4);
+        this.document = new Document(
+                PageSize.A4,
+                PAGE_MARGIN_LEFT_RIGHT,
+                PAGE_MARGIN_LEFT_RIGHT,
+                PAGE_MARGIN_TOP,
+                PAGE_MARGIN_BOTTOM
+        );
         try {
             this.writer = PdfWriter.getInstance(document, outputStream);
             this.writer.setPageEvent(new PageFooterEvent());
@@ -180,7 +192,7 @@ public class PdfBuilder {
             List list = new List(List.UNORDERED);
             list.setListSymbol("- ");
             list.setIndentationLeft(15);
-            items.forEach(item -> list.add(new ListItem(item, FONT_NORMAL)));
+            items.forEach(item -> list.add(new ListItem(item+".", FONT_NORMAL)));
             document.add(list);
         });
     }
@@ -518,8 +530,8 @@ public class PdfBuilder {
 
         public ColumnBuilder list(java.util.List<String> items) {
             List list = new List(List.UNORDERED);
-            list.setListSymbol("• ");
-            items.forEach(item -> list.add(new ListItem(item, FONT_NORMAL)));
+            list.setListSymbol("-");
+            items.forEach(item -> list.add(new ListItem(item+".", FONT_NORMAL)));
             cell.addElement(list);
             return this;
         }
@@ -546,28 +558,29 @@ public class PdfBuilder {
         @Override
         public void onEndPage(PdfWriter writer, Document document) {
             PdfContentByte cb = writer.getDirectContent();
-            float y = document.bottomMargin() - 10;
+            float footerTextY = document.bottomMargin() - FOOTER_TEXT_OFFSET;
+            float footerSeparatorY = document.bottomMargin() - FOOTER_SEPARATOR_OFFSET;
 
             // Línea
             cb.setLineWidth(0.5f);
-            cb.moveTo(document.leftMargin(), y + 15);
-            cb.lineTo(document.right(), y + 15);
+            cb.moveTo(document.leftMargin(), footerSeparatorY);
+            cb.lineTo(document.right(), footerSeparatorY);
             cb.stroke();
 
             // Contacto centrado
             Phrase footer = new Phrase(COMPANY_EMAIL + "  |  " + COMPANY_PHONE, FONT_SMALL);
             ColumnText.showTextAligned(cb, Element.ALIGN_CENTER, footer,
-                    (document.right() + document.leftMargin()) / 2, y, 0);
+                    (document.right() + document.leftMargin()) / 2, footerTextY, 0);
 
             // Número de página a la derecha
             String pageText = "Página " + writer.getPageNumber() + " de ";
             float pageTextWidth = BASE_FONT_HELVETICA.getWidthPoint(pageText, 8);
             cb.beginText();
             cb.setFontAndSize(BASE_FONT_HELVETICA, 8);
-            cb.setTextMatrix(document.right() - pageTextWidth - 20, y);
+            cb.setTextMatrix(document.right() - pageTextWidth - 20, footerTextY);
             cb.showText(pageText);
             cb.endText();
-            cb.addTemplate(totalPages, document.right() - 20, y);
+            cb.addTemplate(totalPages, document.right() - 20, footerTextY);
         }
 
         @Override
