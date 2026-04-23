@@ -1,5 +1,7 @@
 package es.upm.api.domain.model;
 
+import es.upm.api.domain.model.snapshos.AccessLinkSnapshot;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class AcceptanceEngagement {
     private LocalDateTime signatureDate;
-    private UserDto signer;
-    private AccessLinkDto accessLinkDto;
+    private UserSnapshot signer;
+    private AccessLinkSnapshot accessLinkSnapshot;
 }
 

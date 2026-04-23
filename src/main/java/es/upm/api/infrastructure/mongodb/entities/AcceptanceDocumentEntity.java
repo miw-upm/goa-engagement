@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.mongodb.entities;
 
 import es.upm.api.domain.model.AcceptanceEngagement;
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +30,7 @@ public class AcceptanceDocumentEntity {
     public AcceptanceEngagement toAcceptanceDocument() {
         AcceptanceEngagement acceptance = new AcceptanceEngagement();
         BeanUtils.copyProperties(this, acceptance, "signer");
-        acceptance.setSigner(UserDto.builder().id(this.signer).build());
+        acceptance.setSigner(UserSnapshot.builder().id(this.signer).build());
         return acceptance;
     }
 }

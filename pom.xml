@@ -61,7 +61,7 @@
         <!-- Spring cloud -->
         <spring-cloud.version>2025.0.1</spring-cloud.version>
         <!-- GOA commons -->
-        <goa-commons.version>1.2.0</goa-commons.version>
+        <goa-commons.version>1.4.0</goa-commons.version>
     </properties>
 
     <repositories>
@@ -72,11 +72,11 @@
     </repositories>
 
     <dependencies>
-<!--        <dependency>
+        <dependency>
             <groupId>es.upm.miw</groupId>
             <artifactId>goa-commons</artifactId>
             <version>${goa-commons.version}</version>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>com.github.librepdf</groupId>
             <artifactId>openpdf</artifactId>

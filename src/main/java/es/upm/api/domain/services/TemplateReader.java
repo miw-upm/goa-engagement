@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.BadGatewayException;
+import es.upm.miw.exception.BadGatewayException;
 
 import java.io.IOException;
 import java.io.InputStream;

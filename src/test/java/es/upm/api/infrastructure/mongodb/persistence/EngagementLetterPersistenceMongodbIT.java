@@ -1,6 +1,7 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
 import es.upm.api.domain.model.*;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import es.upm.api.infrastructure.mongodb.repositories.EngagementLetterRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,7 +44,7 @@ class EngagementLetterPersistenceMongodbIT {
                 .id(engagementLetterId)
                 .creationDate(creationDate)
                 .discount(10)
-                .owner(UserDto.builder().id(ownerId).build())
+                .owner(UserSnapshot.builder().id(ownerId).build())
                 .legalProcedures(List.of(LegalProcedure.builder()
                         .title("procedimiento")
                         .budget(BigDecimal.TEN)
@@ -59,7 +60,7 @@ class EngagementLetterPersistenceMongodbIT {
         EngagementLetter toUpdate = this.engagementLetterPersistence.readById(engagementLetterId);
         toUpdate.setAcceptanceEngagements(List.of(AcceptanceEngagement.builder()
                 .signatureDate(signatureDate)
-                .signer(UserDto.builder().id(signerId).build())
+                .signer(UserSnapshot.builder().id(signerId).build())
                 .build()));
 
         this.engagementLetterPersistence.update(engagementLetterId, toUpdate);

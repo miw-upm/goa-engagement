@@ -1,6 +1,6 @@
 package es.upm.api.domain.model;
 
-import es.upm.api.domain.model.validations.ListNotEmpty;
+import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

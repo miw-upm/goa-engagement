@@ -1,4 +1,4 @@
-package es.upm.api.domain.model;
+package es.upm.api.domain.model.snapshos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserDto {
+public class UserSnapshot {
     public static final String SIN_DEFINIR = "(___SIN DEFINIR___)";
     private UUID id;
     private String mobile;

@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.resources;
 
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -36,7 +36,7 @@ class EngagementLetterResourceIT {
     void testRead() throws Exception {
         BDDMockito.given(this.userWebClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
-                        UserDto.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
+                        UserSnapshot.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
         mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                 .andExpect(status().isOk());
 

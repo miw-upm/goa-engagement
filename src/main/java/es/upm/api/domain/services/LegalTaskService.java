@@ -2,7 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.persistence.LegalTaskPersistence;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,16 +10,11 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class LegalTaskService {
 
     private final LegalTaskPersistence legalTaskPersistence;
     private final LegalProcedureTemplateService legalProcedureTemplateService;
-
-    @Autowired
-    public LegalTaskService(LegalTaskPersistence legalTaskPersistence, LegalProcedureTemplateService legalProcedureTemplateService) {
-        this.legalTaskPersistence = legalTaskPersistence;
-        this.legalProcedureTemplateService = legalProcedureTemplateService;
-    }
 
     public void create(LegalTask legalTask) {
         legalTask.setId(UUID.randomUUID());
@@ -45,12 +40,8 @@ public class LegalTaskService {
         this.legalTaskPersistence.update(id, legalTask);
     }
 
-    public Stream<LegalTask> findNullSafe(String title) {
+    public Stream<LegalTask> find(String title) {
         return this.legalTaskPersistence.findNullSafe(title);
-    }
-
-    public Stream<LegalTask> findAll() {
-        return this.legalTaskPersistence.findAll();
     }
 
     public LegalTask read(UUID id) {

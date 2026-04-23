@@ -1,11 +1,12 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.domain.exceptions.ConflictException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.persistence.LegalTaskPersistence;
 import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
 import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
+import es.upm.miw.exception.ConflictException;
+import es.upm.miw.exception.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -14,14 +15,10 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 @Repository
+@RequiredArgsConstructor
 public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
     public static final Sort TITLE = Sort.by(Sort.Direction.ASC, "title");
     private final LegalTaskRepository legalTaskRepository;
-
-    @Autowired
-    public LegalTaskTaskPersistenceMongodb(LegalTaskRepository legalTaskRepository) {
-        this.legalTaskRepository = legalTaskRepository;
-    }
 
     @Override
     public void create(LegalTask legalTask) {
@@ -74,10 +71,4 @@ public class LegalTaskTaskPersistenceMongodb implements LegalTaskPersistence {
         }
     }
 
-    @Override
-    public LegalTask findByTitle(String title) {
-        return this.legalTaskRepository.findByTitle(title)
-                .orElseThrow(() -> new NotFoundException("Legal task not found, title:" + title))
-                .toLegalTask();
-    }
 }

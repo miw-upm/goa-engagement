@@ -1,7 +1,7 @@
 package es.upm.api.domain.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.EngagementLetterCriteria;
+import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;

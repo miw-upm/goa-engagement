@@ -1,7 +1,8 @@
 package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import es.upm.api.domain.model.validations.ListNotEmpty;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
+import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -33,8 +34,8 @@ public class EngagementLetter {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate closingDate;
     @NotNull
-    private UserDto owner;
-    private List<UserDto> attachments;
+    private UserSnapshot owner;
+    private List<UserSnapshot> attachments;
     @ListNotEmpty
     private List<LegalProcedure> legalProcedures;
     @ListNotEmpty
@@ -43,14 +44,14 @@ public class EngagementLetter {
     private List<AcceptanceEngagement> acceptanceEngagements;
 
     public String buildClientsFullNameIdentity() {
-        List<UserDto> clients = new ArrayList<>();
+        List<UserSnapshot> clients = new ArrayList<>();
         clients.add(this.owner);
         if (this.attachments != null && !this.attachments.isEmpty()) {
             clients.addAll(this.attachments);
         }
 
         return clients.stream()
-                .map(UserDto::toFullNameAndIdentity)
+                .map(UserSnapshot::toFullNameAndIdentity)
                 .collect(Collectors.joining(", "));
     }
 

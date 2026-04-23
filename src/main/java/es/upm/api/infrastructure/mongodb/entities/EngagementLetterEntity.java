@@ -1,7 +1,7 @@
 package es.upm.api.infrastructure.mongodb.entities;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.UserDto;
+import es.upm.api.domain.model.snapshos.UserSnapshot;
 import lombok.*;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
@@ -42,11 +42,11 @@ public class EngagementLetterEntity {
     public EngagementLetter toEngagementLetter() {
         EngagementLetter engagementLetter = new EngagementLetter();
         BeanUtils.copyProperties(this, engagementLetter);
-        engagementLetter.setOwner(UserDto.builder().id(this.getOwnerId()).build());
+        engagementLetter.setOwner(UserSnapshot.builder().id(this.getOwnerId()).build());
 
         if (this.attachmentIds != null) {
             engagementLetter.setAttachments(this.attachmentIds.stream()
-                    .map(attachmentId -> UserDto.builder().id(attachmentId).build())
+                    .map(attachmentId -> UserSnapshot.builder().id(attachmentId).build())
                     .toList());
         }
         if (this.acceptanceDocumentEntities != null) {
