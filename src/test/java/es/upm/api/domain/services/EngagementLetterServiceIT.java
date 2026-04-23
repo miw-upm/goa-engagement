@@ -1,9 +1,11 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
-import es.upm.api.domain.model.*;
-import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.LegalProcedure;
+import es.upm.api.domain.model.PaymentMethod;
+import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

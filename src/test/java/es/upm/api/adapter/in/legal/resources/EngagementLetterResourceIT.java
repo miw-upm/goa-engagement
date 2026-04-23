@@ -1,8 +1,8 @@
 package es.upm.api.adapter.in.legal.resources;
 
 import es.upm.api.adapter.in.resources.EngagementLetterResource;
-import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.domain.model.external.UserSnapshot;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;

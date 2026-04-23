@@ -1,11 +1,11 @@
 package es.upm.api.adapter.out.legal.mongo.legalproceduretemplate;
 
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
+import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import es.upm.api.domain.model.LegalProcedureTemplate;
 import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.model.criteria.LegalProcedureTemplateFindCriteria;
 import es.upm.api.domain.ports.out.legal.LegalProcedureTemplateGateway;
-import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
-import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;

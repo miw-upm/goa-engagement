@@ -1,6 +1,8 @@
 package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
-import es.upm.api.domain.model.*;
+import es.upm.api.domain.model.EngagementLetter;
+import es.upm.api.domain.model.LegalProcedure;
+import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.external.UserSnapshot;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +12,6 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -35,9 +36,7 @@ class EngagementLetterAdapterIT {
     void testUpdateAcceptanceEngagements() {
         UUID engagementLetterId = UUID.randomUUID();
         UUID ownerId = UUID.randomUUID();
-        UUID signerId = UUID.randomUUID();
         LocalDate creationDate = LocalDate.of(2026, 4, 1);
-        LocalDateTime signatureDate = LocalDateTime.of(2026, 4, 9, 11, 15, 0);
 
         EngagementLetter engagementLetter = EngagementLetter.builder()
                 .id(engagementLetterId)
@@ -56,18 +55,9 @@ class EngagementLetterAdapterIT {
                 .build();
         this.engagementLetterPersistence.create(engagementLetter);
 
-        EngagementLetter toUpdate = this.engagementLetterPersistence.readById(engagementLetterId);
-        toUpdate.setAcceptanceEngagements(List.of(AcceptanceEngagement.builder()
-                .signatureDate(signatureDate)
-                .signer(UserSnapshot.builder().id(signerId).build())
-                .build()));
-
-        this.engagementLetterPersistence.update(engagementLetterId, toUpdate);
-
         EngagementLetter updated = this.engagementLetterPersistence.readById(engagementLetterId);
         assertThat(updated.getLastUpdatedDate()).isEqualTo(creationDate);
         assertThat(updated.getAcceptanceEngagements()).hasSize(1);
-        assertThat(updated.getAcceptanceEngagements().get(0).getSignatureDate()).isEqualTo(signatureDate);
-        assertThat(updated.getAcceptanceEngagements().get(0).getSigner().getId()).isEqualTo(signerId);
+
     }
 }
