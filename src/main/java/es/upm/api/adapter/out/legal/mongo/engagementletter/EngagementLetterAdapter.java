@@ -68,7 +68,7 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
     }
 
     @Override
-    public Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria) {
+    public Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria) {
         Stream<EngagementLetterEntity> letters = this.engagementLetterRepository
                 .findAll(Sort.by(Sort.Direction.DESC, "creationDate")).stream();
 

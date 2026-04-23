@@ -25,8 +25,8 @@ public class EngagementLetterResource {
     private final EngagementLetterService engagementLetterService;
 
     @GetMapping
-    public List<EngagementLetter> searchNullSafe(@ModelAttribute EngagementLetterFindCriteria criteria) {
-        return this.engagementLetterService.searchNullSafe(criteria).toList();
+    public List<EngagementLetter> find(@ModelAttribute EngagementLetterFindCriteria criteria) {
+        return this.engagementLetterService.find(criteria).toList();
     }
 
     @PostMapping

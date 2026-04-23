@@ -65,8 +65,8 @@ public class EngagementLetterService {
         this.engagementLetterGateway.update(id, engagementLetter);
     }
 
-    public Stream<EngagementLetter> searchNullSafe(EngagementLetterFindCriteria criteria) {
-        Stream<EngagementLetter> letters = this.engagementLetterGateway.searchNullSafe(criteria);
+    public Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria) {
+        Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
             List<UUID> clientIds = this.userFinderClient.findNullSafe(criteria.getClient()).stream()
@@ -74,8 +74,11 @@ public class EngagementLetterService {
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
         }
-
-        return letters;
+        return letters
+                .map(letter -> {
+                    letter.setOwner(this.userFinderClient.readUserById(letter.getOwner().getId()));
+                    return letter;
+                });
     }
 
     private boolean isClientInLetter(EngagementLetter letter, List<UUID> clientIds) {
