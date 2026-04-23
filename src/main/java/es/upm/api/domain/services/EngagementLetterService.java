@@ -1,11 +1,12 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.BadRequestException;
+import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.events.EngagementLetterDeletedEvent;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.miw.exception.BadRequestException;
 import org.openpdf.text.Element;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;

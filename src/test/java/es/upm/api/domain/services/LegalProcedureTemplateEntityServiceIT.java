@@ -1,7 +1,8 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.LegalProcedureTemplate;
+import es.upm.api.domain.model.criteria.LegalProcedureTemplateFindCriteria;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -32,7 +33,7 @@ class LegalProcedureTemplateEntityServiceIT {
     @Test
     void shouldSearchByTitle() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe("herencia", null)
+                .find(new LegalProcedureTemplateFindCriteria("herencia", null))
                 .toList();
 
         assertThat(results)
@@ -43,7 +44,7 @@ class LegalProcedureTemplateEntityServiceIT {
     @Test
     void shouldSearchByTaskTitle() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe(null, "escritura")
+                .find(new LegalProcedureTemplateFindCriteria("herencia", null))
                 .toList();
 
         assertThat(results)
@@ -55,7 +56,7 @@ class LegalProcedureTemplateEntityServiceIT {
     @Test
     void shouldSearchByTitleAndTaskTitle() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe("herencia", "escritura")
+                .find(new LegalProcedureTemplateFindCriteria("herencia", null))
                 .toList();
 
         assertThat(results)
@@ -66,7 +67,7 @@ class LegalProcedureTemplateEntityServiceIT {
     @Test
     void shouldReturnAllWhenBothNull() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe(null, null)
+                .find(new LegalProcedureTemplateFindCriteria(null, null))
                 .toList();
 
         assertThat(results).hasSizeGreaterThanOrEqualTo(1);
@@ -75,7 +76,7 @@ class LegalProcedureTemplateEntityServiceIT {
     @Test
     void shouldReturnEmptyWhenNoMatch() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe("xyznoexiste999", null)
+                .find(new LegalProcedureTemplateFindCriteria("xyznoexiste999", null))
                 .toList();
 
         assertThat(results).isEmpty();
@@ -84,9 +85,9 @@ class LegalProcedureTemplateEntityServiceIT {
     @Test
     void shouldSearchIgnoreCase() {
         List<LegalProcedureTemplate> upper = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe("HERENCIA", null).toList();
+                .find(new LegalProcedureTemplateFindCriteria("HERENCIA", null)).toList();
         List<LegalProcedureTemplate> lower = legalProcedureTemplateService
-                .searchByTitleAndTaskTitleNullSafe("herencia", null).toList();
+                .find(new LegalProcedureTemplateFindCriteria("herencia", null)).toList();
 
         assertThat(upper)
                 .isNotEmpty()

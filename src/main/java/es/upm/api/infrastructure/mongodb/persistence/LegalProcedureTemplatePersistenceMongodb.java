@@ -1,14 +1,15 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.domain.exceptions.ConflictException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.LegalProcedureTemplate;
 import es.upm.api.domain.model.LegalTask;
+import es.upm.api.domain.model.criteria.LegalProcedureTemplateFindCriteria;
 import es.upm.api.domain.persistence.LegalProcedureTemplatePersistence;
 import es.upm.api.infrastructure.mongodb.entities.LegalProcedureTemplateEntity;
 import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
 import es.upm.api.infrastructure.mongodb.repositories.LegalProcedureRepository;
 import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
+import es.upm.miw.exception.ConflictException;
+import es.upm.miw.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
@@ -65,13 +66,13 @@ public class LegalProcedureTemplatePersistenceMongodb implements LegalProcedureT
     }
 
     @Override
-    public Stream<LegalProcedureTemplate> searchByTitleAndTaskTitleNullSafe(String title, String taskTitle) {
-        Stream<LegalProcedureTemplateEntity> templates = StringUtils.hasText(title)
-                ? this.procedureRepository.searchByTitleContainingIgnoreCase(title, Sort.by("title")).stream()
+    public Stream<LegalProcedureTemplate> find(LegalProcedureTemplateFindCriteria criteria) {
+        Stream<LegalProcedureTemplateEntity> templates = StringUtils.hasText(criteria.getTitle())
+                ? this.procedureRepository.searchByTitleContainingIgnoreCase(criteria.getTitle(), Sort.by("title")).stream()
                 : this.procedureRepository.findAll(Sort.by("title")).stream();
 
-        if (StringUtils.hasText(taskTitle)) {
-            String taskTitleLower = taskTitle.toLowerCase();
+        if (StringUtils.hasText(criteria.getTitle())) {
+            String taskTitleLower = criteria.getTitle().toLowerCase();
             templates = templates.filter(template -> template.getLegalTaskEntities() != null &&
                     template.getLegalTaskEntities().stream()
                             .anyMatch(task -> task.getTitle() != null &&

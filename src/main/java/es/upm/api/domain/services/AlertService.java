@@ -1,12 +1,12 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.PendingAlertNotification;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.persistence.AlertPersistence;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;

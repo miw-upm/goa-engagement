@@ -1,11 +1,11 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.BDDMockito;

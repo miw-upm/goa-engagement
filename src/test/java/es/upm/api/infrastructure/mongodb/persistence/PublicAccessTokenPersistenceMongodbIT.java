@@ -1,10 +1,10 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.PublicAccessToken;
 import es.upm.api.domain.model.TokenPurpose;
 import es.upm.api.infrastructure.mongodb.entities.PublicAccessTokenEntity;
 import es.upm.api.infrastructure.mongodb.repositories.PublicAccessTokenRepository;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

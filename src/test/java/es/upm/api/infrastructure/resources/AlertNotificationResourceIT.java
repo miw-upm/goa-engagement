@@ -1,12 +1,12 @@
 package es.upm.api.infrastructure.resources;
 
-import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.model.AlertNotification;
 import es.upm.api.domain.model.PendingAlertNotification;
 import es.upm.api.domain.model.Status;
 import es.upm.api.domain.services.AlertService;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;

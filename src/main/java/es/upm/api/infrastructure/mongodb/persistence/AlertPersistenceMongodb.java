@@ -1,10 +1,10 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.persistence.AlertPersistence;
 import es.upm.api.infrastructure.mongodb.entities.AlertEntity;
 import es.upm.api.infrastructure.mongodb.repositories.AlertRepository;
+import es.upm.miw.exception.NotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

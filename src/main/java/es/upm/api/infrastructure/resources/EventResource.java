@@ -6,6 +6,7 @@ import es.upm.api.domain.model.Status;
 import es.upm.api.domain.services.EventService;
 import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.EventMapper;
+import es.upm.miw.security.Security;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

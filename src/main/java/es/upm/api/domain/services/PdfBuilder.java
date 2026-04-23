@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.BadGatewayException;
+import es.upm.miw.exception.BadGatewayException;
 import org.openpdf.text.*;
 import org.openpdf.text.Font;
 import org.openpdf.text.Image;

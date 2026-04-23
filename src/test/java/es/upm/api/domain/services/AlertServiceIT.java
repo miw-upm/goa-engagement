@@ -1,9 +1,9 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.AlertPersistence;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.BDDMockito;

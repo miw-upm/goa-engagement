@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.resources.httperrors;
 
-import es.upm.api.domain.exceptions.*;
+import es.upm.miw.exception.*;
 import feign.FeignException;
 import feign.RetryableException;
 import org.apache.logging.log4j.LogManager;
@@ -44,8 +44,7 @@ public class ApiExceptionHandler {
     @ResponseBody
     public ErrorMessage noResourceFoundRequest(Exception exception) {
         return new ErrorMessage(new NotFoundException(
-                "Path no encontrado... **/actuator/info, **/swagger-ui.html, **/v3/api-docs, .well-known/openid-configuration"),
-                HttpStatus.NOT_FOUND.value());
+                "Path no encontrado... **/actuator/info, **/swagger-ui.html, **/v3/api-docs, .well-known/openid-configuration"));
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -54,7 +53,7 @@ public class ApiExceptionHandler {
     })
     @ResponseBody
     public ErrorMessage notFoundRequest(Exception exception) {
-        return new ErrorMessage(exception, HttpStatus.NOT_FOUND.value());
+        return new ErrorMessage(exception);
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -68,7 +67,7 @@ public class ApiExceptionHandler {
     })
     @ResponseBody
     public ErrorMessage badRequest(Exception exception) {
-        return new ErrorMessage(exception, HttpStatus.BAD_REQUEST.value());
+        return new ErrorMessage(exception);
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
@@ -77,7 +76,7 @@ public class ApiExceptionHandler {
     })
     @ResponseBody
     public ErrorMessage conflict(Exception exception) {
-        return new ErrorMessage(exception, HttpStatus.CONFLICT.value());
+        return new ErrorMessage(exception);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -86,7 +85,7 @@ public class ApiExceptionHandler {
     })
     @ResponseBody
     public ErrorMessage forbidden(Exception exception) {
-        return new ErrorMessage(exception, HttpStatus.FORBIDDEN.value());
+        return new ErrorMessage(exception);
     }
 
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
@@ -97,7 +96,7 @@ public class ApiExceptionHandler {
     })
     @ResponseBody
     public ErrorMessage badGateway(Exception exception) {
-        return new ErrorMessage(exception, HttpStatus.BAD_GATEWAY.value());
+        return new ErrorMessage(exception);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -109,7 +108,7 @@ public class ApiExceptionHandler {
         if (environment.acceptsProfiles(Profiles.of("dev", "test"))) {
             exception.printStackTrace();
         }
-        return new ErrorMessage(exception, HttpStatus.INTERNAL_SERVER_ERROR.value());
+        return new ErrorMessage(exception);
     }
 
 }

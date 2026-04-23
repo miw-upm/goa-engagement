@@ -1,11 +1,11 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.domain.exceptions.ConflictException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.LegalTask;
 import es.upm.api.domain.persistence.LegalTaskPersistence;
 import es.upm.api.infrastructure.mongodb.entities.LegalTaskEntity;
 import es.upm.api.infrastructure.mongodb.repositories.LegalTaskRepository;
+import es.upm.miw.exception.ConflictException;
+import es.upm.miw.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;

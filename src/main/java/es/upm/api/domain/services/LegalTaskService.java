@@ -45,7 +45,7 @@ public class LegalTaskService {
         this.legalTaskPersistence.update(id, legalTask);
     }
 
-    public Stream<LegalTask> findNullSafe(String title) {
+    public Stream<LegalTask> find(String title) {
         return this.legalTaskPersistence.findNullSafe(title);
     }
 

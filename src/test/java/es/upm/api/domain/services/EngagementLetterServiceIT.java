@@ -1,8 +1,9 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.NotFoundException;
+import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.webclients.UserWebClient;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;

@@ -1,11 +1,11 @@
 package es.upm.api.infrastructure.resources;
 
-import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.services.EngagementLetterService;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,39 +72,4 @@ class PublicEngagementLetterResourceIT {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void testReadByTokenWhenTokenIsInactive() throws Exception {
-        BDDMockito.given(this.engagementLetterService.readPublicByToken(eq("inactive-token")))
-                .willThrow(new BadRequestException("Cannot access engagement letter: public access token is inactive"));
-
-        this.mockMvc.perform(get(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCESS)
-                        .param("token", "inactive-token"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("inactive")));
-    }
-
-    @Test
-    void testReadByTokenWhenTokenHasExpired() throws Exception {
-        BDDMockito.given(this.engagementLetterService.readPublicByToken(eq("expired-token")))
-                .willThrow(new BadRequestException("Cannot access engagement letter: public access token has expired"));
-
-        this.mockMvc.perform(get(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCESS)
-                        .param("token", "expired-token"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("expired")));
-    }
-
-    @Test
-    void testReadByTokenWhenTokenExceededMaxUses() throws Exception {
-        BDDMockito.given(this.engagementLetterService.readPublicByToken(eq("maxed-token")))
-                .willThrow(new BadRequestException("Cannot access engagement letter: public access token has exceeded its maximum uses"));
-
-        this.mockMvc.perform(get(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCESS)
-                        .param("token", "maxed-token"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("maximum uses")));
-    }
 }

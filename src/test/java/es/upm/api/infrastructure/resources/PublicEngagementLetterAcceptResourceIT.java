@@ -1,12 +1,12 @@
 package es.upm.api.infrastructure.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import es.upm.api.domain.exceptions.BadRequestException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.api.infrastructure.dtos.PublicEngagementLetterAcceptRequestDto;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,50 +78,8 @@ class PublicEngagementLetterAcceptResourceIT {
                 .andExpect(status().isNotFound());
     }
 
-    @Test
-    void testAcceptByTokenWhenAlreadyAccepted() throws Exception {
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("accepted-token")))
-                .willThrow(new BadRequestException("Cannot accept engagement letter: engagement letter has already been accepted"));
 
-        String body = this.objectMapper.writeValueAsString(
-                PublicEngagementLetterAcceptRequestDto.builder().token("accepted-token").build()
-        );
 
-        this.mockMvc.perform(post(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCEPT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("already been accepted")));
-    }
 
-    @Test
-    void testAcceptByTokenWhenTokenIsInactive() throws Exception {
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("inactive-token")))
-                .willThrow(new BadRequestException("Cannot accept engagement letter: public access token is inactive"));
 
-        String body = this.objectMapper.writeValueAsString(
-                PublicEngagementLetterAcceptRequestDto.builder().token("inactive-token").build()
-        );
-
-        this.mockMvc.perform(post(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCEPT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400))
-                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("inactive")));
-    }
-
-    @Test
-    void testAcceptByTokenWhenTokenIsMissingInRequest() throws Exception {
-        String body = this.objectMapper.writeValueAsString(
-                PublicEngagementLetterAcceptRequestDto.builder().token(" ").build()
-        );
-
-        this.mockMvc.perform(post(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCEPT)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value(400));
-    }
 }

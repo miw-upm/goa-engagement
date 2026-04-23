@@ -1,7 +1,5 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.ForbiddenException;
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.model.EventType;
@@ -12,6 +10,8 @@ import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.CommentDto;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
 import es.upm.api.infrastructure.mappers.EventMapper;
+import es.upm.miw.exception.ForbiddenException;
+import es.upm.miw.exception.NotFoundException;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 

@@ -4,6 +4,7 @@ import es.upm.api.domain.model.Alert;
 import es.upm.api.domain.services.AlertService;
 import es.upm.api.infrastructure.dtos.*;
 import es.upm.api.infrastructure.mappers.AlertMapper;
+import es.upm.miw.security.Security;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

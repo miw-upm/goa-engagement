@@ -1,10 +1,11 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.api.infrastructure.dtos.EventUpdateDto;
+import es.upm.miw.exception.ForbiddenException;
+import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -746,7 +747,7 @@ class EventServiceIT {
                         actualComment.getContent(),
                         user2.getMobile()
                 )
-        ).isInstanceOf(es.upm.api.domain.exceptions.ForbiddenException.class)
+        ).isInstanceOf(ForbiddenException.class)
                 .hasMessageContaining("You can only delete your own comments");
     }
 
@@ -778,7 +779,7 @@ class EventServiceIT {
                         "Non-existent comment",
                         user.getMobile()
                 )
-        ).isInstanceOf(es.upm.api.domain.exceptions.NotFoundException.class)
+        ).isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("The comment doesn't exist in the event");
     }
 
@@ -920,7 +921,7 @@ class EventServiceIT {
                         actualComment.getContent(),
                         author.getMobile()
                 )
-        ).isInstanceOf(es.upm.api.domain.exceptions.NotFoundException.class)
+        ).isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("The comment doesn't exist in the event");
     }
 

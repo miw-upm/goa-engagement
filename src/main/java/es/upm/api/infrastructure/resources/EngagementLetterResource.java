@@ -1,10 +1,11 @@
 package es.upm.api.infrastructure.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.EngagementLetterCriteria;
+import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.services.EngagementLetterService;
+import es.upm.miw.security.Security;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,19 +15,14 @@ import java.util.UUID;
 @RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
 @RequestMapping(EngagementLetterResource.ENGAGEMENT_LETTER)
+@RequiredArgsConstructor
 public class EngagementLetterResource {
     public static final String ENGAGEMENT_LETTER = "/engagement-letters";
     public static final String ID_ID = "/{id}";
     public static final String PUBLIC_ACCESS_TOKEN = "/public-access-token";
     public static final String PRINT_VIEW = "/print-view";
 
-
     private final EngagementLetterService engagementLetterService;
-
-    @Autowired
-    public EngagementLetterResource(EngagementLetterService engagementLetterService) {
-        this.engagementLetterService = engagementLetterService;
-    }
 
     @GetMapping
     public List<EngagementLetter> searchNullSafe(@ModelAttribute EngagementLetterCriteria criteria) {

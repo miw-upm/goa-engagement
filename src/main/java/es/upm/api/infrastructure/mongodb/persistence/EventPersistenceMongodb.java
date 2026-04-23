@@ -1,12 +1,12 @@
 package es.upm.api.infrastructure.mongodb.persistence;
 
-import es.upm.api.domain.exceptions.NotFoundException;
 import es.upm.api.domain.model.Comment;
 import es.upm.api.domain.model.Event;
 import es.upm.api.domain.persistence.EventPersistence;
 import es.upm.api.infrastructure.mongodb.entities.CommentEntity;
 import es.upm.api.infrastructure.mongodb.entities.EventEntity;
 import es.upm.api.infrastructure.mongodb.repositories.EventRepository;
+import es.upm.miw.exception.NotFoundException;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
