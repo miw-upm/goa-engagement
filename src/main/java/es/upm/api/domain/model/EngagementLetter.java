@@ -1,7 +1,7 @@
 package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import es.upm.api.domain.model.validations.ListNotEmpty;
+import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
