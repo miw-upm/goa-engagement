@@ -1,4 +1,4 @@
-package es.upm.api.domain.model.snapshos;
+package es.upm.api.domain.model.snapshots;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

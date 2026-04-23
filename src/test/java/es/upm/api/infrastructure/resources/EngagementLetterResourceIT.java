@@ -1,6 +1,6 @@
 package es.upm.api.infrastructure.resources;
 
-import es.upm.api.domain.model.snapshos.UserSnapshot;
+import es.upm.api.domain.model.snapshots.UserSnapshot;
 import es.upm.api.domain.webclients.UserWebClient;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;

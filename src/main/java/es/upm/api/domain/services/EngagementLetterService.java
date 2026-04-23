@@ -4,7 +4,7 @@ import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.snapshos.UserSnapshot;
+import es.upm.api.domain.model.snapshots.UserSnapshot;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
 import lombok.RequiredArgsConstructor;

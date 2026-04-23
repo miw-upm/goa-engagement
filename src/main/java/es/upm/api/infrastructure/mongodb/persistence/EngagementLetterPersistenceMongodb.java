@@ -2,7 +2,7 @@ package es.upm.api.infrastructure.mongodb.persistence;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
-import es.upm.api.domain.model.snapshos.UserSnapshot;
+import es.upm.api.domain.model.snapshots.UserSnapshot;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.infrastructure.mongodb.entities.AcceptanceDocumentEntity;
 import es.upm.api.infrastructure.mongodb.entities.EngagementLetterEntity;

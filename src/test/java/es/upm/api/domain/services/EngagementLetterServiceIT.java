@@ -2,7 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.criteria.EngagementLetterCriteria;
 import es.upm.api.domain.model.*;
-import es.upm.api.domain.model.snapshos.UserSnapshot;
+import es.upm.api.domain.model.snapshots.UserSnapshot;
 import es.upm.api.domain.webclients.UserWebClient;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;

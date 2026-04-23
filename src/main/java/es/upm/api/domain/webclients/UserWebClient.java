@@ -1,7 +1,7 @@
 package es.upm.api.domain.webclients;
 
 import es.upm.api.configurations.FeignConfig;
-import es.upm.api.domain.model.snapshos.UserSnapshot;
+import es.upm.api.domain.model.snapshots.UserSnapshot;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
