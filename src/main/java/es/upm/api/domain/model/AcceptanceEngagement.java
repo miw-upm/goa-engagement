@@ -22,8 +22,10 @@ public class AcceptanceEngagement {
     private String signerEmail;
     private String signatureToken;
     private DeviceInfo deviceInfo;
+    private Boolean documentAccepted;
+    private String signature;
 
-    public boolean isSignered() {
+    public boolean isSigned() {
         return this.signatureAt != null
                 && this.signer != null
                 && this.signerFullName != null
@@ -31,7 +33,9 @@ public class AcceptanceEngagement {
                 && this.mobile != null
                 && this.signerEmail != null
                 && this.signatureToken != null
-                && this.deviceInfo != null;
+                && this.deviceInfo != null
+                && this.documentAccepted != null
+                && this.signature != null;
     }
 }
 

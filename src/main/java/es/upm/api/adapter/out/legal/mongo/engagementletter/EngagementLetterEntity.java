@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Builder
@@ -20,8 +21,8 @@ public class EngagementLetterEntity {
     @Id
     private UUID id;
     private Boolean budgetOnly;
-    private Integer discount;
     private LocalDate lastUpdatedDate;
+    private Integer discount;
     private LocalDate closingDate;
     private UUID ownerId;
     @Singular
@@ -32,11 +33,34 @@ public class EngagementLetterEntity {
     private List<PaymentMethodEntity> paymentMethodEntities;
     private String legalClause;
     @Singular
-    private List<AcceptanceDocumentEntity> acceptanceDocumentEntities;
+    private List<AcceptanceEngagementEntity> acceptanceEngagementEntities;
 
     public EngagementLetterEntity(EngagementLetter engagementLetter) {
         BeanUtils.copyProperties(engagementLetter, this);
         this.ownerId = engagementLetter.getOwner().getId();
+        Optional.ofNullable(engagementLetter.getAttachments())
+                .ifPresent(attachments -> this.setAttachmentIds(
+                        attachments.stream()
+                                .map(UserSnapshot::getId)
+                                .toList()
+                ));
+        this.setLegalProcedureEntities(
+                engagementLetter.getLegalProcedures().stream()
+                        .map(LegalProcedureEntity::new)
+                        .toList()
+        );
+        this.setPaymentMethodEntities(
+                engagementLetter.getPaymentMethods().stream()
+                        .map(PaymentMethodEntity::new)
+                        .toList()
+        );
+
+        Optional.ofNullable(engagementLetter.getAcceptanceEngagements())
+                .ifPresent(documents -> this.setAcceptanceEngagementEntities(
+                        documents.stream()
+                                .map(AcceptanceEngagementEntity::new)
+                                .toList()
+                ));
     }
 
     public EngagementLetter toDomain() {
@@ -49,9 +73,9 @@ public class EngagementLetterEntity {
                     .map(attachmentId -> UserSnapshot.builder().id(attachmentId).build())
                     .toList());
         }
-        if (this.acceptanceDocumentEntities != null) {
-            engagementLetter.setAcceptanceEngagements(this.acceptanceDocumentEntities.stream()
-                    .map(AcceptanceDocumentEntity::toDomain)
+        if (this.acceptanceEngagementEntities != null) {
+            engagementLetter.setAcceptanceEngagements(this.acceptanceEngagementEntities.stream()
+                    .map(AcceptanceEngagementEntity::toDomain)
                     .toList());
         }
         engagementLetter.setPaymentMethods(this.paymentMethodEntities.stream()
