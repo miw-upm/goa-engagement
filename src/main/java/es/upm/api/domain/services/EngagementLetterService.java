@@ -1,6 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
@@ -16,10 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -164,5 +163,25 @@ public class EngagementLetterService {
                 .paragraphBold(dict.getTitle("aviso_importante"))
                 .paragraph(dict.getText("aviso_hoja"))
                 .multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
+    }
+
+    public Stream<UserSnapshot> findPendingSigners(UUID id) {
+        EngagementLetter letter = this.readById(id);
+        Stream<UserSnapshot> allSigners = Stream.concat(
+                Stream.ofNullable(letter.getOwner()),
+                letter.getAttachments() == null ? Stream.empty() : letter.getAttachments().stream()
+        );
+        Set<UUID> signedIds = letter.getAcceptanceEngagements() == null
+                ? Set.of()
+                : letter.getAcceptanceEngagements().stream()
+                .filter(AcceptanceEngagement::isSigned)
+                .map(AcceptanceEngagement::getSigner)
+                .filter(Objects::nonNull)
+                .map(UserSnapshot::getId)
+                .collect(Collectors.toSet());
+
+        return allSigners
+                .filter(Objects::nonNull)
+                .filter(user -> !signedIds.contains(user.getId()));
     }
 }

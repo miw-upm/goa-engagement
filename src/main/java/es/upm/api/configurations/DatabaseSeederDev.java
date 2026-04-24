@@ -116,7 +116,7 @@ public class DatabaseSeederDev {
         AcceptanceEngagementEntity[] acceptances = {
                 AcceptanceEngagementEntity.builder()
                         .signatureAt(LocalDateTime.now().plusHours(1))
-                        .signerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
+                        .signerId(US[0])
                         .signerFullName("c1 family-c1")
                         .signerIdentity("66666603E")
                         .mobile("666666000")
@@ -125,7 +125,7 @@ public class DatabaseSeederDev {
                         .deviceInfo(device).build(),
                 AcceptanceEngagementEntity.builder()
                         .signatureAt(LocalDateTime.now().plusHours(1))
-                        .signerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
+                        .signerId(US[1])
                         .signerFullName("c2 family-c2")
                         .signerIdentity("66666604T")
                         .mobile("666666001")
@@ -160,13 +160,13 @@ public class DatabaseSeederDev {
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[2]))
                         .acceptanceEngagementEntities(List.of(acceptances[0]))
                         .build(),
-                EngagementLetterEntity.builder().id(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001"))
+                EngagementLetterEntity.builder().id(UUIDS[1])
                         .budgetOnly(false)
                         .discount(20).lastUpdatedDate(LocalDate.now())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
-                        .ownerId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
-                        .attachmentId(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"))
+                        .ownerId(US[0])
+                        .attachmentId(US[1])
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2]))
                         .acceptanceEngagementEntities(List.of(acceptances[0], acceptances[1]))
                         .build(),
@@ -175,8 +175,8 @@ public class DatabaseSeederDev {
                         .discount(15)
                         .legalClause(LEGAL_CLAUSE)
                         .lastUpdatedDate(LocalDate.now())
-                        .ownerId(UUIDS[2])
-                        .attachmentId(UUIDS[1])
+                        .ownerId(US[1])
+                        .attachmentId(US[2])
                         .paymentMethodEntity(PaymentMethodEntity.builder()
                                 .description("A la firma de la carta de encargo")
                                 .percentage("50%").build())
@@ -184,6 +184,7 @@ public class DatabaseSeederDev {
                                 .description("A la finalización del procedimiento")
                                 .percentage("50%").build())
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
+                        .acceptanceEngagementEntities(List.of(acceptances[1]))
                         .build(),
                 EngagementLetterEntity.builder().id(UUIDS[3])
                         .budgetOnly(false)

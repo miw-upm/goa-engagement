@@ -2,6 +2,7 @@ package es.upm.api.adapter.in.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.miw.security.Security;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ public class EngagementLetterResource {
     public static final String ENGAGEMENT_LETTER = "/engagement-letters";
     public static final String ID_ID = "/{id}";
     public static final String PRINT_VIEW = "/print-view";
+    public static final String PENDING_SIGNERS = ID_ID + "/pending-signers";
 
     private final EngagementLetterService engagementLetterService;
 
@@ -47,6 +49,12 @@ public class EngagementLetterResource {
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
         this.engagementLetterService.delete(id);
+    }
+
+
+    @GetMapping(PENDING_SIGNERS)
+    public List<UserSnapshot> findPendingSigners(@PathVariable UUID id) {
+        return this.engagementLetterService.findPendingSigners(id).toList();
     }
 
     @GetMapping

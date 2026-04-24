@@ -23,7 +23,7 @@ public class AcceptanceEngagement {
     private String signatureToken;
     private DeviceInfo deviceInfo;
 
-    public boolean isSignered() {
+    public boolean isSigned() {
         return this.signatureAt != null
                 && this.signer != null
                 && this.signerFullName != null

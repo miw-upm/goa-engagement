@@ -20,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,7 +62,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testReadSuccess() {
-        assertThat(engagementLetterService.readById(UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0001")))
+        assertThat(engagementLetterService.readById(UUIDS[1]))
                 .isNotNull()
                 .satisfies(retrieveEngagement -> {
                     assertThat(retrieveEngagement.getOwner().getFirstName()).isEqualTo("mock");
@@ -224,9 +225,8 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindFiltersByOwner() {
-        UUID ownerId = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
         BDDMockito.given(this.userFinderClient.find("test"))
-                .willReturn(List.of(UserSnapshot.builder().id(ownerId).build()));
+                .willReturn(List.of(UserSnapshot.builder().id(UUIDS[4]).build()));
 
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setClient("test");
@@ -235,6 +235,24 @@ class EngagementLetterServiceIT {
 
         assertThat(results)
                 .isNotEmpty()
-                .allSatisfy(letter -> assertThat(letter.getOwner().getId()).isEqualTo(ownerId));
+                .allSatisfy(letter -> assertThat(letter.getOwner().getId()).isEqualTo(UUIDS[4]));
+    }
+
+    @Test
+    void testFindPendingSignersWhenAllEngagementsAreSigned() {
+        List<UserSnapshot> pending = this.engagementLetterService.findPendingSigners(UUIDS[1]).toList();
+        assertThat(pending).isEmpty();
+    }
+
+    @Test
+    void testFindPendingSignersWhenLetterHasAcceptances() {
+        List<UserSnapshot> pending = this.engagementLetterService.findPendingSigners(UUIDS[2]).toList();
+        assertThat(pending).isNotEmpty();
+    }
+
+    @Test
+    void testFindPendingSignersLetterNotFound() {
+        assertThatThrownBy(() -> this.engagementLetterService.findPendingSigners(UUID.randomUUID()).toList())
+                .isInstanceOf(NotFoundException.class);
     }
 }
