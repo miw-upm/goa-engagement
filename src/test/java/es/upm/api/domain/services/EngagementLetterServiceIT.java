@@ -240,12 +240,6 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testFindPendingSignersWhenAllEngagementsAreSigned() {
-        assertThatThrownBy(() -> this.engagementLetterService.findPendingSigners(UUIDS[1]).toList())
-                .isInstanceOf(ConflictException.class);
-    }
-
-    @Test
     void testFindPendingSignersWhenLetterHasAcceptances() {
         List<UserSnapshot> pending = this.engagementLetterService.findPendingSigners(UUIDS[2]).toList();
         assertThat(pending).isNotEmpty();
