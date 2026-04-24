@@ -2,7 +2,6 @@ package es.upm.api.adapter.out.legal.mongo.engagementletter;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
-import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -22,37 +20,7 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
 
     @Override
     public void create(EngagementLetter engagementLetter) {
-        EngagementLetterEntity engagementLetterEntity = this.convertToEngagementLetterEntity(engagementLetter);
-        this.engagementLetterRepository.save(engagementLetterEntity);
-    }
-
-    private EngagementLetterEntity convertToEngagementLetterEntity(EngagementLetter engagementLetter) {
-        EngagementLetterEntity engagementLetterEntity = new EngagementLetterEntity(engagementLetter);
-        engagementLetterEntity.setOwnerId(engagementLetter.getOwner().getId());
-        Optional.ofNullable(engagementLetter.getAttachments())
-                .ifPresent(attachments -> engagementLetterEntity.setAttachmentIds(
-                        attachments.stream()
-                                .map(UserSnapshot::getId)
-                                .toList()
-                ));
-        engagementLetterEntity.setLegalProcedureEntities(
-                engagementLetter.getLegalProcedures().stream()
-                        .map(LegalProcedureEntity::new)
-                        .toList()
-        );
-        engagementLetterEntity.setPaymentMethodEntities(
-                engagementLetter.getPaymentMethods().stream()
-                        .map(PaymentMethodEntity::new)
-                        .toList()
-        );
-        engagementLetterEntity.setLegalClause(engagementLetter.getLegalClause());
-        Optional.ofNullable(engagementLetter.getAcceptanceEngagements())
-                .ifPresent(documents -> engagementLetterEntity.setAcceptanceDocumentEntities(
-                        documents.stream()
-                                .map(AcceptanceDocumentEntity::new)
-                                .toList()
-                ));
-        return engagementLetterEntity;
+        this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter));
     }
 
     @Override
@@ -62,9 +30,10 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
 
     @Override
     public void update(UUID id, EngagementLetter engagementLetter) {
-        this.readById(id);
-        engagementLetter.setId(id);
-        this.engagementLetterRepository.save(this.convertToEngagementLetterEntity(engagementLetter));
+        if (id != engagementLetter.getId() || !this.engagementLetterRepository.existsById(id)) {
+            throw new NotFoundException("For update The EngagementLetter must exist: " + id);
+        }
+        this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter));
     }
 
     @Override
