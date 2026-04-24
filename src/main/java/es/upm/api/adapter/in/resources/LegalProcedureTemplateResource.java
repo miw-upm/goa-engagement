@@ -22,14 +22,14 @@ public class LegalProcedureTemplateResource {
 
     private final LegalProcedureTemplateService legalProcedureTemplateService;
 
-    @GetMapping(ID_ID)
-    public LegalProcedureTemplate read(@PathVariable UUID id) {
-        return this.legalProcedureTemplateService.readById(id);
-    }
-
     @PostMapping
     public void create(@Valid @RequestBody LegalProcedureTemplate template) {
         this.legalProcedureTemplateService.create(template);
+    }
+
+    @GetMapping(ID_ID)
+    public LegalProcedureTemplate read(@PathVariable UUID id) {
+        return this.legalProcedureTemplateService.readById(id);
     }
 
     @PutMapping(ID_ID)

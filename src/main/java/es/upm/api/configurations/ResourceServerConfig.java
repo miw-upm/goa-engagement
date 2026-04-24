@@ -1,6 +1,5 @@
 package es.upm.api.configurations;
 
-import es.upm.api.infrastructure.resources.SystemResource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -13,8 +12,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
-import static es.upm.api.infrastructure.resources.SystemResource.SYSTEM;
-import static es.upm.api.infrastructure.resources.SystemResource.VERSION_BADGE;
+import static es.upm.api.adapter.in.resources.SystemResource.SYSTEM;
+import static es.upm.api.adapter.in.resources.SystemResource.VERSION_BADGE;
 import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
 
 @Configuration
@@ -28,7 +27,7 @@ public class ResourceServerConfig {  // validate tokens y security APIs con SCOP
     @Order(1)
     public SecurityFilterChain systemEndpointsSecurityConfig(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher(SystemResource.SYSTEM + "/**")
+                .securityMatcher(SYSTEM + "/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth

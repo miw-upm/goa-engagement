@@ -1,7 +1,8 @@
 package es.upm.api.adapter.in.legal.resources;
 
-import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.api.adapter.in.resources.EngagementLetterResource;
 import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.domain.model.external.UserSnapshot;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class EngagementLetterResourceIT {
 
     @Autowired
-    es.upm.api.infrastructure.resources.EngagementLetterResource providerResource;
+    EngagementLetterResource providerResource;
 
     @Autowired
     private MockMvc mockMvc;
@@ -37,7 +38,7 @@ class EngagementLetterResourceIT {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
-        mockMvc.perform(get(es.upm.api.infrastructure.resources.EngagementLetterResource.ENGAGEMENT_LETTER + es.upm.api.infrastructure.resources.EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
                 .andExpect(status().isOk());
 
     }

@@ -1,12 +1,12 @@
 package es.upm.api.domain.services;
 
+import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
-import es.upm.api.adapter.out.user.feign.UserFinderClient;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
@@ -69,7 +69,7 @@ public class EngagementLetterService {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userFinderClient.findNullSafe(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinderClient.find(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));

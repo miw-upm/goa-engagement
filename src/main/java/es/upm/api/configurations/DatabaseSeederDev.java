@@ -1,8 +1,8 @@
 package es.upm.api.configurations;
 
 import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
-import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
+import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import lombok.extern.log4j.Log4j2;

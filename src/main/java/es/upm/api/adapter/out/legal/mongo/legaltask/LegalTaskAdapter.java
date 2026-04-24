@@ -30,11 +30,6 @@ public class LegalTaskAdapter implements LegalTaskGateway {
     }
 
     @Override
-    public void deleteById(UUID id) {
-        this.legalTaskRepository.deleteById(id);
-    }
-
-    @Override
     public LegalTask read(UUID id) {
         return this.legalTaskRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Legal task not found, id:" + id))
@@ -42,7 +37,12 @@ public class LegalTaskAdapter implements LegalTaskGateway {
     }
 
     @Override
-    public Stream<LegalTask> findNullSafe(String title) {
+    public void deleteById(UUID id) {
+        this.legalTaskRepository.deleteById(id);
+    }
+
+    @Override
+    public Stream<LegalTask> find(String title) {
         if (title == null) {
             return this.findAll();
         } else {

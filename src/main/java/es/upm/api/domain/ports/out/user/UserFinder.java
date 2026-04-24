@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface UserFinder {
     UserSnapshot readById(UUID id);
+
     UserSnapshot readByMobile(String mobile);
+
     List<UserSnapshot> find(String attribute);
 }

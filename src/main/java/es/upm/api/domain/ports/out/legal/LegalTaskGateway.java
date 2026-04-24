@@ -14,7 +14,7 @@ public interface LegalTaskGateway {
 
     LegalTask read(UUID id);
 
-    Stream<LegalTask> findNullSafe(String title);
+    Stream<LegalTask> find(String title);
 
     Stream<LegalTask> findAll();
 

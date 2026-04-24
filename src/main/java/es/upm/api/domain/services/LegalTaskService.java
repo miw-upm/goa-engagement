@@ -41,7 +41,7 @@ public class LegalTaskService {
     }
 
     public Stream<LegalTask> find(String title) {
-        return this.legalTaskPersistence.findNullSafe(title);
+        return this.legalTaskPersistence.find(title);
     }
 
     public LegalTask read(UUID id) {

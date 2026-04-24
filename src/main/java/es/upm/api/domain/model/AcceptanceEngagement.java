@@ -1,7 +1,7 @@
 package es.upm.api.domain.model;
 
-import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.miw.device.DeviceInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,8 +14,24 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AcceptanceEngagement {
-    private LocalDateTime signatureDate;
+    private LocalDateTime signatureAt;
     private UserSnapshot signer;
-    private AccessLinkSnapshot accessLinkSnapshot;
+    private String signerFullName;
+    private String signerIdentity;
+    private String mobile;
+    private String signerEmail;
+    private String signatureToken;
+    private DeviceInfo deviceInfo;
+
+    public boolean isSignered() {
+        return this.signatureAt != null
+                && this.signer != null
+                && this.signerFullName != null
+                && this.signerIdentity != null
+                && this.mobile != null
+                && this.signerEmail != null
+                && this.signatureToken != null
+                && this.deviceInfo != null;
+    }
 }
 

@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.resources;
+package es.upm.api.adapter.in.resources;
 
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
@@ -19,15 +19,9 @@ import java.util.UUID;
 public class EngagementLetterResource {
     public static final String ENGAGEMENT_LETTER = "/engagement-letters";
     public static final String ID_ID = "/{id}";
-    public static final String PUBLIC_ACCESS_TOKEN = "/public-access-token";
     public static final String PRINT_VIEW = "/print-view";
 
     private final EngagementLetterService engagementLetterService;
-
-    @GetMapping
-    public List<EngagementLetter> find(@ModelAttribute EngagementLetterFindCriteria criteria) {
-        return this.engagementLetterService.find(criteria).toList();
-    }
 
     @PostMapping
     public void create(@Valid @RequestBody EngagementLetter engagementLetter) {
@@ -53,6 +47,11 @@ public class EngagementLetterResource {
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
         this.engagementLetterService.delete(id);
+    }
+
+    @GetMapping
+    public List<EngagementLetter> find(@ModelAttribute EngagementLetterFindCriteria criteria) {
+        return this.engagementLetterService.find(criteria).toList();
     }
 
 }
