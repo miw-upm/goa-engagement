@@ -22,6 +22,8 @@ public class EngagementLetterResource {
     public static final String ID_ID = "/{id}";
     public static final String PRINT_VIEW = "/print-view";
     public static final String PENDING_SIGNERS = ID_ID + "/pending-signers";
+    public static final String VIEW_MOBILE_TOKEN = "/view/{mobile}/{token}";
+    public static final String SIGN_ENGAGEMENT_LETTER_MOBILE_TOKEN = "/sign-engagement-letter/{mobile}/{token}";
 
     private final EngagementLetterService engagementLetterService;
 
@@ -36,8 +38,22 @@ public class EngagementLetterResource {
     }
 
     @GetMapping(value = ID_ID + PRINT_VIEW, produces = {"application/pdf", "application/json"})
-    public byte[] readPrintView(@PathVariable UUID id) {
+    public byte[] view(@PathVariable UUID id) {
         return this.engagementLetterService.generatePdf(id);
+    }
+
+    @PreAuthorize(Security.ALL)
+    @GetMapping(value = VIEW_MOBILE_TOKEN, produces = {"application/pdf", "application/json"})
+    public byte[] viewByToken(@PathVariable String mobile, @PathVariable String token) {
+        System.out.println(">VIEW>>>>>>>>>>>>>>>>>> mobile: " + mobile + " token: " + token);
+        return this.engagementLetterService.generatePdfWithToken(mobile, token);
+    }
+
+    @PreAuthorize(Security.ALL)
+    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER_MOBILE_TOKEN)
+    public void signByToken(@PathVariable String mobile, @PathVariable String token,
+                            @RequestBody AcceptanceEngagementCreationDto acceptance) {
+        System.out.println(">SIGN>>>>>>>>>>>>>>Accepting engagement letter with mobile: " + mobile + " and token: " + token + " acceptance: " + acceptance);
     }
 
     @PutMapping(ID_ID)

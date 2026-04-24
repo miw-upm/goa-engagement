@@ -22,6 +22,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
@@ -189,5 +191,10 @@ public class EngagementLetterService {
             throw new ConflictException("Todos los firmantes ya han firmado");
         }
         return pendingSigners.stream();
+    }
+
+    public byte[] generatePdfWithToken(String mobile, String token) {
+        //TODO comprobar mobile y token, y obtener la id
+        return this.generatePdf(UUIDS[0]);
     }
 }
