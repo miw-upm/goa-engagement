@@ -6,6 +6,7 @@ import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -240,8 +241,8 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindPendingSignersWhenAllEngagementsAreSigned() {
-        List<UserSnapshot> pending = this.engagementLetterService.findPendingSigners(UUIDS[1]).toList();
-        assertThat(pending).isEmpty();
+        assertThatThrownBy(() -> this.engagementLetterService.findPendingSigners(UUIDS[1]).toList())
+                .isInstanceOf(ConflictException.class);
     }
 
     @Test

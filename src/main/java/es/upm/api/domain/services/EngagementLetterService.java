@@ -8,6 +8,7 @@ import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
+import es.upm.miw.exception.ConflictException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
@@ -167,10 +168,7 @@ public class EngagementLetterService {
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
         EngagementLetter letter = this.readById(id);
-        Stream<UserSnapshot> allSigners = Stream.concat(
-                Stream.ofNullable(letter.getOwner()),
-                letter.getAttachments() == null ? Stream.empty() : letter.getAttachments().stream()
-        );
+
         Set<UUID> signedIds = letter.getAcceptanceEngagements() == null
                 ? Set.of()
                 : letter.getAcceptanceEngagements().stream()
@@ -180,8 +178,16 @@ public class EngagementLetterService {
                 .map(UserSnapshot::getId)
                 .collect(Collectors.toSet());
 
-        return allSigners
+        List<UserSnapshot> pendingSigners = Stream.concat(
+                        Stream.ofNullable(letter.getOwner()),
+                        letter.getAttachments() == null ? Stream.empty() : letter.getAttachments().stream())
                 .filter(Objects::nonNull)
-                .filter(user -> !signedIds.contains(user.getId()));
+                .filter(user -> !signedIds.contains(user.getId()))
+                .toList();
+
+        if (pendingSigners.isEmpty()) {
+            throw new ConflictException("Todos los firmantes ya han firmado");
+        }
+        return pendingSigners.stream();
     }
 }
