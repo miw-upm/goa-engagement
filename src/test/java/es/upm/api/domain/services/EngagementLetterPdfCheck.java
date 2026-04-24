@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.mockito.ArgumentMatchers.any;
 
 @Log4j2
@@ -38,8 +39,7 @@ class EngagementLetterPdfCheck {
                         .documentType("DNI")
                         .identity("43234543V")
                         .build());
-        byte[] pdf = this.engagementLetterService.generatePdf(
-                UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"));
+        byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[0]);
         Path output = Path.of("target", "presupuesto-check.pdf");
         Files.write(output, pdf);
         log.info("PDF generado en: {}", output.toAbsolutePath());
@@ -56,8 +56,7 @@ class EngagementLetterPdfCheck {
                         .documentType("DNI")
                         .identity("43234543V")
                         .build());
-        byte[] pdf = this.engagementLetterService.generatePdf(
-                UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0002"));
+        byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[0]);
         Path output = Path.of("target", "hoja-check.pdf");
         Files.write(output, pdf);
         log.info("PDF generado en: {}", output.toAbsolutePath());

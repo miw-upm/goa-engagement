@@ -11,20 +11,19 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @SpringBootTest
 @ActiveProfiles("test")
 class LegalProcedureTemplateServiceIT {
-    private static final UUID EXISTING_ID = UUID.fromString("aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000");
-
     @Autowired
     private LegalProcedureTemplateService legalProcedureTemplateService;
 
     @Test
     void shouldFindById() {
-        assertThat(legalProcedureTemplateService.readById(EXISTING_ID))
+        assertThat(legalProcedureTemplateService.readById(UUIDS[0]))
                 .isNotNull()
                 .extracting(LegalProcedureTemplate::getTitle)
                 .isEqualTo("Procedimiento de herencia");
@@ -44,13 +43,13 @@ class LegalProcedureTemplateServiceIT {
     @Test
     void shouldSearchByTaskTitle() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .find(new LegalProcedureTemplateFindCriteria("herencia", null))
+                .find(new LegalProcedureTemplateFindCriteria("herenci", null))
                 .toList();
 
         assertThat(results)
                 .isNotEmpty()
                 .anyMatch(p -> p.getLegalTasks().stream()
-                        .anyMatch(t -> t.getTitle().toLowerCase().contains("escritura")));
+                        .anyMatch(t -> t.getTitle().toLowerCase().contains("pasivos")));
     }
 
     @Test

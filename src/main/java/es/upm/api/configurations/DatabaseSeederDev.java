@@ -33,6 +33,10 @@ public class DatabaseSeederDev {
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007"),
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0008"),
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0009"),
+            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000a"),
+            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000b"),
+            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000c"),
+            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000d"),
     };
     public static final UUID[] US = {
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"),
@@ -82,7 +86,11 @@ public class DatabaseSeederDev {
                 new LegalTaskEntity(UUIDS[6], "Redacción del cuaderno particional de la herencia ante el notario correspondiente"),
                 new LegalTaskEntity(UUIDS[7], "Liquidación de Impuesto de Sucesiones (prescrito)"),
                 new LegalTaskEntity(UUIDS[8], "Averiguación de los posibles pasivos (deuda) existente"),
-                new LegalTaskEntity(UUIDS[9], "Tramitación de los seguros")
+                new LegalTaskEntity(UUIDS[9], "Tramitación de los seguros"),
+                new LegalTaskEntity(UUIDS[9], "Redacción de la escritura de herencia y tramitación con la notaría correspondiente"),
+                new LegalTaskEntity(UUIDS[9], "Asistencia letrada en la notaría"),
+                new LegalTaskEntity(UUIDS[9], "Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad"),
+                new LegalTaskEntity(UUIDS[9], "Tramitación de la venta de las viviendas de la herencia con la inmobiliaria"),
         };
         this.legalTaskRepository.saveAll(List.of(tasks));
         log.warn("        ------- tareas legales --------------------------------------------------------------------");
@@ -176,7 +184,6 @@ public class DatabaseSeederDev {
                                 .description("A la finalización del procedimiento")
                                 .percentage("50%").build())
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
-                        .acceptanceEngagementEntities(null)
                         .build(),
                 EngagementLetterEntity.builder().id(UUIDS[3])
                         .budgetOnly(false)
@@ -186,7 +193,6 @@ public class DatabaseSeederDev {
                         .ownerId(US[0])
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Completo").percentage("100%").build())
                         .legalProcedureEntities(List.of(procedimientos[0]))
-                        .acceptanceEngagementEntities(null)
                         .build(),
         };
 

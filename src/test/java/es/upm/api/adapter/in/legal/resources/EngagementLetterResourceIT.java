@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,7 +39,7 @@ class EngagementLetterResourceIT {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
-        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, "aaaaaaa0-bbbb-cccc-dddd-eeeeffff0000"))
+        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, UUIDS[0]))
                 .andExpect(status().isOk());
 
     }
