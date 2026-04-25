@@ -1,6 +1,6 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.adapter.out.user.feign.GoaUserClient;
 import es.upm.api.domain.model.external.UserSnapshot;
 import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ class EngagementLetterPdfCheck {
     private EngagementLetterService engagementLetterService;
 
     @MockitoBean
-    private UserFinderClient userFinderClient;
+    private GoaUserClient userFinderClient;
 
     @Test
     void testGenerateBudgePdfCheck() throws Exception {

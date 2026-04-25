@@ -11,20 +11,20 @@ import java.util.UUID;
 @Component
 @RequiredArgsConstructor
 public class UserFinderAdapter implements UserFinder {
-    private final UserFinderClient userFeignClient;
+    private final GoaUserClient goaUserClient;
 
     @Override
     public UserSnapshot readById(UUID id) {
-        return userFeignClient.readUserById(id);
+        return goaUserClient.readUserById(id);
     }
 
     @Override
     public UserSnapshot readByMobile(String mobile) {
-        return userFeignClient.readUserByMobile(mobile);
+        return goaUserClient.readUserByMobile(mobile);
     }
 
     @Override
     public List<UserSnapshot> find(String attribute) {
-        return userFeignClient.find(attribute);
+        return goaUserClient.findUser(attribute);
     }
 }

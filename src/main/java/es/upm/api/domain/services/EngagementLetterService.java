@@ -1,19 +1,20 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.adapter.out.user.feign.GoaUserClient;
 import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
+import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -22,14 +23,13 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
-
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
+    private final static String SIGN_ENGAGEMENT_LETTER = "sign-engagement-letter";
     private final EngagementLetterGateway engagementLetterGateway;
-    private final UserFinderClient userFinderClient;
-    private final ApplicationEventPublisher eventPublisher;
+    private final GoaUserClient userFinderClient;
+    private final AccessLinkGateway accessLinkGateway;
 
     public EngagementLetter readById(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
@@ -71,7 +71,7 @@ public class EngagementLetterService {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userFinderClient.find(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinderClient.findUser(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
@@ -194,7 +194,7 @@ public class EngagementLetterService {
     }
 
     public byte[] generatePdfWithToken(String mobile, String token) {
-        //TODO comprobar mobile y token, y obtener la id
-        return this.generatePdf(UUIDS[0]);
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(mobile, token, SIGN_ENGAGEMENT_LETTER);
+        return this.generatePdf(accessLink.getDocument());
     }
 }

@@ -1,12 +1,11 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.adapter.out.user.feign.GoaUserClient;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
-import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,7 +33,7 @@ class EngagementLetterServiceIT {
     private EngagementLetterService engagementLetterService;
 
     @MockitoBean
-    private UserFinderClient userFinderClient;
+    private GoaUserClient userFinderClient;
     private EngagementLetter engagementLetter;
 
     @BeforeEach
@@ -56,7 +55,7 @@ class EngagementLetterServiceIT {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
-        BDDMockito.given(this.userFinderClient.find(any(String.class)))
+        BDDMockito.given(this.userFinderClient.findUser(any(String.class)))
                 .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
     }
@@ -226,7 +225,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindFiltersByOwner() {
-        BDDMockito.given(this.userFinderClient.find("test"))
+        BDDMockito.given(this.userFinderClient.findUser("test"))
                 .willReturn(List.of(UserSnapshot.builder().id(UUIDS[4]).build()));
 
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
