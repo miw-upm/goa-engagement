@@ -85,7 +85,6 @@ public class EngagementLetterResource {
                 .mobile(mobile)
                 .signatureToken(token)
                 .documentAccepted(acceptanceCreation.getDocumentAccepted())
-                .signature(acceptanceCreation.getSignature())
                 .deviceInfo(this.resolveDeviceInfo(request))
                 .build();
         this.engagementLetterService.sign(acceptance);

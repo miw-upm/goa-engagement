@@ -178,9 +178,8 @@ public class EngagementLetterService {
                 ? Set.of()
                 : letter.getAcceptanceEngagements().stream()
                 .filter(AcceptanceEngagement::isSigned)
-                .map(AcceptanceEngagement::getSigner)
+                .map(AcceptanceEngagement::getSignerId)
                 .filter(Objects::nonNull)
-                .map(UserSnapshot::getId)
                 .collect(Collectors.toSet());
 
         List<UserSnapshot> pendingSigners = Stream.concat(
@@ -204,9 +203,12 @@ public class EngagementLetterService {
     public void sign(AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
                 .use(acceptance.getSignatureToken(), acceptance.getMobile(), SIGN_ENGAGEMENT_LETTER);
+        System.out.println(">accessLink>>>>>>>>>>>>>>: " + accessLink);
         UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
+        System.out.println(">user>>>>>>>>>>>>>>: " + user);
+
         acceptance.setSignatureAt(LocalDateTime.now());
-        acceptance.setSigner(accessLink.getUser());
+        acceptance.setSignerId(user.getId());
         acceptance.setSignerFullName(user.toFullName());
         acceptance.setSignerIdentity(user.getIdentity());
         acceptance.setSignerEmail(user.getEmail());
