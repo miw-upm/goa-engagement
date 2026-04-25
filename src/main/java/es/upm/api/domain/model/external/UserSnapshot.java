@@ -29,6 +29,16 @@ public class UserSnapshot {
         return this.toFullName() + " con " + formatDocumentType() + " nº " + valueOrUndefined(identity);
     }
 
+    public boolean isComplete() {
+        return this.id != null
+                && this.mobile != null
+                && this.firstName != null
+                && this.familyName != null
+                && this.documentType != null
+                && this.identity != null
+                && this.email != null;
+    }
+
     private String formatDocumentType() {
         if (documentType == null) {
             return SIN_DEFINIR;

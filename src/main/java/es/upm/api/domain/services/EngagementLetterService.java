@@ -12,6 +12,7 @@ import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
 import es.upm.miw.exception.ConflictException;
+import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
@@ -167,32 +168,45 @@ public class EngagementLetterService {
                 .section(dict.getTitle("jurisdiccion"))
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
-                .paragraph(dict.getText("aviso_hoja"))
-                .multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
+                .paragraph(dict.getText("aviso_hoja"));
+
+        pdf.multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
     }
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
         EngagementLetter letter = this.readById(id);
-
+        this.ensureSignable(letter);
         Set<UUID> signedIds = letter.getAcceptanceEngagements() == null
                 ? Set.of()
                 : letter.getAcceptanceEngagements().stream()
                 .filter(AcceptanceEngagement::isSigned)
                 .map(AcceptanceEngagement::getSignerId)
-                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
-
-        List<UserSnapshot> pendingSigners = Stream.concat(
-                        Stream.ofNullable(letter.getOwner()),
-                        letter.getAttachments() == null ? Stream.empty() : letter.getAttachments().stream())
-                .filter(Objects::nonNull)
+        Stream<UserSnapshot> ownerStream = Stream.of(letter.getOwner());
+        Stream<UserSnapshot> attachmentStream = letter.getAttachments() == null ? Stream.empty()
+                : letter.getAttachments().stream();
+        List<UserSnapshot> pendingSigners = Stream.concat(ownerStream, attachmentStream)
                 .filter(user -> !signedIds.contains(user.getId()))
                 .toList();
-
         if (pendingSigners.isEmpty()) {
-            throw new ConflictException("Todos los firmantes ya han firmado");
+            throw new InvalidTransitionException("Todos los firmantes ya han firmado");
         }
         return pendingSigners.stream();
+    }
+
+    private void ensureSignable(EngagementLetter letter) {
+        if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
+            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
+        }
+        if (!letter.getOwner().isComplete()) {
+            throw new InvalidTransitionException("El propietario debe estar completado");
+        }
+        if (letter.getAttachments() == null || letter.getAttachments().isEmpty()) {
+            return;
+        }
+        if (!letter.getAttachments().stream().allMatch(UserSnapshot::isComplete)) {
+            throw new InvalidTransitionException("Los adjuntos deben estar completados");
+        }
     }
 
     public byte[] generatePdfWithToken(String mobile, String token) {
@@ -203,10 +217,7 @@ public class EngagementLetterService {
     public void sign(AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
                 .use(acceptance.getSignatureToken(), acceptance.getMobile(), SIGN_ENGAGEMENT_LETTER);
-        System.out.println(">accessLink>>>>>>>>>>>>>>: " + accessLink);
         UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
-        System.out.println(">user>>>>>>>>>>>>>>: " + user);
-
         acceptance.setSignatureAt(LocalDateTime.now());
         acceptance.setSignerId(user.getId());
         acceptance.setSignerFullName(user.toFullName());

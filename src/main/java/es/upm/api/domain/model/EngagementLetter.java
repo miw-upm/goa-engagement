@@ -71,14 +71,15 @@ public class EngagementLetter {
     }
 
     public void add(AcceptanceEngagement acceptance) {
-        if (this.acceptanceEngagements == null) {
-            this.acceptanceEngagements = new ArrayList<>();
-        }
+        this.acceptanceEngagements = this.acceptanceEngagements == null
+                ? new ArrayList<>()
+                : new ArrayList<>(this.acceptanceEngagements);
         boolean mobileInUse = this.getAcceptanceEngagements().stream()
                 .anyMatch(signer -> acceptance.getMobile().equals(signer.getMobile()));
         if (mobileInUse) {
             throw new ConflictException("El usuario ya firmó: " + acceptance.getMobile());
         }
-        acceptanceEngagements.add(acceptance);
+        this.acceptanceEngagements.add(acceptance);
     }
+
 }

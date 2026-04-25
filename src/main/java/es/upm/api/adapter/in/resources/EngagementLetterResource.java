@@ -80,7 +80,6 @@ public class EngagementLetterResource {
     public void signWithToken(@PathVariable String mobile, @PathVariable String token,
                               @RequestBody AcceptanceEngagementCreationDto acceptanceCreation,
                               HttpServletRequest request) {
-        System.out.println(">SIGN>>>>>>>>>>>>>>Accepting engagement letter with mobile: " + mobile + " and token: " + token + " acceptance: " + acceptanceCreation);
         AcceptanceEngagement acceptance = AcceptanceEngagement.builder()
                 .mobile(mobile)
                 .signatureToken(token)
