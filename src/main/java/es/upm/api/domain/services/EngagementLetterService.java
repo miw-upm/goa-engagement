@@ -11,7 +11,6 @@ import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
-import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
@@ -22,18 +21,32 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
-    private final static String SIGN_ENGAGEMENT_LETTER = "sign-engagement-letter";
+    private static final String SIGN_ENGAGEMENT_LETTER = "sign-engagement-letter";
     private final EngagementLetterGateway engagementLetterGateway;
     private final GoaUserClient userFinderClient;
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
+
+    public void create(EngagementLetter engagementLetter) {
+        engagementLetter.setId(UUID.randomUUID());
+        engagementLetter.setOwner(
+                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
+        );
+        engagementLetter.setLastUpdatedDate(LocalDate.now());
+        if (engagementLetter.getAttachments() != null) {
+            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
+        }
+        this.engagementLetterGateway.create(engagementLetter);
+    }
 
     public EngagementLetter readById(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
@@ -49,26 +62,14 @@ public class EngagementLetterService {
         return engagementLetter;
     }
 
-    public void create(EngagementLetter engagementLetter) {
-        engagementLetter.setId(UUID.randomUUID());
-        engagementLetter.setOwner(
-                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
-        );
-        engagementLetter.setLastUpdatedDate(LocalDate.now());
-        if (engagementLetter.getAttachments() != null) {
-            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
-        }
-        this.engagementLetterGateway.create(engagementLetter);
-    }
-
-    public void delete(UUID id) {
-        this.engagementLetterGateway.delete(id);
-    }
-
     public void update(UUID id, EngagementLetter engagementLetter) {
         engagementLetter.setLastUpdatedDate(LocalDate.now());
         engagementLetter.setId(id);
         this.engagementLetterGateway.update(id, engagementLetter);
+    }
+
+    public void delete(UUID id) {
+        this.engagementLetterGateway.delete(id);
     }
 
     public Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria) {
@@ -78,24 +79,13 @@ public class EngagementLetterService {
             List<UUID> clientIds = this.userFinderClient.findUser(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
-            letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
+            letters = letters.filter(letter -> letter.isClientInLetter(clientIds));
         }
         return letters
                 .map(letter -> {
                     letter.setOwner(this.userFinderClient.readUserById(letter.getOwner().getId()));
                     return letter;
                 });
-    }
-
-    private boolean isClientInLetter(EngagementLetter letter, List<UUID> clientIds) {
-        if (letter.getOwner() != null && clientIds.contains(letter.getOwner().getId())) {
-            return true;
-        }
-        if (letter.getAttachments() != null) {
-            return letter.getAttachments().stream()
-                    .anyMatch(attachment -> clientIds.contains(attachment.getId()));
-        }
-        return false;
     }
 
     public byte[] generatePdf(UUID engagementLetterId) {
@@ -175,38 +165,17 @@ public class EngagementLetterService {
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
         EngagementLetter letter = this.readById(id);
-        this.ensureSignable(letter);
-        Set<UUID> signedIds = letter.getAcceptanceEngagements() == null
-                ? Set.of()
-                : letter.getAcceptanceEngagements().stream()
-                .filter(AcceptanceEngagement::isSigned)
-                .map(AcceptanceEngagement::getSignerId)
-                .collect(Collectors.toSet());
-        Stream<UserSnapshot> ownerStream = Stream.of(letter.getOwner());
-        Stream<UserSnapshot> attachmentStream = letter.getAttachments() == null ? Stream.empty()
-                : letter.getAttachments().stream();
-        List<UserSnapshot> pendingSigners = Stream.concat(ownerStream, attachmentStream)
-                .filter(user -> !signedIds.contains(user.getId()))
-                .toList();
+        if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
+            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
+        }
+        if (!letter.areAllUsersComplete()) {
+            throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
+        }
+        List<UserSnapshot> pendingSigners = letter.findPendingSigners();
         if (pendingSigners.isEmpty()) {
             throw new InvalidTransitionException("Todos los firmantes ya han firmado");
         }
         return pendingSigners.stream();
-    }
-
-    private void ensureSignable(EngagementLetter letter) {
-        if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
-            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
-        }
-        if (!letter.getOwner().isComplete()) {
-            throw new InvalidTransitionException("El propietario debe estar completado");
-        }
-        if (letter.getAttachments() == null || letter.getAttachments().isEmpty()) {
-            return;
-        }
-        if (!letter.getAttachments().stream().allMatch(UserSnapshot::isComplete)) {
-            throw new InvalidTransitionException("Los adjuntos deben estar completados");
-        }
     }
 
     public byte[] generatePdfWithToken(String mobile, String token) {

@@ -14,11 +14,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Builder
 @Data
@@ -82,4 +80,33 @@ public class EngagementLetter {
         this.acceptanceEngagements.add(acceptance);
     }
 
+    public List<UserSnapshot> findPendingSigners() {
+        Set<UUID> signedIds = Optional.ofNullable(this.getAcceptanceEngagements())
+                .orElse(List.of()).stream()
+                .map(AcceptanceEngagement::getSignerId)
+                .collect(Collectors.toSet());
+
+        return Stream.concat(
+                        Stream.of(this.getOwner()), Optional.ofNullable(this.getAttachments()).orElse(List.of()).stream())
+                .filter(user -> !signedIds.contains(user.getId()))
+                .toList();
+    }
+
+    public boolean isSigned() {
+        return this.findPendingSigners().isEmpty();
+    }
+
+    public boolean areAllUsersComplete() {
+        return Stream.concat(
+                        Stream.of(this.getOwner()), Optional.ofNullable(this.getAttachments()).orElse(List.of()).stream())
+                .allMatch(UserSnapshot::isComplete);
+    }
+
+    public boolean isClientInLetter(List<UUID> clientIds) {
+        return Stream.concat(
+                        Stream.of(this.getOwner()),
+                        Optional.ofNullable(this.getAttachments()).orElse(List.of()).stream())
+                .map(UserSnapshot::getId)
+                .anyMatch(clientIds::contains);
+    }
 }
