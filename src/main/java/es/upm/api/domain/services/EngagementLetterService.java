@@ -194,7 +194,7 @@ public class EngagementLetterService {
     }
 
     public byte[] generatePdfWithToken(String mobile, String token) {
-        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(mobile, token, SIGN_ENGAGEMENT_LETTER);
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, SIGN_ENGAGEMENT_LETTER);
         return this.generatePdf(accessLink.getDocument());
     }
 }

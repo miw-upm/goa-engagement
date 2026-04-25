@@ -46,7 +46,6 @@ public class EngagementLetterResource {
     @PreAuthorize(Security.ALL)
     @GetMapping(value = VIEW + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] readViewWithToken(@PathVariable String mobile, @PathVariable String token) {
-        System.out.println(">VIEW>>>>>>>>>>>>>>>>>> mobile: " + mobile + " token: " + token);
         return this.engagementLetterService.generatePdfWithToken(mobile, token);
     }
 
