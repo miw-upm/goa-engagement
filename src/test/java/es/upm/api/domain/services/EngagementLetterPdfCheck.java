@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.US;
 import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -49,14 +50,15 @@ class EngagementLetterPdfCheck {
     void testGenerateLetterPdfCheck() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(UserSnapshot.builder()
-                        .id(UUID.randomUUID())
-                        .firstName("María")
-                        .familyName("García López")
-                        .mobile("612345678")
+                        .id(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
+                        .firstName("c1")
+                        .familyName("family-c1")
+                        .mobile("666666000")
                         .documentType("DNI")
-                        .identity("43234543V")
+                        .identity("66666603E")
+                        .email("c1@gmail.com")
                         .build());
-        byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[0]);
+        byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[4]);
         Path output = Path.of("target", "hoja-check.pdf");
         Files.write(output, pdf);
         log.info("PDF generado en: {}", output.toAbsolutePath());

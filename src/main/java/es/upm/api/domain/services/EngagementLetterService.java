@@ -21,6 +21,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -159,8 +160,24 @@ public class EngagementLetterService {
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
                 .paragraph(dict.getText("aviso_hoja"));
+        if (letter.isSigned()) {
+            List<PdfBuilder.LeftSignature> leftSignatures = letter.getAcceptanceEngagements().stream()
+                    .map(ae -> new PdfBuilder.LeftSignature(ae.getSignerFullName(),
+                            String.format("Firmado electrónicamente %s (CET)%nRef.: %s",
+                                    ae.getSignatureAt().format( DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
+                                   ae.suffix())))
+                    .toList();
+            pdf.multiSignatureWithSignatures(leftSignatures, dict.getText("firma_nuria"));
+        } else {
+            pdf.multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
+        }
+    }
 
-        pdf.multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
+    private String tokenSuffix(String token) {
+        if (token == null || token.length() <= 4) {
+            return token == null ? "" : token;
+        }
+        return token.substring(token.length() - 6);
     }
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {

@@ -35,5 +35,9 @@ public class AcceptanceEngagement {
                 && this.deviceInfo != null
                 && this.documentAccepted != null;
     }
+
+    public String suffix() {
+        return "..." + signatureToken.substring(signatureToken.length() - 6);
+    }
 }
 
