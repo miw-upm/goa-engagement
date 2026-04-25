@@ -10,6 +10,7 @@ import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
+import es.upm.api.domain.ports.out.user.UserFinder;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
@@ -19,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -30,6 +32,7 @@ public class EngagementLetterService {
     private final EngagementLetterGateway engagementLetterGateway;
     private final GoaUserClient userFinderClient;
     private final AccessLinkGateway accessLinkGateway;
+    private final UserFinder userFinder;
 
     public EngagementLetter readById(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
@@ -196,5 +199,19 @@ public class EngagementLetterService {
     public byte[] generatePdfWithToken(String mobile, String token) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, SIGN_ENGAGEMENT_LETTER);
         return this.generatePdf(accessLink.getDocument());
+    }
+
+    public void sign(AcceptanceEngagement acceptance) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway
+                .use(acceptance.getSignatureToken(), acceptance.getMobile(), SIGN_ENGAGEMENT_LETTER);
+        UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
+        acceptance.setSignatureAt(LocalDateTime.now());
+        acceptance.setSigner(accessLink.getUser());
+        acceptance.setSignerFullName(user.toFullName());
+        acceptance.setSignerIdentity(user.getIdentity());
+        acceptance.setSignerEmail(user.getEmail());
+        EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocument());
+        letter.add(acceptance);
+        this.engagementLetterGateway.update(letter.getId(), letter);
     }
 }

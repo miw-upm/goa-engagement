@@ -19,6 +19,7 @@ public class UserSnapshot {
     private String familyName;
     private String documentType;
     private String identity;
+    private String email;
 
     public String toFullName() {
         return "D./Dña. " + firstName + " " + valueOrUndefined(familyName);

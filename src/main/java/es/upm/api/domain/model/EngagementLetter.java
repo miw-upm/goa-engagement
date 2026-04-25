@@ -2,6 +2,7 @@ package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.miw.exception.ConflictException;
 import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -67,5 +68,17 @@ public class EngagementLetter {
     public String buildCreationDate() {
         return "En Madrid, a " + lastUpdatedDate
                 .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES")));
+    }
+
+    public void add(AcceptanceEngagement acceptance) {
+        if (this.acceptanceEngagements == null) {
+            this.acceptanceEngagements = new ArrayList<>();
+        }
+        boolean mobileInUse = this.getAcceptanceEngagements().stream()
+                .anyMatch(signer -> acceptance.getMobile().equals(signer.getMobile()));
+        if (mobileInUse) {
+            throw new ConflictException("El usuario ya firmó: " + acceptance.getMobile());
+        }
+        acceptanceEngagements.add(acceptance);
     }
 }

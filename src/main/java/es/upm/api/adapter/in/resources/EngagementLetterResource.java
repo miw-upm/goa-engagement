@@ -1,10 +1,14 @@
 package es.upm.api.adapter.in.resources;
 
+import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.services.EngagementLetterService;
+import es.upm.miw.device.DeviceInfo;
+import es.upm.miw.device.DeviceInfoResolver;
 import es.upm.miw.security.Security;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -43,20 +47,6 @@ public class EngagementLetterResource {
         return this.engagementLetterService.generatePdf(id);
     }
 
-    @PreAuthorize(Security.ALL)
-    @GetMapping(value = VIEW + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readViewWithToken(@PathVariable String mobile, @PathVariable String token) {
-        return this.engagementLetterService.generatePdfWithToken(mobile, token);
-    }
-
-    @PreAuthorize(Security.ALL)
-    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID)
-    public void signWithToken(@PathVariable String mobile, @PathVariable String token,
-                              @RequestBody AcceptanceEngagementCreationDto acceptance) {
-        System.out.println(">SIGN>>>>>>>>>>>>>>Accepting engagement letter with mobile: " + mobile + " and token: " + token + " acceptance: " + acceptance);
-        //TODO servicio
-    }
-
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
         this.engagementLetterService.update(id, engagementLetter);
@@ -77,6 +67,42 @@ public class EngagementLetterResource {
     @GetMapping
     public List<EngagementLetter> find(@ModelAttribute EngagementLetterFindCriteria criteria) {
         return this.engagementLetterService.find(criteria).toList();
+    }
+
+    @PreAuthorize(Security.ALL)
+    @GetMapping(value = VIEW + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] readViewWithToken(@PathVariable String mobile, @PathVariable String token) {
+        return this.engagementLetterService.generatePdfWithToken(mobile, token);
+    }
+
+    @PreAuthorize(Security.ALL)
+    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID)
+    public void signWithToken(@PathVariable String mobile, @PathVariable String token,
+                              @RequestBody AcceptanceEngagementCreationDto acceptanceCreation,
+                              HttpServletRequest request) {
+        System.out.println(">SIGN>>>>>>>>>>>>>>Accepting engagement letter with mobile: " + mobile + " and token: " + token + " acceptance: " + acceptanceCreation);
+        AcceptanceEngagement acceptance = AcceptanceEngagement.builder()
+                .mobile(mobile)
+                .signatureToken(token)
+                .documentAccepted(acceptanceCreation.getDocumentAccepted())
+                .signature(acceptanceCreation.getSignature())
+                .deviceInfo(this.resolveDeviceInfo(request))
+                .build();
+        this.engagementLetterService.sign(acceptance);
+    }
+
+    private DeviceInfo resolveDeviceInfo(HttpServletRequest request) {
+        String xForwardedFor = request.getHeader("X-Forwarded-For");
+        String xRealIp = request.getHeader("X-Real-IP");
+        String ip;
+        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
+            ip = xForwardedFor.split(",")[0].trim();
+        } else if (xRealIp != null && !xRealIp.isBlank()) {
+            ip = xRealIp.trim();
+        } else {
+            ip = request.getRemoteAddr();
+        }
+        return DeviceInfoResolver.resolve(request.getHeader("User-Agent"), ip);
     }
 
 }
