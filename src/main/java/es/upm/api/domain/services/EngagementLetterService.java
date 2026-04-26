@@ -1,35 +1,53 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.adapter.out.user.feign.GoaUserClient;
 import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
-import es.upm.miw.exception.ConflictException;
+import es.upm.api.domain.ports.out.user.AccessLinkGateway;
+import es.upm.api.domain.ports.out.user.UserFinder;
+import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
-
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
+    private static final String SIGN_ENGAGEMENT_LETTER = "sign-engagement-letter";
     private final EngagementLetterGateway engagementLetterGateway;
-    private final UserFinderClient userFinderClient;
-    private final ApplicationEventPublisher eventPublisher;
+    private final GoaUserClient userFinderClient;
+    private final AccessLinkGateway accessLinkGateway;
+    private final UserFinder userFinder;
+
+    public void create(EngagementLetter engagementLetter) {
+        engagementLetter.setId(UUID.randomUUID());
+        engagementLetter.setOwner(
+                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
+        );
+        engagementLetter.setLastUpdatedDate(LocalDate.now());
+        if (engagementLetter.getAttachments() != null) {
+            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
+        }
+        this.engagementLetterGateway.create(engagementLetter);
+    }
 
     public EngagementLetter readById(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
@@ -45,36 +63,24 @@ public class EngagementLetterService {
         return engagementLetter;
     }
 
-    public void create(EngagementLetter engagementLetter) {
-        engagementLetter.setId(UUID.randomUUID());
-        engagementLetter.setOwner(
-                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
-        );
-        engagementLetter.setLastUpdatedDate(LocalDate.now());
-        if (engagementLetter.getAttachments() != null) {
-            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
-        }
-        this.engagementLetterGateway.create(engagementLetter);
-    }
-
-    public void delete(UUID id) {
-        this.engagementLetterGateway.delete(id);
-    }
-
     public void update(UUID id, EngagementLetter engagementLetter) {
         engagementLetter.setLastUpdatedDate(LocalDate.now());
         engagementLetter.setId(id);
         this.engagementLetterGateway.update(id, engagementLetter);
     }
 
+    public void delete(UUID id) {
+        this.engagementLetterGateway.delete(id);
+    }
+
     public Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria) {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userFinderClient.find(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinderClient.findUser(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
-            letters = letters.filter(letter -> isClientInLetter(letter, clientIds));
+            letters = letters.filter(letter -> letter.isClientInLetter(clientIds));
         }
         return letters
                 .map(letter -> {
@@ -83,15 +89,19 @@ public class EngagementLetterService {
                 });
     }
 
-    private boolean isClientInLetter(EngagementLetter letter, List<UUID> clientIds) {
-        if (letter.getOwner() != null && clientIds.contains(letter.getOwner().getId())) {
-            return true;
+    public Stream<UserSnapshot> findPendingSigners(UUID id) {
+        EngagementLetter letter = this.readById(id);
+        if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
+            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
         }
-        if (letter.getAttachments() != null) {
-            return letter.getAttachments().stream()
-                    .anyMatch(attachment -> clientIds.contains(attachment.getId()));
+        if (!letter.areAllUsersComplete()) {
+            throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
         }
-        return false;
+        List<UserSnapshot> pendingSigners = letter.findPendingSigners();
+        if (pendingSigners.isEmpty()) {
+            throw new InvalidTransitionException("Todos los firmantes ya han firmado");
+        }
+        return pendingSigners.stream();
     }
 
     public byte[] generatePdf(UUID engagementLetterId) {
@@ -164,37 +174,37 @@ public class EngagementLetterService {
                 .section(dict.getTitle("jurisdiccion"))
                 .paragraph(dict.getText("jurisdiccion")).space(3)
                 .paragraphBold(dict.getTitle("aviso_importante"))
-                .paragraph(dict.getText("aviso_hoja"))
-                .multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
-    }
-
-    public Stream<UserSnapshot> findPendingSigners(UUID id) {
-        EngagementLetter letter = this.readById(id);
-
-        Set<UUID> signedIds = letter.getAcceptanceEngagements() == null
-                ? Set.of()
-                : letter.getAcceptanceEngagements().stream()
-                .filter(AcceptanceEngagement::isSigned)
-                .map(AcceptanceEngagement::getSigner)
-                .filter(Objects::nonNull)
-                .map(UserSnapshot::getId)
-                .collect(Collectors.toSet());
-
-        List<UserSnapshot> pendingSigners = Stream.concat(
-                        Stream.ofNullable(letter.getOwner()),
-                        letter.getAttachments() == null ? Stream.empty() : letter.getAttachments().stream())
-                .filter(Objects::nonNull)
-                .filter(user -> !signedIds.contains(user.getId()))
-                .toList();
-
-        if (pendingSigners.isEmpty()) {
-            throw new ConflictException("Todos los firmantes ya han firmado");
+                .paragraph(dict.getText("aviso_hoja"));
+        if (letter.isSigned()) {
+            List<PdfBuilder.LeftSignature> leftSignatures = letter.getAcceptanceEngagements().stream()
+                    .map(ae -> new PdfBuilder.LeftSignature(ae.getSignerFullName(),
+                            String.format("Firmado electrónicamente %s (CET)%nRef.: %s",
+                                    ae.getSignatureAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
+                                    ae.suffix()
+                            )
+                    )).toList();
+            pdf.multiSignatureWithSignatures(leftSignatures, dict.getText("firma_nuria"));
+        } else {
+            pdf.multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
         }
-        return pendingSigners.stream();
     }
 
     public byte[] generatePdfWithToken(String mobile, String token) {
-        //TODO comprobar mobile y token, y obtener la id
-        return this.generatePdf(UUIDS[0]);
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, SIGN_ENGAGEMENT_LETTER);
+        return this.generatePdf(accessLink.getDocument());
+    }
+
+    public void signWithToken(AcceptanceEngagement acceptance) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway
+                .use(acceptance.getSignatureToken(), acceptance.getMobile(), SIGN_ENGAGEMENT_LETTER);
+        UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
+        acceptance.setSignatureAt(LocalDateTime.now());
+        acceptance.setSignerId(user.getId());
+        acceptance.setSignerFullName(user.toFullName());
+        acceptance.setSignerIdentity(user.getIdentity());
+        acceptance.setSignerEmail(user.getEmail());
+        EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocument());
+        letter.add(acceptance);
+        this.engagementLetterGateway.update(letter.getId(), letter);
     }
 }

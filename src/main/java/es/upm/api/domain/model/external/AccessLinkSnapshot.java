@@ -12,5 +12,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccessLinkSnapshot {
-    UUID id;
+    private String id;
+    private UserSnapshot user;
+    private String scope;
+    private UUID document;
 }

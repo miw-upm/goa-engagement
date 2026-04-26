@@ -21,6 +21,14 @@ public class LegalTaskService {
         this.legalTaskPersistence.create(legalTask);
     }
 
+    public void update(UUID id, LegalTask legalTask) {
+        this.legalTaskPersistence.update(id, legalTask);
+    }
+
+    public LegalTask read(UUID id) {
+        return this.legalTaskPersistence.read(id);
+    }
+
     public void deleteById(UUID id) {
         this.legalProcedureTemplateService.findAll()
                 .forEach(legalProcedureTemplate -> {
@@ -36,15 +44,8 @@ public class LegalTaskService {
         this.legalTaskPersistence.deleteById(id);
     }
 
-    public void update(UUID id, LegalTask legalTask) {
-        this.legalTaskPersistence.update(id, legalTask);
-    }
-
     public Stream<LegalTask> find(String title) {
         return this.legalTaskPersistence.find(title);
     }
 
-    public LegalTask read(UUID id) {
-        return this.legalTaskPersistence.read(id);
-    }
 }

@@ -20,6 +20,10 @@ public class LegalProcedureTemplateService {
         this.legalProcedureTemplateGateway.create(legalProcedureTemplate);
     }
 
+    public LegalProcedureTemplate readById(UUID id) {
+        return this.legalProcedureTemplateGateway.read(id);
+    }
+
     public void delete(UUID id) {
         this.legalProcedureTemplateGateway.deleteById(id);
     }
@@ -30,10 +34,6 @@ public class LegalProcedureTemplateService {
 
     public Stream<LegalProcedureTemplate> find(LegalProcedureTemplateFindCriteria criteria) {
         return this.legalProcedureTemplateGateway.find(criteria);
-    }
-
-    public LegalProcedureTemplate readById(UUID id) {
-        return this.legalProcedureTemplateGateway.read(id);
     }
 
     public Stream<LegalProcedureTemplate> findAll() {

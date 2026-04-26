@@ -1,12 +1,11 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.adapter.out.user.feign.UserFinderClient;
+import es.upm.api.adapter.out.user.feign.GoaUserClient;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
-import es.upm.miw.exception.ConflictException;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.US;
 import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -34,7 +34,7 @@ class EngagementLetterServiceIT {
     private EngagementLetterService engagementLetterService;
 
     @MockitoBean
-    private UserFinderClient userFinderClient;
+    private GoaUserClient userFinderClient;
     private EngagementLetter engagementLetter;
 
     @BeforeEach
@@ -56,7 +56,7 @@ class EngagementLetterServiceIT {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation ->
                         UserSnapshot.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
-        BDDMockito.given(this.userFinderClient.find(any(String.class)))
+        BDDMockito.given(this.userFinderClient.findUser(any(String.class)))
                 .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
     }
@@ -100,7 +100,6 @@ class EngagementLetterServiceIT {
                 .paymentMethods(List.of(PaymentMethod.builder().description("Actualizado").percentage("20%").build()))
                 .build();
         this.engagementLetterService.update(originalId, updatedEngagementLetter);
-
         EngagementLetter retrieved = this.engagementLetterService.readById(originalId);
         assertThat(retrieved)
                 .isNotNull()
@@ -124,9 +123,7 @@ class EngagementLetterServiceIT {
     @Test
     void testSearchNullSafeReturnsAllWhenCriteriaEmpty() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
-
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-
         assertThat(results).hasSizeGreaterThanOrEqualTo(4);
     }
 
@@ -134,9 +131,7 @@ class EngagementLetterServiceIT {
     void testFindFiltersByOpenedTrue() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(true);
-
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-
         assertThat(results)
                 .isNotEmpty()
                 .allSatisfy(letter -> assertThat(letter.getClosingDate()).isNull());
@@ -146,9 +141,7 @@ class EngagementLetterServiceIT {
     void testFindFiltersByOpenedFalse() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setOpened(false);
-
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-
         assertThat(results)
                 .isNotEmpty()
                 .allSatisfy(letter -> assertThat(letter.getClosingDate()).isNotNull());
@@ -158,9 +151,7 @@ class EngagementLetterServiceIT {
     void testFindFiltersByLegalProcedureTitle() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setLegalProcedureTitle("herencia");
-
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-
         assertThat(results)
                 .isNotEmpty()
                 .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
@@ -171,9 +162,7 @@ class EngagementLetterServiceIT {
     void testFindFiltersByTaskTitle() {
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setTaskTitle("asesoramiento");
-
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-
         assertThat(results)
                 .isNotEmpty()
                 .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
@@ -185,13 +174,10 @@ class EngagementLetterServiceIT {
     void testSearchNullSafeIgnoresCase() {
         EngagementLetterFindCriteria criteriaUpper = new EngagementLetterFindCriteria();
         criteriaUpper.setLegalProcedureTitle("HERENCIA");
-
         EngagementLetterFindCriteria criteriaLower = new EngagementLetterFindCriteria();
         criteriaLower.setLegalProcedureTitle("herencia");
-
         List<EngagementLetter> upper = engagementLetterService.find(criteriaUpper).toList();
         List<EngagementLetter> lower = engagementLetterService.find(criteriaLower).toList();
-
         assertThat(upper)
                 .isNotEmpty()
                 .hasSameSizeAs(lower);
@@ -226,23 +212,15 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindFiltersByOwner() {
-        BDDMockito.given(this.userFinderClient.find("test"))
+        BDDMockito.given(this.userFinderClient.findUser("test"))
                 .willReturn(List.of(UserSnapshot.builder().id(UUIDS[4]).build()));
 
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setClient("test");
-
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-
         assertThat(results)
                 .isNotEmpty()
                 .allSatisfy(letter -> assertThat(letter.getOwner().getId()).isEqualTo(UUIDS[4]));
-    }
-
-    @Test
-    void testFindPendingSignersWhenLetterHasAcceptances() {
-        List<UserSnapshot> pending = this.engagementLetterService.findPendingSigners(UUIDS[2]).toList();
-        assertThat(pending).isNotEmpty();
     }
 
     @Test
@@ -250,4 +228,40 @@ class EngagementLetterServiceIT {
         assertThatThrownBy(() -> this.engagementLetterService.findPendingSigners(UUID.randomUUID()).toList())
                 .isInstanceOf(NotFoundException.class);
     }
+
+    @Test
+    void testFindPendingSignersWithoutAttachments() {
+        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[3]);
+        List<UserSnapshot> pending = letter.findPendingSigners();
+        assertThat(pending)
+                .hasSize(1)
+                .first()
+                .satisfies(user -> assertThat(user.getId()).isEqualTo(US[0]));
+    }
+
+    @Test
+    void testFindPendingSignersWhenAllHaveSigned() {
+        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[1]);
+        List<UserSnapshot> pending = letter.findPendingSigners();
+        assertThat(pending).isEmpty();
+    }
+
+    @Test
+    void testIsSignedReturnsTrueWhenAllSignersHaveSigned() {
+        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[1]);
+        assertThat(letter.isSigned()).isTrue();
+    }
+
+    @Test
+    void testIsSignedReturnsFalseWhenSomeSignersArePending() {
+        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[3]);
+        assertThat(letter.isSigned()).isFalse();
+    }
+
+    @Test
+    void testAreAllUsersCompleteReturnsFalseWhenSomeUserIsIncomplete() {
+        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[1]);
+        assertThat(letter.areAllUsersComplete()).isFalse();
+    }
+
 }

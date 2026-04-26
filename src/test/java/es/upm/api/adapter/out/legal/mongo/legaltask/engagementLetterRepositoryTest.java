@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @ActiveProfiles("test")
-class LegalTaskRepositoryTest {
+class engagementLetterRepositoryTest {
 
     @Autowired
     private LegalTaskRepository legalTaskRepository;

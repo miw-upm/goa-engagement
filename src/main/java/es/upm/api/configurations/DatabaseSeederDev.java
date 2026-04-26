@@ -122,7 +122,9 @@ public class DatabaseSeederDev {
                         .mobile("666666000")
                         .signerEmail("c1@gmail.com")
                         .signatureToken(UUIDBase64.URL.encode())
-                        .deviceInfo(device).build(),
+                        .deviceInfo(device)
+                        .documentAccepted(true)
+                        .build(),
                 AcceptanceEngagementEntity.builder()
                         .signatureAt(LocalDateTime.now().plusHours(1))
                         .signerId(US[1])
@@ -195,6 +197,16 @@ public class DatabaseSeederDev {
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Completo").percentage("100%").build())
                         .legalProcedureEntities(List.of(procedimientos[0]))
                         .build(),
+                EngagementLetterEntity.builder().id(UUIDS[4])
+                        .budgetOnly(false)
+                        .discount(20).lastUpdatedDate(LocalDate.now())
+                        .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
+                        .ownerId(US[0])
+                        .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2]))
+                        .acceptanceEngagementEntities(List.of(acceptances[0]))
+                        .build(),
+
+
         };
 
         this.engagementLetterRepository.saveAll(List.of(encargos));

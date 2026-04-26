@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@RestController
 @RequestMapping(LegalTaskResource.LEGAL_TASKS)
 @RequiredArgsConstructor
 public class LegalTaskResource {
@@ -38,7 +38,7 @@ public class LegalTaskResource {
 
     @PreAuthorize(Security.ADMIN)
     @DeleteMapping(ID_ID)
-    public void deleteByID(@PathVariable UUID id) {
+    public void delete(@PathVariable UUID id) {
         this.legalTaskService.deleteById(id);
     }
 

@@ -19,6 +19,7 @@ public class UserSnapshot {
     private String familyName;
     private String documentType;
     private String identity;
+    private String email;
 
     public String toFullName() {
         return "D./Dña. " + firstName + " " + valueOrUndefined(familyName);
@@ -26,6 +27,16 @@ public class UserSnapshot {
 
     public String toFullNameAndIdentity() {
         return this.toFullName() + " con " + formatDocumentType() + " nº " + valueOrUndefined(identity);
+    }
+
+    public boolean isComplete() {
+        return this.id != null
+                && this.mobile != null
+                && this.firstName != null
+                && this.familyName != null
+                && this.documentType != null
+                && this.identity != null
+                && this.email != null;
     }
 
     private String formatDocumentType() {
