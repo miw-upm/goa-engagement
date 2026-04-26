@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@RestController
 @RequestMapping(LegalProcedureTemplateResource.LEGAL_PROCEDURE_TEMPLATE)
 @RequiredArgsConstructor
 public class LegalProcedureTemplateResource {

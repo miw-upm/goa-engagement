@@ -89,6 +89,21 @@ public class EngagementLetterService {
                 });
     }
 
+    public Stream<UserSnapshot> findPendingSigners(UUID id) {
+        EngagementLetter letter = this.readById(id);
+        if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
+            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
+        }
+        if (!letter.areAllUsersComplete()) {
+            throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
+        }
+        List<UserSnapshot> pendingSigners = letter.findPendingSigners();
+        if (pendingSigners.isEmpty()) {
+            throw new InvalidTransitionException("Todos los firmantes ya han firmado");
+        }
+        return pendingSigners.stream();
+    }
+
     public byte[] generatePdf(UUID engagementLetterId) {
         EngagementLetter letter = this.readById(engagementLetterId);
         TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.yml");
@@ -164,35 +179,14 @@ public class EngagementLetterService {
             List<PdfBuilder.LeftSignature> leftSignatures = letter.getAcceptanceEngagements().stream()
                     .map(ae -> new PdfBuilder.LeftSignature(ae.getSignerFullName(),
                             String.format("Firmado electrónicamente %s (CET)%nRef.: %s",
-                                    ae.getSignatureAt().format( DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
-                                   ae.suffix())))
-                    .toList();
+                                    ae.getSignatureAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
+                                    ae.suffix()
+                            )
+                    )).toList();
             pdf.multiSignatureWithSignatures(leftSignatures, dict.getText("firma_nuria"));
         } else {
             pdf.multiSignature(letter.buildClientsName(), dict.getText("firma_nuria"));
         }
-    }
-
-    private String tokenSuffix(String token) {
-        if (token == null || token.length() <= 4) {
-            return token == null ? "" : token;
-        }
-        return token.substring(token.length() - 6);
-    }
-
-    public Stream<UserSnapshot> findPendingSigners(UUID id) {
-        EngagementLetter letter = this.readById(id);
-        if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
-            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
-        }
-        if (!letter.areAllUsersComplete()) {
-            throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
-        }
-        List<UserSnapshot> pendingSigners = letter.findPendingSigners();
-        if (pendingSigners.isEmpty()) {
-            throw new InvalidTransitionException("Todos los firmantes ya han firmado");
-        }
-        return pendingSigners.stream();
     }
 
     public byte[] generatePdfWithToken(String mobile, String token) {
@@ -200,7 +194,7 @@ public class EngagementLetterService {
         return this.generatePdf(accessLink.getDocument());
     }
 
-    public void sign(AcceptanceEngagement acceptance) {
+    public void signWithToken(AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
                 .use(acceptance.getSignatureToken(), acceptance.getMobile(), SIGN_ENGAGEMENT_LETTER);
         UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());

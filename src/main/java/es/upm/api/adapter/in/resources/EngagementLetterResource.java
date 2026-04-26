@@ -5,7 +5,6 @@ import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.services.EngagementLetterService;
-import es.upm.miw.device.DeviceInfo;
 import es.upm.miw.device.DeviceInfoResolver;
 import es.upm.miw.security.Security;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,8 +17,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
 @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@RestController
 @RequestMapping(EngagementLetterResource.ENGAGEMENT_LETTER)
 @RequiredArgsConstructor
 public class EngagementLetterResource {
@@ -27,8 +26,8 @@ public class EngagementLetterResource {
     public static final String ID_ID = "/{id}";
     public static final String VIEW = "/view";
     public static final String PENDING_SIGNERS = "/pending-signers";
-    public static final String MOBILE_ID_TOKEN_ID = "/{mobile}/{token}";
     public static final String SIGN_ENGAGEMENT_LETTER = "/sign-engagement-letter";
+    public static final String MOBILE_ID_TOKEN_ID = "/{mobile}/{token}";
 
     private final EngagementLetterService engagementLetterService;
 
@@ -43,10 +42,11 @@ public class EngagementLetterResource {
     }
 
     @GetMapping(value = ID_ID + VIEW, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readView(@PathVariable UUID id) {
+    public byte[] readPdf(@PathVariable UUID id) {
         return this.engagementLetterService.generatePdf(id);
     }
 
+    @PreAuthorize(Security.ADMIN)
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
         this.engagementLetterService.update(id, engagementLetter);
@@ -58,20 +58,19 @@ public class EngagementLetterResource {
         this.engagementLetterService.delete(id);
     }
 
+    @GetMapping
+    public List<EngagementLetter> find(@ModelAttribute EngagementLetterFindCriteria criteria) {
+        return this.engagementLetterService.find(criteria).toList();
+    }
 
     @GetMapping(ID_ID + PENDING_SIGNERS)
     public List<UserSnapshot> findPendingSigners(@PathVariable UUID id) {
         return this.engagementLetterService.findPendingSigners(id).toList();
     }
 
-    @GetMapping
-    public List<EngagementLetter> find(@ModelAttribute EngagementLetterFindCriteria criteria) {
-        return this.engagementLetterService.find(criteria).toList();
-    }
-
     @PreAuthorize(Security.ALL)
     @GetMapping(value = VIEW + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readViewWithToken(@PathVariable String mobile, @PathVariable String token) {
+    public byte[] readPdfWithToken(@PathVariable String mobile, @PathVariable String token) {
         return this.engagementLetterService.generatePdfWithToken(mobile, token);
     }
 
@@ -84,24 +83,9 @@ public class EngagementLetterResource {
                 .mobile(mobile)
                 .signatureToken(token)
                 .documentAccepted(acceptanceCreation.getDocumentAccepted())
-                .deviceInfo(this.resolveDeviceInfo(request))
+                .deviceInfo(DeviceInfoResolver.resolve(request))
                 .build();
-        this.engagementLetterService.sign(acceptance);
+        this.engagementLetterService.signWithToken(acceptance);
     }
-
-    private DeviceInfo resolveDeviceInfo(HttpServletRequest request) {
-        String xForwardedFor = request.getHeader("X-Forwarded-For");
-        String xRealIp = request.getHeader("X-Real-IP");
-        String ip;
-        if (xForwardedFor != null && !xForwardedFor.isBlank()) {
-            ip = xForwardedFor.split(",")[0].trim();
-        } else if (xRealIp != null && !xRealIp.isBlank()) {
-            ip = xRealIp.trim();
-        } else {
-            ip = request.getRemoteAddr();
-        }
-        return DeviceInfoResolver.resolve(request.getHeader("User-Agent"), ip);
-    }
-
 }
 

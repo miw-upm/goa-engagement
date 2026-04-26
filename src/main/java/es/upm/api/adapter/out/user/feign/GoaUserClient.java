@@ -16,9 +16,9 @@ import java.util.UUID;
 public interface GoaUserClient {
     String GOA_USER = "goa-user";
     String USERS = "/users";
+    String ACCESS_LINK = "/access-link";
     String ID_ID = "/{id}";
     String MOBILE_ID = "/{mobile}";
-    String ACCESS_LINK = "/access-link";
 
     @GetMapping(USERS + ID_ID)
     UserSnapshot readUserById(@PathVariable UUID id);
