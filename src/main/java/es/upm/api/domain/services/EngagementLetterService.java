@@ -99,7 +99,7 @@ public class EngagementLetterService {
         }
         List<UserSnapshot> pendingSigners = letter.findPendingSigners();
         if (pendingSigners.isEmpty()) {
-            throw new InvalidTransitionException("Todos los firmantes ya han firmado");
+            throw new InvalidTransitionException("Todos los intervinientes ya han firmado");
         }
         return pendingSigners.stream();
     }
