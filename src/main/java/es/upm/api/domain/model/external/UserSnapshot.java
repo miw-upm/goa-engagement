@@ -22,11 +22,15 @@ public class UserSnapshot {
     private String email;
 
     public String toFullName() {
-        return "D./Dña. " + firstName + " " + valueOrUndefined(familyName);
+        return firstName + " " + valueOrUndefined(familyName);
     }
 
-    public String toFullNameAndIdentity() {
-        return this.toFullName() + " con " + formatDocumentType() + " nº " + valueOrUndefined(identity);
+    public String toDonFullName() {
+        return "D./Dña. " + this.toFullName();
+    }
+
+    public String toDonFullNameAndIdentity() {
+        return this.toDonFullName() + " con N.I.F nº " + valueOrUndefined(identity);
     }
 
     public boolean isComplete() {

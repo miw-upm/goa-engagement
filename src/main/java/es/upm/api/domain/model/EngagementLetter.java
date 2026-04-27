@@ -50,7 +50,7 @@ public class EngagementLetter {
         }
 
         return clients.stream()
-                .map(UserSnapshot::toFullNameAndIdentity)
+                .map(UserSnapshot::toDonFullNameAndIdentity)
                 .collect(Collectors.joining(", "));
     }
 

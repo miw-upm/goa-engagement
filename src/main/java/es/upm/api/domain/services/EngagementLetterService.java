@@ -177,7 +177,7 @@ public class EngagementLetterService {
                 .paragraph(dict.getText("aviso_hoja"));
         if (letter.isSigned()) {
             List<PdfBuilder.LeftSignature> leftSignatures = letter.getAcceptanceEngagements().stream()
-                    .map(ae -> new PdfBuilder.LeftSignature(ae.getSignerFullName(),
+                    .map(ae -> new PdfBuilder.LeftSignature(ae.toDonFullName(),
                             String.format("Firmado electrónicamente %s (CET)%nRef.: %s",
                                     ae.getSignatureAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
                                     ae.suffix()
