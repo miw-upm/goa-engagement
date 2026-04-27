@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public interface CustomerFileDownloadRepository extends MongoRepository<CustomerFileDownloadEntity, UUID> {
     List<CustomerFileDownloadEntity> findByCustomerIdIn(List<UUID> customerIds);
-    List<CustomerFileDownloadEntity> findByDocumentType(String documentType);
-    List<CustomerFileDownloadEntity> findByCustomerIdInAndDocumentType(List<UUID> customerIds, String documentType);
+
+    List<CustomerFileDownloadEntity> findByDocumentTypeContainingIgnoreCase(String documentType);
+
+    List<CustomerFileDownloadEntity> findByCustomerIdInAndDocumentTypeContainingIgnoreCase(List<UUID> customerIds, String documentType);
 }

@@ -13,5 +13,6 @@ public interface CustomerFileDownloadGateway {
     CustomerFileDownload readById(UUID id);
 
     Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria, List<UUID> customerIds);
+
     Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria);
 }

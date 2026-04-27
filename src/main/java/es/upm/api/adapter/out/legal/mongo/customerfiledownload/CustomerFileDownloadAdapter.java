@@ -29,7 +29,7 @@ public class CustomerFileDownloadAdapter implements CustomerFileDownloadGateway 
     @Override
     public Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria, List<UUID> customerIds) {
         List<CustomerFileDownloadEntity> entities = StringUtils.hasText(criteria.getDocumentType())
-                ? this.customerFileDownloadRepository.findByCustomerIdInAndDocumentType(customerIds, criteria.getDocumentType())
+                ? this.customerFileDownloadRepository.findByCustomerIdInAndDocumentTypeContainingIgnoreCase(customerIds, criteria.getDocumentType())
                 : this.customerFileDownloadRepository.findByCustomerIdIn(customerIds);
         return entities.stream().map(CustomerFileDownloadEntity::toDomain);
     }
@@ -37,7 +37,7 @@ public class CustomerFileDownloadAdapter implements CustomerFileDownloadGateway 
     @Override
     public Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria) {
         List<CustomerFileDownloadEntity> entities = StringUtils.hasText(criteria.getDocumentType())
-                ? this.customerFileDownloadRepository.findByDocumentType(criteria.getDocumentType())
+                ? this.customerFileDownloadRepository.findByDocumentTypeContainingIgnoreCase(criteria.getDocumentType())
                 : this.customerFileDownloadRepository.findAll(Sort.by(Sort.Direction.DESC, "downloadedAt"));
         return entities.stream().map(CustomerFileDownloadEntity::toDomain);
     }
