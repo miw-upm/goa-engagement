@@ -1,5 +1,7 @@
 package es.upm.api.configurations;
 
+import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadEntity;
+import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadRepository;
 import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
@@ -51,13 +53,16 @@ public class DatabaseSeederDev {
     private final LegalTaskRepository legalTaskRepository;
     private final LegalProcedureTemplateRepository legalProcedureTemplateRepository;
     private final EngagementLetterRepository engagementLetterRepository;
+    private final CustomerFileDownloadRepository customerFileDownloadRepository;
 
     public DatabaseSeederDev(LegalTaskRepository legalTaskRepository,
                              LegalProcedureTemplateRepository legalProcedureTemplateRepository,
-                             EngagementLetterRepository engagementLetterRepository) {
+                             EngagementLetterRepository engagementLetterRepository,
+                             CustomerFileDownloadRepository customerFileDownloadRepository) {
         this.legalTaskRepository = legalTaskRepository;
         this.legalProcedureTemplateRepository = legalProcedureTemplateRepository;
         this.engagementLetterRepository = engagementLetterRepository;
+        this.customerFileDownloadRepository = customerFileDownloadRepository;
         this.deleteAllAndInitializeAndSeedDataBase();
     }
 
@@ -67,6 +72,7 @@ public class DatabaseSeederDev {
     }
 
     private void deleteAllAndInitialize() {
+        this.customerFileDownloadRepository.deleteAll();
         this.engagementLetterRepository.deleteAll();
         this.legalProcedureTemplateRepository.deleteAll();
         this.legalTaskRepository.deleteAll();
@@ -211,6 +217,36 @@ public class DatabaseSeederDev {
 
         this.engagementLetterRepository.saveAll(List.of(encargos));
         log.warn("        ------- Hojas de encargo ------------------------------------------------------------------");
+
+        CustomerFileDownloadEntity[] customerFileDownloads = {
+                CustomerFileDownloadEntity.builder()
+                        .id(UUIDS[0])
+                        .downloadedAt(LocalDateTime.now().minusHours(2))
+                        .customerId(US[0])
+                        .documentType("engagement-letter")
+                        .documentId(UUIDS[0])
+                        .downloadToken(UUIDBase64.URL.encode())
+                        .build(),
+                CustomerFileDownloadEntity.builder()
+                        .id(UUIDS[1])
+                        .downloadedAt(LocalDateTime.now().minusHours(1))
+                        .customerId(US[1])
+                        .documentType("engagement-letter")
+                        .documentId(UUIDS[1])
+                        .downloadToken(UUIDBase64.URL.encode())
+                        .build(),
+                CustomerFileDownloadEntity.builder()
+                        .id(UUIDS[2])
+                        .downloadedAt(LocalDateTime.now().minusMinutes(20))
+                        .customerId(US[0])
+                        .documentType("engagement-budget")
+                        .documentId(UUIDS[2])
+                        .downloadToken(UUIDBase64.URL.encode())
+                        .build(),
+        };
+
+        this.customerFileDownloadRepository.saveAll(List.of(customerFileDownloads));
+        log.warn("        ------- Descargas de documentos de clientes -----------------------------------------------");
     }
 
 }
