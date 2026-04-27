@@ -58,7 +58,7 @@ public class EngagementLetter {
         List<String> names = new ArrayList<>();
         names.add(this.getOwner().toFullName());
         if (this.getAttachments() != null) {
-            this.getAttachments().forEach(user -> names.add(user.toFullName()));
+            this.getAttachments().forEach(user -> names.add(user.toDonFullName()));
         }
         return names;
     }
