@@ -39,5 +39,9 @@ public class AcceptanceEngagement {
     public String suffix() {
         return "..." + signatureToken.substring(signatureToken.length() - 6);
     }
+
+    public String toDonFullName() {
+        return "D./Dña. " + this.signerFullName;
+    }
 }
 
