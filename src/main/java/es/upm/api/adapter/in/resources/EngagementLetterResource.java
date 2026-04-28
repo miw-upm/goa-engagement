@@ -24,10 +24,11 @@ import java.util.UUID;
 public class EngagementLetterResource {
     public static final String ENGAGEMENT_LETTER = "/engagement-letters";
     public static final String ID_ID = "/{id}";
-    public static final String VIEW = "/view";
+    public static final String READ_ENGAGEMENT_LETTER = "/read-engagement-letter";
     public static final String PENDING_SIGNERS = "/pending-signers";
     public static final String SIGN_ENGAGEMENT_LETTER = "/sign-engagement-letter";
     public static final String MOBILE_ID_TOKEN_ID = "/{mobile}/{token}";
+    public static final String VIEW = "/view";
 
     private final EngagementLetterService engagementLetterService;
 
@@ -69,9 +70,15 @@ public class EngagementLetterResource {
     }
 
     @PreAuthorize(Security.ALL)
-    @GetMapping(value = VIEW + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    @GetMapping(value = READ_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] readPdfWithToken(@PathVariable String mobile, @PathVariable String token) {
-        return this.engagementLetterService.generatePdfWithToken(mobile, token);
+        return this.engagementLetterService.readPdfWithToken(READ_ENGAGEMENT_LETTER.substring(1), mobile, token);
+    }
+
+    @PreAuthorize(Security.ALL)
+    @GetMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] readBeforeSigningWithToken(@PathVariable String mobile, @PathVariable String token) {
+        return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), mobile, token);
     }
 
     @PreAuthorize(Security.ALL)
@@ -85,7 +92,7 @@ public class EngagementLetterResource {
                 .documentAccepted(acceptanceCreation.getDocumentAccepted())
                 .deviceInfo(DeviceInfoResolver.resolve(request))
                 .build();
-        this.engagementLetterService.signWithToken(acceptance);
+        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), acceptance);
     }
 }
 

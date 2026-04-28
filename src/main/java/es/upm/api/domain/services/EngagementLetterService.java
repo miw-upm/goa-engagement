@@ -1,6 +1,5 @@
 package es.upm.api.domain.services;
 
-import es.upm.api.adapter.out.user.feign.GoaUserClient;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
@@ -28,7 +27,6 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class EngagementLetterService {
-    private static final String SIGN_ENGAGEMENT_LETTER = "sign-engagement-letter";
     private final EngagementLetterGateway engagementLetterGateway;
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
@@ -186,22 +184,21 @@ public class EngagementLetterService {
         }
     }
 
-    public byte[] generatePdfWithToken(String mobile, String token) {
-        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, SIGN_ENGAGEMENT_LETTER);
+    public byte[] readPdfWithToken(String scope, String mobile, String token) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, scope);
         UserSnapshot user = this.userFinder.readByMobile(mobile);
         CustomerFileDownload customerFileDownload = CustomerFileDownload.builder()
                 .customer(user)
-                .documentType(SIGN_ENGAGEMENT_LETTER)
+                .documentType(scope)
                 .documentId(accessLink.getDocument())
                 .downloadToken(token).build();
         this.customerFileDownloadService.create(customerFileDownload);
-
         return this.generatePdf(accessLink.getDocument());
     }
 
-    public void signWithToken(AcceptanceEngagement acceptance) {
+    public void signWithToken(String scope, AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
-                .use(acceptance.getSignatureToken(), acceptance.getMobile(), SIGN_ENGAGEMENT_LETTER);
+                .use(acceptance.getSignatureToken(), acceptance.getMobile(), scope);
         UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
         acceptance.setSignatureAt(LocalDateTime.now());
         acceptance.setSignerId(user.getId());
