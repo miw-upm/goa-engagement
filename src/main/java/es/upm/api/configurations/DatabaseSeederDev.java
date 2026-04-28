@@ -9,6 +9,8 @@ import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
 import es.upm.miw.device.DeviceInfo;
 import es.upm.miw.uuid.UUIDBase64;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.UUID;
 
 @Log4j2
 @Service
+@RequiredArgsConstructor
 @Profile({"dev", "test"})
 public class DatabaseSeederDev {
 
@@ -55,14 +58,8 @@ public class DatabaseSeederDev {
     private final EngagementLetterRepository engagementLetterRepository;
     private final CustomerFileDownloadRepository customerFileDownloadRepository;
 
-    public DatabaseSeederDev(LegalTaskRepository legalTaskRepository,
-                             LegalProcedureTemplateRepository legalProcedureTemplateRepository,
-                             EngagementLetterRepository engagementLetterRepository,
-                             CustomerFileDownloadRepository customerFileDownloadRepository) {
-        this.legalTaskRepository = legalTaskRepository;
-        this.legalProcedureTemplateRepository = legalProcedureTemplateRepository;
-        this.engagementLetterRepository = engagementLetterRepository;
-        this.customerFileDownloadRepository = customerFileDownloadRepository;
+    @PostConstruct
+    public void init() {
         this.deleteAllAndInitializeAndSeedDataBase();
     }
 

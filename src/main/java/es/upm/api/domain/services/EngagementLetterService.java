@@ -1,10 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.adapter.out.user.feign.GoaUserClient;
-import es.upm.api.domain.model.AcceptanceEngagement;
-import es.upm.api.domain.model.EngagementLetter;
-import es.upm.api.domain.model.LegalProcedure;
-import es.upm.api.domain.model.PaymentMethod;
+import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
@@ -36,6 +33,7 @@ public class EngagementLetterService {
     private final GoaUserClient userFinderClient;
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
+    private final CustomerFileDownloadService customerFileDownloadService;
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
@@ -191,6 +189,13 @@ public class EngagementLetterService {
 
     public byte[] generatePdfWithToken(String mobile, String token) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, SIGN_ENGAGEMENT_LETTER);
+        CustomerFileDownload customerFileDownload = CustomerFileDownload.builder()
+                .customer(accessLink.getUser())
+                .documentType(SIGN_ENGAGEMENT_LETTER)
+                .documentId(accessLink.getDocument())
+                .downloadToken(token).build();
+        this.customerFileDownloadService.create(customerFileDownload);
+
         return this.generatePdf(accessLink.getDocument());
     }
 
