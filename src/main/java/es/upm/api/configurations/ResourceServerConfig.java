@@ -42,7 +42,7 @@ public class ResourceServerConfig {  // validate tokens y security APIs con SCOP
     @Order(2)
     public SecurityFilterChain documentViewSecurityConfig(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher(ENGAGEMENT_LETTER + "/view/**", ENGAGEMENT_LETTER + "/sign-engagement-letter/**")
+                .securityMatcher(ENGAGEMENT_LETTER + "/read-engagement-letter/**", ENGAGEMENT_LETTER + "/sign-engagement-letter/**")
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
