@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -20,8 +21,15 @@ public class CustomerFileDownloadService {
     private final CustomerFileDownloadGateway customerFileDownloadGateway;
     private final GoaUserClient userFinderClient;
 
+    public void create(CustomerFileDownload customerFileDownload) {
+        customerFileDownload.setId(UUID.randomUUID());
+        customerFileDownload.setDownloadedAt(LocalDateTime.now());
+        this.customerFileDownloadGateway.create(customerFileDownload);
+    }
+
     public CustomerFileDownload readById(UUID id) {
         CustomerFileDownload customerFileDownload = this.customerFileDownloadGateway.readById(id);
+
         return this.enrichCustomer(customerFileDownload);
     }
 

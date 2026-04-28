@@ -15,4 +15,6 @@ public interface CustomerFileDownloadGateway {
     Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria, List<UUID> customerIds);
 
     Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria);
+
+    void create(CustomerFileDownload customerFileDownload);
 }
