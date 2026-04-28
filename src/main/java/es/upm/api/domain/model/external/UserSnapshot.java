@@ -29,7 +29,7 @@ public class UserSnapshot {
     }
 
     public String toDonFullNameAndIdentity() {
-        return this.toDonFullName() + " con N.I.F nº " + valueOrUndefined(identity);
+        return this.toDonFullName() + " con N.I.F. nº " + valueOrUndefined(identity);
     }
 
     public boolean isComplete() {
