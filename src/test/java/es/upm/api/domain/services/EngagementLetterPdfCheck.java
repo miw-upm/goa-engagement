@@ -37,7 +37,6 @@ class EngagementLetterPdfCheck {
                         .firstName("María")
                         .familyName("García López")
                         .mobile("612345678")
-                        .documentType("DNI")
                         .identity("43234543V")
                         .build());
         byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[0]);
@@ -54,7 +53,6 @@ class EngagementLetterPdfCheck {
                         .firstName("c1")
                         .familyName("family-c1")
                         .mobile("666666000")
-                        .documentType("DNI")
                         .identity("66666603E")
                         .email("c1@gmail.com")
                         .build());
