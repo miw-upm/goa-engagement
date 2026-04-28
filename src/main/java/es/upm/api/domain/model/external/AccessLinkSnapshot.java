@@ -13,7 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class AccessLinkSnapshot {
     private String id;
-    private UserSnapshot user;
+    private String mobile;
     private String scope;
     private UUID document;
 }

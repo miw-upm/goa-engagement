@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 public class EngagementLetterService {
     private static final String SIGN_ENGAGEMENT_LETTER = "sign-engagement-letter";
     private final EngagementLetterGateway engagementLetterGateway;
-    private final GoaUserClient userFinderClient;
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
     private final CustomerFileDownloadService customerFileDownloadService;
@@ -38,11 +37,11 @@ public class EngagementLetterService {
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
         engagementLetter.setOwner(
-                this.userFinderClient.readUserByMobile(engagementLetter.getOwner().getMobile())
+                this.userFinder.readByMobile(engagementLetter.getOwner().getMobile())
         );
         engagementLetter.setLastUpdatedDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
-            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinderClient.readUserByMobile(attachment.getMobile()).getId()));
+            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinder.readByMobile(attachment.getMobile()).getId()));
         }
         this.engagementLetterGateway.create(engagementLetter);
     }
@@ -50,12 +49,12 @@ public class EngagementLetterService {
     public EngagementLetter readById(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
         engagementLetter.setOwner(
-                this.userFinderClient.readUserById(engagementLetter.getOwner().getId())
+                this.userFinder.readById(engagementLetter.getOwner().getId())
         );
         Optional.ofNullable(engagementLetter.getAttachments())
                 .ifPresent(attachments -> engagementLetter.setAttachments(
                         attachments.stream()
-                                .map(userDto -> this.userFinderClient.readUserById(userDto.getId()))
+                                .map(userDto -> this.userFinder.readById(userDto.getId()))
                                 .toList()
                 ));
         return engagementLetter;
@@ -75,14 +74,14 @@ public class EngagementLetterService {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
 
         if (StringUtils.hasText(criteria.getClient())) {
-            List<UUID> clientIds = this.userFinderClient.findUser(criteria.getClient()).stream()
+            List<UUID> clientIds = this.userFinder.find(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
                     .toList();
             letters = letters.filter(letter -> letter.isClientInLetter(clientIds));
         }
         return letters
                 .map(letter -> {
-                    letter.setOwner(this.userFinderClient.readUserById(letter.getOwner().getId()));
+                    letter.setOwner(this.userFinder.readById(letter.getOwner().getId()));
                     return letter;
                 });
     }
@@ -189,8 +188,9 @@ public class EngagementLetterService {
 
     public byte[] generatePdfWithToken(String mobile, String token) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, SIGN_ENGAGEMENT_LETTER);
+        UserSnapshot user = this.userFinder.readByMobile(mobile);
         CustomerFileDownload customerFileDownload = CustomerFileDownload.builder()
-                .customer(accessLink.getUser())
+                .customer(user)
                 .documentType(SIGN_ENGAGEMENT_LETTER)
                 .documentId(accessLink.getDocument())
                 .downloadToken(token).build();
