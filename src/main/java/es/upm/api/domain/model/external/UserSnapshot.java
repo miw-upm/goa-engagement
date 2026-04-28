@@ -17,7 +17,6 @@ public class UserSnapshot {
     private String mobile;
     private String firstName;
     private String familyName;
-    private String documentType;
     private String identity;
     private String email;
 
@@ -38,16 +37,8 @@ public class UserSnapshot {
                 && this.mobile != null
                 && this.firstName != null
                 && this.familyName != null
-                && this.documentType != null
                 && this.identity != null
                 && this.email != null;
-    }
-
-    private String formatDocumentType() {
-        if (documentType == null) {
-            return SIN_DEFINIR;
-        }
-        return String.join(".", documentType.toUpperCase().split("")) + ".";
     }
 
     private String valueOrUndefined(String value) {
