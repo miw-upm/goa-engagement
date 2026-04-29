@@ -4,12 +4,15 @@ import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.api.domain.ports.out.email.EmailWriter;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
+import es.upm.miw.exception.BadGatewayException;
 import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
 import org.springframework.stereotype.Service;
@@ -31,6 +34,8 @@ public class EngagementLetterService {
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
     private final CustomerFileDownloadService customerFileDownloadService;
+    private final EmailWriter emailWriter;
+    private final SignedEngagementLetterEmailTemplateService signedEngagementLetterEmailTemplateService;
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
@@ -208,5 +213,28 @@ public class EngagementLetterService {
         EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocument());
         letter.add(acceptance);
         this.engagementLetterGateway.update(letter.getId(), letter);
+        if (letter.isSigned()) {
+            this.sendEmails(letter);
+        }
+    }
+
+    private void sendEmails(EngagementLetter letter) {
+        try {
+            this.sendEmail(letter.getOwner());
+            letter.getAttachments().forEach(this::sendEmail);
+        } catch (FeignException.BadRequest e) {
+            throw new BadGatewayException("Error de email", e.getCause());
+        } catch (Exception e) {
+            throw new BadGatewayException("Error del host de email", e.getCause());
+        }
+    }
+
+    private void sendEmail(UserSnapshot user) {
+        this.emailWriter.sendHtml(
+                this.signedEngagementLetterEmailTemplateService.buildHtmlEmail(
+                        user.getEmail(),
+                        user.getFirstName()
+                )
+        );
     }
 }
