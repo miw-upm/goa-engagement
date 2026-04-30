@@ -77,22 +77,20 @@ public class EngagementLetterResource {
 
     @PreAuthorize(Security.ALL)
     @GetMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readBeforeSigningWithToken(@PathVariable String mobile, @PathVariable String token) {
-        return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), mobile, token);
+    public byte[] readBeforeSigningWithToken(@PathVariable String urlId, @PathVariable String token) {
+        return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), urlId, token);
     }
 
     @PreAuthorize(Security.ALL)
     @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID)
-    public void signWithToken(@PathVariable String mobile, @PathVariable String token,
+    public void signWithToken(@PathVariable String urlId, @PathVariable String token,
                               @RequestBody AcceptanceEngagementCreationDto acceptanceCreation,
                               HttpServletRequest request) {
         AcceptanceEngagement acceptance = AcceptanceEngagement.builder()
-                .mobile(mobile)
                 .signatureToken(token)
                 .documentAccepted(acceptanceCreation.getDocumentAccepted())
                 .deviceInfo(DeviceInfoResolver.resolve(request))
                 .build();
-        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), acceptance);
+        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1),urlId, acceptance);
     }
 }
-

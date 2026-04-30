@@ -201,14 +201,15 @@ public class EngagementLetterService {
         return this.generatePdf(accessLink.getDocumentId());
     }
 
-    public void signWithToken(String scope, AcceptanceEngagement acceptance) {
+    public void signWithToken(String scope, String urlId, AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
-                .consume(acceptance.getSignatureToken(), acceptance.getMobile(), scope);
-        UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
+                .consume(scope, urlId, acceptance.getSignatureToken());
+        UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, acceptance.getSignatureToken());
         acceptance.setSignatureAt(LocalDateTime.now());
         acceptance.setSignerId(user.getId());
         acceptance.setSignerFullName(user.toFullName());
         acceptance.setSignerIdentity(user.getIdentity());
+        acceptance.setMobile(user.getMobile());
         acceptance.setSignerEmail(user.getEmail());
         EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocumentId());
         letter.add(acceptance);
