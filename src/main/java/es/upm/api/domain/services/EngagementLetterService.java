@@ -189,28 +189,28 @@ public class EngagementLetterService {
         }
     }
 
-    public byte[] readPdfWithToken(String scope, String mobile, String token) {
-        AccessLinkSnapshot accessLink = this.accessLinkGateway.use(token, mobile, scope);
-        UserSnapshot user = this.userFinder.readByMobile(mobile);
+    public byte[] readPdfWithToken(String scope, String urlId, String token) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
+        UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
         CustomerFileDownload customerFileDownload = CustomerFileDownload.builder()
                 .customer(user)
                 .documentType(scope)
-                .documentId(accessLink.getDocument())
+                .documentId(accessLink.getDocumentId())
                 .downloadToken(token).build();
         this.customerFileDownloadService.create(customerFileDownload);
-        return this.generatePdf(accessLink.getDocument());
+        return this.generatePdf(accessLink.getDocumentId());
     }
 
     public void signWithToken(String scope, AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
-                .use(acceptance.getSignatureToken(), acceptance.getMobile(), scope);
+                .consume(acceptance.getSignatureToken(), acceptance.getMobile(), scope);
         UserSnapshot user = this.userFinder.readByMobile(acceptance.getMobile());
         acceptance.setSignatureAt(LocalDateTime.now());
         acceptance.setSignerId(user.getId());
         acceptance.setSignerFullName(user.toFullName());
         acceptance.setSignerIdentity(user.getIdentity());
         acceptance.setSignerEmail(user.getEmail());
-        EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocument());
+        EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocumentId());
         letter.add(acceptance);
         this.engagementLetterGateway.update(letter.getId(), letter);
         if (letter.isSigned()) {

@@ -11,7 +11,7 @@ public class AccessLinkGatewayAdapter implements AccessLinkGateway {
     private final GoaUserClient goaUserClient;
 
     @Override
-    public AccessLinkSnapshot use(String id, String mobile, String scope) {
-        return goaUserClient.useAccessLink(id, mobile, scope);
+    public AccessLinkSnapshot consume(String scope, String urlId, String token) {
+        return goaUserClient.consumeAccessLinkToken(scope, urlId, token);
     }
 }

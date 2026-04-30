@@ -43,6 +43,7 @@ public class DatabaseSeederDev {
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000c"),
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000d"),
     };
+
     public static final UUID[] US = {
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"),
             UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"),

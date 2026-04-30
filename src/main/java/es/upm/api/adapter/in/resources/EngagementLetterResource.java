@@ -27,7 +27,7 @@ public class EngagementLetterResource {
     public static final String READ_ENGAGEMENT_LETTER = "/read-engagement-letter";
     public static final String PENDING_SIGNERS = "/pending-signers";
     public static final String SIGN_ENGAGEMENT_LETTER = "/sign-engagement-letter";
-    public static final String MOBILE_ID_TOKEN_ID = "/{mobile}/{token}";
+    public static final String URL_ID_TOKEN_ID = "/{urlId}/{token}";
     public static final String VIEW = "/view";
 
     private final EngagementLetterService engagementLetterService;
@@ -70,19 +70,19 @@ public class EngagementLetterResource {
     }
 
     @PreAuthorize(Security.ALL)
-    @GetMapping(value = READ_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readPdfWithToken(@PathVariable String mobile, @PathVariable String token) {
-        return this.engagementLetterService.readPdfWithToken(READ_ENGAGEMENT_LETTER.substring(1), mobile, token);
+    @GetMapping(value = READ_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] readPdfWithToken(@PathVariable String urlId, @PathVariable String token) {
+        return this.engagementLetterService.readPdfWithToken(READ_ENGAGEMENT_LETTER.substring(1), urlId, token);
     }
 
     @PreAuthorize(Security.ALL)
-    @GetMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    @GetMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] readBeforeSigningWithToken(@PathVariable String mobile, @PathVariable String token) {
         return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), mobile, token);
     }
 
     @PreAuthorize(Security.ALL)
-    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID)
+    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID)
     public void signWithToken(@PathVariable String mobile, @PathVariable String token,
                               @RequestBody AcceptanceEngagementCreationDto acceptanceCreation,
                               HttpServletRequest request) {

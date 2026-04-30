@@ -24,7 +24,12 @@ public class UserFinderAdapter implements UserFinder {
     }
 
     @Override
-    public List<UserSnapshot> find(String attribute) {
-        return goaUserClient.findUser(attribute);
+    public List<UserSnapshot> find(String customer) {
+        return goaUserClient.findUser(customer);
+    }
+
+    @Override
+    public UserSnapshot readByUrlIdWithToken(String scope, String urlId, String token) {
+        return goaUserClient.readUserByUrlIdWithToken(scope, urlId, token);
     }
 }
