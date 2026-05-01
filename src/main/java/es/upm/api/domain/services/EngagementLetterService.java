@@ -15,6 +15,7 @@ import es.upm.miw.pdf.TextDictionary;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import org.openpdf.text.Element;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -36,6 +37,7 @@ public class EngagementLetterService {
     private final CustomerFileDownloadService customerFileDownloadService;
     private final EmailWriter emailWriter;
     private final SignedEngagementLetterEmailTemplateService signedEngagementLetterEmailTemplateService;
+    private final PasswordEncoder passwordEncoder;
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
@@ -213,10 +215,18 @@ public class EngagementLetterService {
         acceptance.setSignerEmail(user.getEmail());
         EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocumentId());
         letter.add(acceptance);
+        this.encode(acceptance);
         this.engagementLetterGateway.update(letter.getId(), letter);
         if (letter.isSigned()) {
             this.sendEmails(letter);
         }
+    }
+
+    private void encode(AcceptanceEngagement acceptance) {
+        acceptance.setSignerIdentity(this.passwordEncoder.encode(acceptance.getSignerIdentity()));
+        acceptance.setSignerEmail(this.passwordEncoder.encode(acceptance.getSignerEmail()));
+        acceptance.setSignatureToken(this.passwordEncoder.encode(acceptance.getSignatureToken()));
+        acceptance.getDeviceInfo().setIpAddress(this.passwordEncoder.encode(acceptance.getDeviceInfo().getIpAddress()));
     }
 
     private void sendEmails(EngagementLetter letter) {

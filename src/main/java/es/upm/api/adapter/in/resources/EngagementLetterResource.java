@@ -91,6 +91,6 @@ public class EngagementLetterResource {
                 .documentAccepted(acceptanceCreation.getDocumentAccepted())
                 .deviceInfo(DeviceInfoResolver.resolve(request))
                 .build();
-        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1),urlId, acceptance);
+        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), urlId, acceptance);
     }
 }
