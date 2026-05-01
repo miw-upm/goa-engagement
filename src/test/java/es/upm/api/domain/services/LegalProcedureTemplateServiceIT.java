@@ -43,7 +43,7 @@ class LegalProcedureTemplateServiceIT {
     @Test
     void shouldSearchByTaskTitle() {
         List<LegalProcedureTemplate> results = legalProcedureTemplateService
-                .find(new LegalProcedureTemplateFindCriteria("herenci", null))
+                .find(new LegalProcedureTemplateFindCriteria(null, "herenci"))
                 .toList();
 
         assertThat(results)

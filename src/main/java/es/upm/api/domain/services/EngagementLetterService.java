@@ -93,7 +93,7 @@ public class EngagementLetterService {
         if (!letter.areAllUsersComplete()) {
             throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
         }
-        if(letter.isSigned()){
+        if (letter.isSigned()) {
             throw new InvalidTransitionException("Todos los intervinientes ya han firmado");
         }
         return letter.findPendingSigners().stream();
@@ -226,7 +226,9 @@ public class EngagementLetterService {
         List<Exception> errors = new ArrayList<>();
 
         trySendEmail(letter.getOwner(), errors);
-        letter.getAttachments().forEach(user -> trySendEmail(user, errors));
+        if (letter.getAttachments() != null) {
+            letter.getAttachments().forEach(user -> trySendEmail(user, errors));
+        }
 
         if (!errors.isEmpty()) {
             Exception first = errors.getFirst();

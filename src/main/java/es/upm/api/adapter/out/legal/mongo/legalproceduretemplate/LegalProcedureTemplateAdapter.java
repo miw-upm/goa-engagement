@@ -64,8 +64,8 @@ public class LegalProcedureTemplateAdapter implements LegalProcedureTemplateGate
                 ? this.procedureRepository.searchByTitleContainingIgnoreCase(criteria.getTitle(), Sort.by("title")).stream()
                 : this.procedureRepository.findAll(Sort.by("title")).stream();
 
-        if (StringUtils.hasText(criteria.getTitle())) {
-            String taskTitleLower = criteria.getTitle().toLowerCase();
+        if (StringUtils.hasText(criteria.getTaskTitle())) {
+            String taskTitleLower = criteria.getTaskTitle().toLowerCase();
             templates = templates.filter(template -> template.getLegalTaskEntities() != null &&
                     template.getLegalTaskEntities().stream()
                             .anyMatch(task -> task.getTitle() != null &&
