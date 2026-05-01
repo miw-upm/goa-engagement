@@ -7,8 +7,8 @@ import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureT
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskRepository;
+import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.device.DeviceInfo;
-import es.upm.miw.uuid.UUIDBase64;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -125,7 +125,7 @@ public class DatabaseSeederDev {
                         .signerIdentity("66666603E")
                         .mobile("666666000")
                         .signerEmail("c1@gmail.com")
-                        .signatureToken(UUIDBase64.URL.encode())
+                        .signatureToken(Base64UrlGenerator.token())
                         .deviceInfo(device)
                         .documentAccepted(true)
                         .build(),
@@ -136,7 +136,7 @@ public class DatabaseSeederDev {
                         .signerIdentity("66666604T")
                         .mobile("666666001")
                         .signerEmail("c2@gmail.com")
-                        .signatureToken(UUIDBase64.URL.encode())
+                        .signatureToken(Base64UrlGenerator.token())
                         .deviceInfo(device).build(),
         };
 
@@ -223,7 +223,7 @@ public class DatabaseSeederDev {
                         .customerId(US[0])
                         .documentType("engagement-letter")
                         .documentId(UUIDS[0])
-                        .downloadToken(UUIDBase64.URL.encode())
+                        .downloadToken(Base64UrlGenerator.token())
                         .build(),
                 CustomerFileDownloadEntity.builder()
                         .id(UUIDS[1])
@@ -231,7 +231,7 @@ public class DatabaseSeederDev {
                         .customerId(US[1])
                         .documentType("engagement-letter")
                         .documentId(UUIDS[1])
-                        .downloadToken(UUIDBase64.URL.encode())
+                        .downloadToken(Base64UrlGenerator.token())
                         .build(),
                 CustomerFileDownloadEntity.builder()
                         .id(UUIDS[2])
@@ -239,7 +239,7 @@ public class DatabaseSeederDev {
                         .customerId(US[0])
                         .documentType("engagement-budget")
                         .documentId(UUIDS[2])
-                        .downloadToken(UUIDBase64.URL.encode())
+                        .downloadToken(Base64UrlGenerator.token())
                         .build(),
         };
 
