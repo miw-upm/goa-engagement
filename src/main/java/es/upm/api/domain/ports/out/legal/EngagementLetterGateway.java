@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 
 @Repository
 public interface EngagementLetterGateway {
-    EngagementLetter readById(UUID id);
+    EngagementLetter read(UUID id);
 
     void create(EngagementLetter engagementLetter);
 

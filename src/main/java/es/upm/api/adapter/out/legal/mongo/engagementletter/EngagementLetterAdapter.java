@@ -30,7 +30,7 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
 
     @Override
     public void update(UUID id, EngagementLetter engagementLetter) {
-        if (id != engagementLetter.getId() || !this.engagementLetterRepository.existsById(id)) {
+        if (!id.equals(engagementLetter.getId()) || !this.engagementLetterRepository.existsById(id)) {
             throw new NotFoundException("For update The EngagementLetter must exist: " + id);
         }
         this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter));
@@ -39,7 +39,7 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
     @Override
     public Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria) {
         Stream<EngagementLetterEntity> letters = this.engagementLetterRepository
-                .findAll(Sort.by(Sort.Direction.DESC, "creationDate")).stream();
+                .findAll(Sort.by(Sort.Direction.DESC, "lastUpdatedDate")).stream();
 
         if (criteria.getOpened() != null) {
             letters = letters.filter(letter -> criteria.getOpened() == (letter.getClosingDate() == null));
@@ -71,7 +71,7 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
     }
 
     @Override
-    public EngagementLetter readById(UUID id) {
+    public EngagementLetter read(UUID id) {
         return this.engagementLetterRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("The EngagementLetter ID doesn't exist: " + id))
                 .toDomain();

@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 
 @Repository
 public interface CustomerFileDownloadGateway {
-    CustomerFileDownload readById(UUID id);
+    CustomerFileDownload read(UUID id);
 
     Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria, List<UUID> customerIds);
 

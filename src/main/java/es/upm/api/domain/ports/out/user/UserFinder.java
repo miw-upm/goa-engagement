@@ -10,5 +10,7 @@ public interface UserFinder {
 
     UserSnapshot readByMobile(String mobile);
 
-    List<UserSnapshot> find(String attribute);
+    List<UserSnapshot> find(String customer);
+
+    UserSnapshot readByUrlIdWithToken(String scope, String urlId, String token);
 }

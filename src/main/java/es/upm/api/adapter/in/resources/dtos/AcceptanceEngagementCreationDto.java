@@ -1,4 +1,4 @@
-package es.upm.api.adapter.in.resources;
+package es.upm.api.adapter.in.resources.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

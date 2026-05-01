@@ -6,6 +6,7 @@ import es.upm.api.domain.model.criteria.CustomerFileDownloadFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.CustomerFileDownloadGateway;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -20,16 +21,17 @@ import java.util.stream.Stream;
 public class CustomerFileDownloadService {
     private final CustomerFileDownloadGateway customerFileDownloadGateway;
     private final GoaUserClient userFinderClient;
+    private final PasswordEncoder passwordEncoder;
 
     public void create(CustomerFileDownload customerFileDownload) {
         customerFileDownload.setId(UUID.randomUUID());
         customerFileDownload.setDownloadedAt(LocalDateTime.now());
+        customerFileDownload.setDownloadToken(this.passwordEncoder.encode(customerFileDownload.getDownloadToken()));
         this.customerFileDownloadGateway.create(customerFileDownload);
     }
 
-    public CustomerFileDownload readById(UUID id) {
-        CustomerFileDownload customerFileDownload = this.customerFileDownloadGateway.readById(id);
-
+    public CustomerFileDownload read(UUID id) {
+        CustomerFileDownload customerFileDownload = this.customerFileDownloadGateway.read(id);
         return this.enrichCustomer(customerFileDownload);
     }
 

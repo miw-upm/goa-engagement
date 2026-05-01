@@ -1,5 +1,6 @@
 package es.upm.api.adapter.in.resources;
 
+import es.upm.api.adapter.in.resources.dtos.AcceptanceEngagementCreationDto;
 import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
@@ -27,7 +28,7 @@ public class EngagementLetterResource {
     public static final String READ_ENGAGEMENT_LETTER = "/read-engagement-letter";
     public static final String PENDING_SIGNERS = "/pending-signers";
     public static final String SIGN_ENGAGEMENT_LETTER = "/sign-engagement-letter";
-    public static final String MOBILE_ID_TOKEN_ID = "/{mobile}/{token}";
+    public static final String URL_ID_TOKEN_ID = "/{urlId}/{token}";
     public static final String VIEW = "/view";
 
     private final EngagementLetterService engagementLetterService;
@@ -38,8 +39,8 @@ public class EngagementLetterResource {
     }
 
     @GetMapping(ID_ID)
-    public EngagementLetter readById(@PathVariable UUID id) {
-        return this.engagementLetterService.readById(id);
+    public EngagementLetter read(@PathVariable UUID id) {
+        return this.engagementLetterService.read(id);
     }
 
     @GetMapping(value = ID_ID + VIEW, produces = MediaType.APPLICATION_PDF_VALUE)
@@ -70,29 +71,27 @@ public class EngagementLetterResource {
     }
 
     @PreAuthorize(Security.ALL)
-    @GetMapping(value = READ_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readPdfWithToken(@PathVariable String mobile, @PathVariable String token) {
-        return this.engagementLetterService.readPdfWithToken(READ_ENGAGEMENT_LETTER.substring(1), mobile, token);
+    @GetMapping(value = READ_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] readPdfWithToken(@PathVariable String urlId, @PathVariable String token) {
+        return this.engagementLetterService.readPdfWithToken(READ_ENGAGEMENT_LETTER.substring(1), urlId, token);
     }
 
     @PreAuthorize(Security.ALL)
-    @GetMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
-    public byte[] readBeforeSigningWithToken(@PathVariable String mobile, @PathVariable String token) {
-        return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), mobile, token);
+    @GetMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] readBeforeSigningWithToken(@PathVariable String urlId, @PathVariable String token) {
+        return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), urlId, token);
     }
 
     @PreAuthorize(Security.ALL)
-    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + MOBILE_ID_TOKEN_ID)
-    public void signWithToken(@PathVariable String mobile, @PathVariable String token,
+    @PatchMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID)
+    public void signWithToken(@PathVariable String urlId, @PathVariable String token,
                               @RequestBody AcceptanceEngagementCreationDto acceptanceCreation,
                               HttpServletRequest request) {
         AcceptanceEngagement acceptance = AcceptanceEngagement.builder()
-                .mobile(mobile)
                 .signatureToken(token)
                 .documentAccepted(acceptanceCreation.getDocumentAccepted())
                 .deviceInfo(DeviceInfoResolver.resolve(request))
                 .build();
-        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), acceptance);
+        this.engagementLetterService.signWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), urlId, acceptance);
     }
 }
-

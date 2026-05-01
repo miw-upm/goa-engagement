@@ -4,10 +4,7 @@ import es.upm.api.configurations.FeignConfig;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -16,9 +13,12 @@ import java.util.UUID;
 public interface GoaUserClient {
     String GOA_USER = "goa-user";
     String USERS = "/users";
-    String ACCESS_LINK = "/access-link";
+    String ACCESS_LINKS = "/access-links";
     String ID_ID = "/{id}";
     String MOBILE_ID = "/{mobile}";
+    String SCOPE_ID = "/{scope}";
+    String TOKEN_ID = "/{token}";
+    String CONSUME = "/consume";
 
     @GetMapping(USERS + ID_ID)
     UserSnapshot readUserById(@PathVariable UUID id);
@@ -27,9 +27,12 @@ public interface GoaUserClient {
     UserSnapshot readUserByMobile(@PathVariable String mobile);
 
     @GetMapping(USERS)
-    List<UserSnapshot> findUser(@RequestParam(required = false) String attribute);
+    List<UserSnapshot> findUser(@RequestParam(required = false) String customer);
 
-    @PostMapping(ACCESS_LINK + ID_ID)
-    AccessLinkSnapshot useAccessLink(@PathVariable String id, @RequestParam String mobile, @RequestParam String scope);
+    @GetMapping(USERS + SCOPE_ID + ID_ID + TOKEN_ID)
+    UserSnapshot readUserByUrlIdWithToken(@PathVariable String scope, @PathVariable String id, @PathVariable String token);
 
+
+    @PostMapping(ACCESS_LINKS + SCOPE_ID + ID_ID + CONSUME)
+    AccessLinkSnapshot consumeAccessLinkToken(@PathVariable String scope, @PathVariable String id, @RequestBody String token);
 }

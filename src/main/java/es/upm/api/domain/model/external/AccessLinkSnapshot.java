@@ -12,8 +12,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccessLinkSnapshot {
-    private String id;
-    private String mobile;
+    private UUID id;
+    private String urlId;
+    private String token;
     private String scope;
-    private UUID document;
+    private UUID documentId;
 }
