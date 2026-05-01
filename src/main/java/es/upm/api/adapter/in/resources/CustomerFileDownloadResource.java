@@ -23,7 +23,7 @@ public class CustomerFileDownloadResource {
 
     @GetMapping(ID_ID)
     public CustomerFileDownload read(@PathVariable UUID id) {
-        return this.customerFileDownloadService.readById(id);
+        return this.customerFileDownloadService.read(id);
     }
 
     @GetMapping

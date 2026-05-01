@@ -49,8 +49,8 @@ class CustomerFileDownloadServiceIT {
     }
 
     @Test
-    void shouldReadByIdFromSeederAndHydrateCustomer() {
-        CustomerFileDownload result = this.customerFileDownloadService.readById(UUIDS[0]);
+    void shouldReadFromSeederAndHydrateCustomer() {
+        CustomerFileDownload result = this.customerFileDownloadService.read(UUIDS[0]);
 
         assertThat(result)
                 .isNotNull()
@@ -65,8 +65,8 @@ class CustomerFileDownloadServiceIT {
     }
 
     @Test
-    void shouldThrowNotFoundWhenReadByIdNotExists() {
-        assertThatThrownBy(() -> this.customerFileDownloadService.readById(UUID.randomUUID()))
+    void shouldThrowNotFoundWhenReadNotExists() {
+        assertThatThrownBy(() -> this.customerFileDownloadService.read(UUID.randomUUID()))
                 .isInstanceOf(NotFoundException.class);
     }
 

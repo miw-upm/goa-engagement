@@ -1,5 +1,6 @@
 package es.upm.api.adapter.in.resources;
 
+import es.upm.api.adapter.in.resources.dtos.AcceptanceEngagementCreationDto;
 import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
@@ -38,8 +39,8 @@ public class EngagementLetterResource {
     }
 
     @GetMapping(ID_ID)
-    public EngagementLetter readById(@PathVariable UUID id) {
-        return this.engagementLetterService.readById(id);
+    public EngagementLetter read(@PathVariable UUID id) {
+        return this.engagementLetterService.read(id);
     }
 
     @GetMapping(value = ID_ID + VIEW, produces = MediaType.APPLICATION_PDF_VALUE)

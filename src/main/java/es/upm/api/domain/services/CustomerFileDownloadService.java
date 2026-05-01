@@ -30,9 +30,8 @@ public class CustomerFileDownloadService {
         this.customerFileDownloadGateway.create(customerFileDownload);
     }
 
-    public CustomerFileDownload readById(UUID id) {
-        CustomerFileDownload customerFileDownload = this.customerFileDownloadGateway.readById(id);
-
+    public CustomerFileDownload read(UUID id) {
+        CustomerFileDownload customerFileDownload = this.customerFileDownloadGateway.read(id);
         return this.enrichCustomer(customerFileDownload);
     }
 

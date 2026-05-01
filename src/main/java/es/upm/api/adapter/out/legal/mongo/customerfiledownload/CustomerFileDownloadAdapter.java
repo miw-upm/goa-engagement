@@ -25,7 +25,7 @@ public class CustomerFileDownloadAdapter implements CustomerFileDownloadGateway 
     }
 
     @Override
-    public CustomerFileDownload readById(UUID id) {
+    public CustomerFileDownload read(UUID id) {
         return this.customerFileDownloadRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("The CustomerFileDownload ID doesn't exist: " + id))
                 .toDomain();

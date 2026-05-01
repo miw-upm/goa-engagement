@@ -71,7 +71,7 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
     }
 
     @Override
-    public EngagementLetter readById(UUID id) {
+    public EngagementLetter read(UUID id) {
         return this.engagementLetterRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("The EngagementLetter ID doesn't exist: " + id))
                 .toDomain();

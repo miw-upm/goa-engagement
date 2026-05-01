@@ -63,7 +63,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testReadSuccess() {
-        assertThat(engagementLetterService.readById(UUIDS[1]))
+        assertThat(engagementLetterService.read(UUIDS[1]))
                 .isNotNull()
                 .satisfies(retrieveEngagement -> {
                     assertThat(retrieveEngagement.getOwner().getFirstName()).isEqualTo("mock");
@@ -74,7 +74,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testCreateSuccess() {
-        EngagementLetter engagementLetterDb = this.engagementLetterService.readById(engagementLetter.getId());
+        EngagementLetter engagementLetterDb = this.engagementLetterService.read(engagementLetter.getId());
         assertThat(engagementLetterDb)
                 .isNotNull()
                 .satisfies(engagement -> {
@@ -100,7 +100,7 @@ class EngagementLetterServiceIT {
                 .paymentMethods(List.of(PaymentMethod.builder().description("Actualizado").percentage("20%").build()))
                 .build();
         this.engagementLetterService.update(originalId, updatedEngagementLetter);
-        EngagementLetter retrieved = this.engagementLetterService.readById(originalId);
+        EngagementLetter retrieved = this.engagementLetterService.read(originalId);
         assertThat(retrieved)
                 .isNotNull()
                 .satisfies(letter -> {
@@ -115,7 +115,7 @@ class EngagementLetterServiceIT {
     void testDeleteSuccess() {
         UUID engagementLetterId = this.engagementLetter.getId();
         this.engagementLetterService.delete(engagementLetterId);
-        assertThatThrownBy(() -> this.engagementLetterService.readById(engagementLetterId))
+        assertThatThrownBy(() -> this.engagementLetterService.read(engagementLetterId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining(engagementLetterId.toString());
     }
@@ -231,7 +231,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindPendingSignersWithoutAttachments() {
-        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[3]);
+        EngagementLetter letter = this.engagementLetterService.read(UUIDS[3]);
         List<UserSnapshot> pending = letter.findPendingSigners();
         assertThat(pending)
                 .hasSize(1)
@@ -241,26 +241,26 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindPendingSignersWhenAllHaveSigned() {
-        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[1]);
+        EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
         List<UserSnapshot> pending = letter.findPendingSigners();
         assertThat(pending).isEmpty();
     }
 
     @Test
     void testIsSignedReturnsTrueWhenAllSignersHaveSigned() {
-        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[1]);
+        EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
         assertThat(letter.isSigned()).isTrue();
     }
 
     @Test
     void testIsSignedReturnsFalseWhenSomeSignersArePending() {
-        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[3]);
+        EngagementLetter letter = this.engagementLetterService.read(UUIDS[3]);
         assertThat(letter.isSigned()).isFalse();
     }
 
     @Test
     void testAreAllUsersCompleteReturnsFalseWhenSomeUserIsIncomplete() {
-        EngagementLetter letter = this.engagementLetterService.readById(UUIDS[1]);
+        EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
         assertThat(letter.areAllUsersComplete()).isFalse();
     }
 

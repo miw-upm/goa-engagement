@@ -22,10 +22,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -41,21 +38,19 @@ public class EngagementLetterService {
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
-        engagementLetter.setOwner(
-                this.userFinder.readByMobile(engagementLetter.getOwner().getMobile())
-        );
+        engagementLetter.setOwner(this.userFinder.readByMobile(engagementLetter.getOwner().getMobile()));
         engagementLetter.setLastUpdatedDate(LocalDate.now());
         if (engagementLetter.getAttachments() != null) {
-            engagementLetter.getAttachments().forEach(attachment -> attachment.setId(this.userFinder.readByMobile(attachment.getMobile()).getId()));
+            engagementLetter.getAttachments().forEach(
+                    attachment -> attachment.setId(this.userFinder.readByMobile(attachment.getMobile()).getId())
+            );
         }
         this.engagementLetterGateway.create(engagementLetter);
     }
 
-    public EngagementLetter readById(UUID id) {
-        EngagementLetter engagementLetter = this.engagementLetterGateway.readById(id);
-        engagementLetter.setOwner(
-                this.userFinder.readById(engagementLetter.getOwner().getId())
-        );
+    public EngagementLetter read(UUID id) {
+        EngagementLetter engagementLetter = this.engagementLetterGateway.read(id);
+        engagementLetter.setOwner(this.userFinder.readById(engagementLetter.getOwner().getId()));
         Optional.ofNullable(engagementLetter.getAttachments())
                 .ifPresent(attachments -> engagementLetter.setAttachments(
                         attachments.stream()
@@ -77,7 +72,6 @@ public class EngagementLetterService {
 
     public Stream<EngagementLetter> find(EngagementLetterFindCriteria criteria) {
         Stream<EngagementLetter> letters = this.engagementLetterGateway.find(criteria);
-
         if (StringUtils.hasText(criteria.getClient())) {
             List<UUID> clientIds = this.userFinder.find(criteria.getClient()).stream()
                     .map(UserSnapshot::getId)
@@ -92,22 +86,21 @@ public class EngagementLetterService {
     }
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
-        EngagementLetter letter = this.readById(id);
+        EngagementLetter letter = this.read(id);
         if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
             throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
         }
         if (!letter.areAllUsersComplete()) {
             throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
         }
-        List<UserSnapshot> pendingSigners = letter.findPendingSigners();
-        if (pendingSigners.isEmpty()) {
+        if(letter.isSigned()){
             throw new InvalidTransitionException("Todos los intervinientes ya han firmado");
         }
-        return pendingSigners.stream();
+        return letter.findPendingSigners().stream();
     }
 
     public byte[] generatePdf(UUID engagementLetterId) {
-        EngagementLetter letter = this.readById(engagementLetterId);
+        EngagementLetter letter = this.read(engagementLetterId);
         TextDictionary dict = new TextDictionary("templates/engagement-letter-texts.yml");
         boolean isBudgetOnly = Boolean.TRUE.equals(letter.getBudgetOnly());
         PdfBuilder pdf = new PdfBuilder()
@@ -122,14 +115,14 @@ public class EngagementLetterService {
         } else {
             pdf.paragraph(dict.getText("intervinientes", Map.of("clientes", letter.buildClientsFullNameIdentity())));
         }
-        buildServicesSection(pdf, dict, letter);
+        this.buildServicesSection(pdf, dict, letter);
         if (letter.getLegalClause() != null) {
             pdf.space().paragraph(letter.getLegalClause()).space();
         }
         if (isBudgetOnly) {
-            buildBudgetFooter(pdf, dict);
+            this.buildBudgetFooter(pdf, dict);
         } else {
-            buildEngagementLetterFooter(pdf, dict, letter);
+            this.buildEngagementLetterFooter(pdf, dict, letter);
         }
         return pdf.footer().build();
     }
@@ -179,10 +172,10 @@ public class EngagementLetterService {
                 .paragraph(dict.getText("aviso_hoja"));
         if (letter.isSigned()) {
             List<PdfBuilder.LeftSignature> leftSignatures = letter.getAcceptanceEngagements().stream()
-                    .map(ae -> new PdfBuilder.LeftSignature(ae.toDonFullName(),
+                    .map(acceptance -> new PdfBuilder.LeftSignature(acceptance.toDonFullName(),
                             String.format("Firmado electrónicamente %s (CET)%nRef.: %s",
-                                    ae.getSignatureAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
-                                    ae.suffix()
+                                    acceptance.getSignatureAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")),
+                                    acceptance.suffix()
                             )
                     )).toList();
             pdf.multiSignatureWithSignatures(leftSignatures, dict.getText("firma_nuria"));
@@ -213,7 +206,7 @@ public class EngagementLetterService {
         acceptance.setSignerIdentity(user.getIdentity());
         acceptance.setMobile(user.getMobile());
         acceptance.setSignerEmail(user.getEmail());
-        EngagementLetter letter = this.engagementLetterGateway.readById(accessLink.getDocumentId());
+        EngagementLetter letter = this.engagementLetterGateway.read(accessLink.getDocumentId());
         letter.add(acceptance);
         this.encode(acceptance);
         this.engagementLetterGateway.update(letter.getId(), letter);
@@ -230,13 +223,26 @@ public class EngagementLetterService {
     }
 
     private void sendEmails(EngagementLetter letter) {
+        List<Exception> errors = new ArrayList<>();
+
+        trySendEmail(letter.getOwner(), errors);
+        letter.getAttachments().forEach(user -> trySendEmail(user, errors));
+
+        if (!errors.isEmpty()) {
+            Exception first = errors.getFirst();
+            String message = first instanceof FeignException.BadRequest
+                    ? "Error de email, algún email ha sido rechazado."
+                    : "Error del host de emails.";
+            message += " Si no recibe una copia firmada por email, contacte con el despacho. Disculpe las molestias.";
+            throw new BadGatewayException(message, first.getCause());
+        }
+    }
+
+    private void trySendEmail(UserSnapshot user, List<Exception> errors) {
         try {
-            this.sendEmail(letter.getOwner());
-            letter.getAttachments().forEach(this::sendEmail);
-        } catch (FeignException.BadRequest e) {
-            throw new BadGatewayException("Error de email", e.getCause());
+            this.sendEmail(user);
         } catch (Exception e) {
-            throw new BadGatewayException("Error del host de email", e.getCause());
+            errors.add(e);
         }
     }
 
