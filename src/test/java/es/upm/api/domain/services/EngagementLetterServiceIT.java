@@ -20,7 +20,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.US;
+import static es.upm.api.configurations.DatabaseSeederDev.C_0;
+import static es.upm.api.configurations.DatabaseSeederDev.C_1;
+import static es.upm.api.configurations.DatabaseSeederDev.C_2;
 import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
@@ -41,7 +43,7 @@ class EngagementLetterServiceIT {
     void setUpEngagementLetter() {
         this.engagementLetter = EngagementLetter.builder()
                 .discount(15)
-                .owner(UserSnapshot.builder().id(UUID.randomUUID()).mobile("123456789").firstName("John").build())
+                .owner(UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").build())
                 .legalProcedures(List.of(LegalProcedure.builder()
                         .title("procedimiento")
                         .budget(BigDecimal.TEN)
@@ -51,11 +53,9 @@ class EngagementLetterServiceIT {
                 .build();
 
         BDDMockito.given(this.userFinderClient.readUserByMobile(any(String.class)))
-                .willAnswer(invocation ->
-                        UserSnapshot.builder().id(this.engagementLetter.getOwner().getId()).mobile(invocation.getArgument(0)).firstName("mock").build());
+                .willAnswer(invocation -> mockedUserByMobile(invocation.getArgument(0)));
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
-                .willAnswer(invocation ->
-                        UserSnapshot.builder().id(invocation.getArgument(0)).mobile("123456789").firstName("mock").build());
+                .willAnswer(invocation -> mockedUserById(invocation.getArgument(0)));
         BDDMockito.given(this.userFinderClient.findUser(any(String.class)))
                 .willReturn(List.of());
         this.engagementLetterService.create(this.engagementLetter);
@@ -66,8 +66,8 @@ class EngagementLetterServiceIT {
         assertThat(engagementLetterService.read(UUIDS[1]))
                 .isNotNull()
                 .satisfies(retrieveEngagement -> {
-                    assertThat(retrieveEngagement.getOwner().getFirstName()).isEqualTo("mock");
-                    assertThat(retrieveEngagement.getOwner().getMobile()).isEqualTo("123456789");
+                    assertThat(retrieveEngagement.getOwner().getFirstName()).isEqualTo("c1");
+                    assertThat(retrieveEngagement.getOwner().getMobile()).isEqualTo("666666000");
                     assertThat(retrieveEngagement.getDiscount()).isEqualTo(20);
                 });
     }
@@ -213,14 +213,14 @@ class EngagementLetterServiceIT {
     @Test
     void testFindFiltersByOwner() {
         BDDMockito.given(this.userFinderClient.findUser("test"))
-                .willReturn(List.of(UserSnapshot.builder().id(UUIDS[4]).build()));
+                .willReturn(List.of(UserSnapshot.builder().id(C_0).build()));
 
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
         criteria.setClient("test");
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
         assertThat(results)
                 .isNotEmpty()
-                .allSatisfy(letter -> assertThat(letter.getOwner().getId()).isEqualTo(UUIDS[4]));
+                .allSatisfy(letter -> assertThat(letter.getOwner().getId()).isEqualTo(C_0));
     }
 
     @Test
@@ -236,7 +236,7 @@ class EngagementLetterServiceIT {
         assertThat(pending)
                 .hasSize(1)
                 .first()
-                .satisfies(user -> assertThat(user.getId()).isEqualTo(US[0]));
+                .satisfies(user -> assertThat(user.getId()).isEqualTo(C_0));
     }
 
     @Test
@@ -259,9 +259,34 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testAreAllUsersCompleteReturnsFalseWhenSomeUserIsIncomplete() {
+    void testAreAllUsersCompleteReturnsTrueWithSeedUsers() {
         EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
-        assertThat(letter.areAllUsersComplete()).isFalse();
+        assertThat(letter.areAllUsersComplete()).isTrue();
+    }
+
+    private UserSnapshot mockedUserById(UUID id) {
+        if (C_0.equals(id)) {
+            return UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").familyName("family-c1")
+                    .identity("66666603E").email("c1@gmail.com").build();
+        }
+        if (C_1.equals(id)) {
+            return UserSnapshot.builder().id(C_1).mobile("666666001").firstName("c2").familyName("family-c2")
+                    .identity("66666604T").email("c2@gmail.com").build();
+        }
+        if (C_2.equals(id)) {
+            return UserSnapshot.builder().id(C_2).mobile("666666002").firstName("c3").familyName("family-c3")
+                    .identity("66666605R").email("c3@gmail.com").build();
+        }
+        return UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").familyName("family-c1")
+                .identity("66666603E").email("c1@gmail.com").build();
+    }
+
+    private UserSnapshot mockedUserByMobile(String mobile) {
+        return switch (mobile) {
+            case "666666001" -> mockedUserById(C_1);
+            case "666666002" -> mockedUserById(C_2);
+            default -> mockedUserById(C_0);
+        };
     }
 
 }

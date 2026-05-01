@@ -2,7 +2,11 @@ package es.upm.api.configurations;
 
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadEntity;
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadRepository;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.AcceptanceEngagementEntity;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterEntity;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterRepository;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.LegalProcedureEntity;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.PaymentMethodEntity;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
@@ -27,28 +31,29 @@ import java.util.UUID;
 @Profile({"dev", "test"})
 public class DatabaseSeederDev {
 
-    public static final UUID[] UUIDS = {
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0000"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0001"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0002"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0003"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0008"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0009"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000a"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000b"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000c"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000d"),
-    };
+    public static final UUID ID_0 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0000");
+    public static final UUID ID_1 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0001");
+    public static final UUID ID_2 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0002");
+    public static final UUID ID_3 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0003");
+    public static final UUID ID_4 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004");
+    public static final UUID ID_5 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005");
+    public static final UUID ID_6 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006");
+    public static final UUID ID_7 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0007");
+    public static final UUID ID_8 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0008");
+    public static final UUID ID_9 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0009");
+    public static final UUID ID_10 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000a");
+    public static final UUID ID_11 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000b");
+    public static final UUID ID_12 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000c");
+    public static final UUID ID_13 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000d");
 
-    public static final UUID[] US = {
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0005"),
-            UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0006")
-    };
+    public static final UUID C_0 = ID_4;
+    public static final UUID C_1 = ID_5;
+    public static final UUID C_2 = ID_6;
+
+    // Compatibilidad temporal con tests existentes
+    public static final UUID[] UUIDS = {ID_0, ID_1, ID_2, ID_3, ID_4, ID_5, ID_6, ID_7, ID_8, ID_9, ID_10, ID_11, ID_12, ID_13};
+    public static final UUID[] US = {C_0, C_1, C_2};
+
     private static final String LEGAL_CLAUSE = "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
@@ -81,33 +86,33 @@ public class DatabaseSeederDev {
         log.warn("------- Initial Load from JAVA ---------------------------------------------------------------");
 
         LegalTaskEntity[] tasks = {
-                new LegalTaskEntity(UUIDS[0], "Estudio de antecedentes y documentación"),
-                new LegalTaskEntity(UUIDS[1], "Asesoramiento jurídico"),
-                new LegalTaskEntity(UUIDS[2], "Localización de personas"),
-                new LegalTaskEntity(UUIDS[3], "Negociación de la aceptación o renuncia con contrario"),
-                new LegalTaskEntity(UUIDS[4], "Tramitación notarial de la herencia"),
-                new LegalTaskEntity(UUIDS[5], "Liquidación del Impuesto de Sucesiones y Plusvalía Mortis causa"),
-                new LegalTaskEntity(UUIDS[6], "Redacción del cuaderno particional de la herencia ante el notario correspondiente"),
-                new LegalTaskEntity(UUIDS[7], "Liquidación de Impuesto de Sucesiones (prescrito)"),
-                new LegalTaskEntity(UUIDS[8], "Averiguación de los posibles pasivos (deuda) existente"),
-                new LegalTaskEntity(UUIDS[9], "Tramitación de los seguros"),
-                new LegalTaskEntity(UUIDS[9], "Redacción de la escritura de herencia y tramitación con la notaría correspondiente"),
-                new LegalTaskEntity(UUIDS[9], "Asistencia letrada en la notaría"),
-                new LegalTaskEntity(UUIDS[9], "Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad"),
-                new LegalTaskEntity(UUIDS[9], "Tramitación de la venta de las viviendas de la herencia con la inmobiliaria"),
+                new LegalTaskEntity(ID_0, "Estudio de antecedentes y documentación"),
+                new LegalTaskEntity(ID_1, "Asesoramiento jurídico"),
+                new LegalTaskEntity(ID_2, "Localización de personas"),
+                new LegalTaskEntity(ID_3, "Negociación de la aceptación o renuncia con contrario"),
+                new LegalTaskEntity(ID_4, "Tramitación notarial de la herencia"),
+                new LegalTaskEntity(ID_5, "Liquidación del Impuesto de Sucesiones y Plusvalía Mortis causa"),
+                new LegalTaskEntity(ID_6, "Redacción del cuaderno particional de la herencia ante el notario correspondiente"),
+                new LegalTaskEntity(ID_7, "Liquidación de Impuesto de Sucesiones (prescrito)"),
+                new LegalTaskEntity(ID_8, "Averiguación de los posibles pasivos (deuda) existente"),
+                new LegalTaskEntity(ID_9, "Tramitación de los seguros"),
+                new LegalTaskEntity(ID_10, "Redacción de la escritura de herencia y tramitación con la notaría correspondiente"),
+                new LegalTaskEntity(ID_11, "Asistencia letrada en la notaría"),
+                new LegalTaskEntity(ID_12, "Inscripción de los correspondientes bienes inmuebles en los Registros de la Propiedad"),
+                new LegalTaskEntity(ID_13, "Tramitación de la venta de las viviendas de la herencia con la inmobiliaria"),
         };
         this.legalTaskRepository.saveAll(List.of(tasks));
         log.warn("        ------- tareas legales --------------------------------------------------------------------");
 
 
         LegalProcedureTemplateEntity[] templates = {
-                new LegalProcedureTemplateEntity(UUIDS[0], "Procedimiento de herencia", new BigDecimal("2500"),
+                new LegalProcedureTemplateEntity(ID_0, "Procedimiento de herencia", new BigDecimal("2500"),
                         List.of(tasks[0], tasks[1], tasks[2], tasks[3], tasks[4], tasks[5], tasks[6])),
-                new LegalProcedureTemplateEntity(UUIDS[1], "División de Herencia", new BigDecimal("3000"),
+                new LegalProcedureTemplateEntity(ID_1, "División de Herencia", new BigDecimal("3000"),
                         List.of(tasks[0], tasks[1], tasks[7], tasks[8], tasks[9], tasks[10], tasks[11])),
-                new LegalProcedureTemplateEntity(UUIDS[2], "Herencia notarial", new BigDecimal("1000"),
+                new LegalProcedureTemplateEntity(ID_2, "Herencia notarial", new BigDecimal("1000"),
                         List.of(tasks[0], tasks[1], tasks[12], tasks[13])),
-                new LegalProcedureTemplateEntity(UUIDS[3], "Procedimiento de ejecución hipotecaria", new BigDecimal("4000"),
+                new LegalProcedureTemplateEntity(ID_3, "Procedimiento de ejecución hipotecaria", new BigDecimal("4000"),
                         List.of(tasks[0], tasks[1], tasks[13]))
         };
         this.legalProcedureTemplateRepository.saveAll(List.of(templates));
@@ -120,7 +125,7 @@ public class DatabaseSeederDev {
         AcceptanceEngagementEntity[] acceptances = {
                 AcceptanceEngagementEntity.builder()
                         .signatureAt(LocalDateTime.now().plusHours(1))
-                        .signerId(US[0])
+                        .signerId(C_0)
                         .signerFullName("c1 family-c1")
                         .signerIdentity("66666603E")
                         .mobile("666666000")
@@ -131,7 +136,7 @@ public class DatabaseSeederDev {
                         .build(),
                 AcceptanceEngagementEntity.builder()
                         .signatureAt(LocalDateTime.now().plusHours(1))
-                        .signerId(US[1])
+                        .signerId(C_1)
                         .signerFullName("c2 family-c2")
                         .signerIdentity("66666604T")
                         .mobile("666666001")
@@ -155,34 +160,34 @@ public class DatabaseSeederDev {
         };
 
         EngagementLetterEntity[] encargos = {
-                EngagementLetterEntity.builder().id(UUIDS[0])
+                EngagementLetterEntity.builder().id(ID_0)
                         .budgetOnly(true)
                         .discount(10).lastUpdatedDate(LocalDate.now().minusDays(5))
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
-                        .ownerId(US[0])
-                        .attachmentId(US[1])
+                        .ownerId(C_0)
+                        .attachmentId(C_1)
                         .legalClause(LEGAL_CLAUSE)
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[2]))
                         .acceptanceEngagementEntities(List.of(acceptances[0]))
                         .build(),
-                EngagementLetterEntity.builder().id(UUIDS[1])
+                EngagementLetterEntity.builder().id(ID_1)
                         .budgetOnly(false)
                         .discount(20).lastUpdatedDate(LocalDate.now())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Finalizado el procedimiento").percentage("60%").build())
-                        .ownerId(US[0])
-                        .attachmentId(US[1])
+                        .ownerId(C_0)
+                        .attachmentId(C_1)
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2]))
                         .acceptanceEngagementEntities(List.of(acceptances[0], acceptances[1]))
                         .build(),
-                EngagementLetterEntity.builder().id(UUIDS[2])
+                EngagementLetterEntity.builder().id(ID_2)
                         .budgetOnly(false)
                         .discount(15)
                         .legalClause(LEGAL_CLAUSE)
                         .lastUpdatedDate(LocalDate.now())
-                        .ownerId(US[1])
-                        .attachmentId(US[2])
+                        .ownerId(C_1)
+                        .attachmentId(C_2)
                         .paymentMethodEntity(PaymentMethodEntity.builder()
                                 .description("A la firma de la carta de encargo")
                                 .percentage("50%").build())
@@ -192,20 +197,20 @@ public class DatabaseSeederDev {
                         .legalProcedureEntities(List.of(procedimientos[0], procedimientos[1], procedimientos[2]))
                         .acceptanceEngagementEntities(List.of(acceptances[1]))
                         .build(),
-                EngagementLetterEntity.builder().id(UUIDS[3])
+                EngagementLetterEntity.builder().id(ID_3)
                         .budgetOnly(false)
                         .discount(10)
                         .lastUpdatedDate(LocalDate.now().minusDays(30))
                         .closingDate(LocalDate.now().minusDays(5))  // CERRADO
-                        .ownerId(US[0])
+                        .ownerId(C_0)
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Completo").percentage("100%").build())
                         .legalProcedureEntities(List.of(procedimientos[0]))
                         .build(),
-                EngagementLetterEntity.builder().id(UUIDS[4])
+                EngagementLetterEntity.builder().id(ID_4)
                         .budgetOnly(false)
                         .discount(20).lastUpdatedDate(LocalDate.now())
                         .paymentMethodEntity(PaymentMethodEntity.builder().description("Provisión de fondos").percentage("40%").build())
-                        .ownerId(US[0])
+                        .ownerId(C_0)
                         .legalProcedureEntities(List.of(procedimientos[1], procedimientos[2]))
                         .acceptanceEngagementEntities(List.of(acceptances[0]))
                         .build(),
@@ -218,27 +223,27 @@ public class DatabaseSeederDev {
 
         CustomerFileDownloadEntity[] customerFileDownloads = {
                 CustomerFileDownloadEntity.builder()
-                        .id(UUIDS[0])
+                        .id(ID_0)
                         .downloadedAt(LocalDateTime.now().minusHours(2))
-                        .customerId(US[0])
+                        .customerId(C_0)
                         .documentType("engagement-letter")
-                        .documentId(UUIDS[0])
+                        .documentId(ID_0)
                         .downloadToken(Base64UrlGenerator.token())
                         .build(),
                 CustomerFileDownloadEntity.builder()
-                        .id(UUIDS[1])
+                        .id(ID_1)
                         .downloadedAt(LocalDateTime.now().minusHours(1))
-                        .customerId(US[1])
+                        .customerId(C_1)
                         .documentType("engagement-letter")
-                        .documentId(UUIDS[1])
+                        .documentId(ID_1)
                         .downloadToken(Base64UrlGenerator.token())
                         .build(),
                 CustomerFileDownloadEntity.builder()
-                        .id(UUIDS[2])
+                        .id(ID_2)
                         .downloadedAt(LocalDateTime.now().minusMinutes(20))
-                        .customerId(US[0])
+                        .customerId(C_0)
                         .documentType("engagement-budget")
-                        .documentId(UUIDS[2])
+                        .documentId(ID_2)
                         .downloadToken(Base64UrlGenerator.token())
                         .build(),
         };

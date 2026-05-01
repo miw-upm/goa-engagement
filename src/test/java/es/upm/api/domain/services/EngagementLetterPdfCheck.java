@@ -14,7 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.US;
+import static es.upm.api.configurations.DatabaseSeederDev.C_0;
 import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -32,13 +32,7 @@ class EngagementLetterPdfCheck {
     @Test
     void testGenerateBudgePdfCheck() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
-                .willReturn(UserSnapshot.builder()
-                        .id(UUID.randomUUID())
-                        .firstName("María")
-                        .familyName("García López")
-                        .mobile("612345678")
-                        .identity("43234543V")
-                        .build());
+                .willReturn(mockedC0User());
         byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[0]);
         Path output = Path.of("target", "presupuesto-check.pdf");
         Files.write(output, pdf);
@@ -48,17 +42,21 @@ class EngagementLetterPdfCheck {
     @Test
     void testGenerateLetterPdfCheck() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
-                .willReturn(UserSnapshot.builder()
-                        .id(UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0004"))
-                        .firstName("c1")
-                        .familyName("family-c1")
-                        .mobile("666666000")
-                        .identity("66666603E")
-                        .email("c1@gmail.com")
-                        .build());
+                .willReturn(mockedC0User());
         byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[4]);
         Path output = Path.of("target", "hoja-check.pdf");
         Files.write(output, pdf);
         log.info("PDF generado en: {}", output.toAbsolutePath());
+    }
+
+    private UserSnapshot mockedC0User() {
+        return UserSnapshot.builder()
+                .id(C_0)
+                .firstName("c1")
+                .familyName("family-c1")
+                .mobile("666666000")
+                .identity("66666603E")
+                .email("c1@gmail.com")
+                .build();
     }
 }

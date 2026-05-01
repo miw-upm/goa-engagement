@@ -15,6 +15,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
+import static es.upm.api.configurations.DatabaseSeederDev.C_0;
+import static es.upm.api.configurations.DatabaseSeederDev.C_1;
+import static es.upm.api.configurations.DatabaseSeederDev.C_2;
 import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,10 +40,26 @@ class EngagementLetterResourceIT {
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
-                .willAnswer(invocation ->
-                        UserSnapshot.builder().id(invocation.getArgument(0)).mobile("666000666").firstName("mock").build());
+                .willAnswer(invocation -> mockedUser(invocation.getArgument(0)));
         mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, UUIDS[0]))
                 .andExpect(status().isOk());
 
+    }
+
+    private UserSnapshot mockedUser(UUID id) {
+        if (C_0.equals(id)) {
+            return UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").familyName("family-c1")
+                    .identity("66666603E").email("c1@gmail.com").build();
+        }
+        if (C_1.equals(id)) {
+            return UserSnapshot.builder().id(C_1).mobile("666666001").firstName("c2").familyName("family-c2")
+                    .identity("66666604T").email("c2@gmail.com").build();
+        }
+        if (C_2.equals(id)) {
+            return UserSnapshot.builder().id(C_2).mobile("666666002").firstName("c3").familyName("family-c3")
+                    .identity("66666605R").email("c3@gmail.com").build();
+        }
+        return UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").familyName("family-c1")
+                .identity("66666603E").email("c1@gmail.com").build();
     }
 }
