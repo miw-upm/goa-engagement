@@ -149,4 +149,45 @@ class PublicEngagementLetterAccessServiceIT {
                 .hasMessageContaining("maximum uses");
         verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
     }
+
+    @Test
+    void testReadPublicEngagementLetterWhenTokenPurposeIsInvalid() {
+        BDDMockito.given(this.publicAccessTokenPersistence.readByToken("wrong-purpose-token"))
+                .willReturn(PublicAccessToken.builder()
+                        .token("wrong-purpose-token")
+                        .purpose(null)
+                        .expiresAt(LocalDateTime.now().plusDays(1))
+                        .maxUses(5)
+                        .usedCount(0)
+                        .isActive(true)
+                        .engagementLetterId(UUID.randomUUID())
+                        .build());
+
+        assertThatThrownBy(() -> this.engagementLetterService.readPublicByToken("wrong-purpose-token"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("purpose");
+        verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
+    }
+
+    @Test
+    void testReadPublicEngagementLetterWhenEngagementLetterDoesNotExist() {
+        UUID engagementLetterId = UUID.randomUUID();
+        BDDMockito.given(this.publicAccessTokenPersistence.readByToken("orphan-token"))
+                .willReturn(PublicAccessToken.builder()
+                        .token("orphan-token")
+                        .purpose(TokenPurpose.ACCEPT_ENGAGEMENT)
+                        .expiresAt(LocalDateTime.now().plusDays(1))
+                        .maxUses(5)
+                        .usedCount(0)
+                        .isActive(true)
+                        .engagementLetterId(engagementLetterId)
+                        .build());
+        BDDMockito.given(this.engagementLetterPersistence.readById(eq(engagementLetterId)))
+                .willThrow(new NotFoundException("The EngagementLetter ID doesn't exist: " + engagementLetterId));
+
+        assertThatThrownBy(() -> this.engagementLetterService.readPublicByToken("orphan-token"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(engagementLetterId.toString());
+        verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
+    }
 }

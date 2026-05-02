@@ -113,6 +113,23 @@ class PublicEngagementLetterAcceptResourceIT {
     }
 
     @Test
+    void testAcceptByTokenWhenTokenHasExpired() throws Exception {
+        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("expired-token")))
+                .willThrow(new BadRequestException("Cannot accept engagement letter: public access token has expired"));
+
+        String body = this.objectMapper.writeValueAsString(
+                PublicEngagementLetterAcceptRequestDto.builder().token("expired-token").build()
+        );
+
+        this.mockMvc.perform(post(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCEPT)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value(400))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("expired")));
+    }
+
+    @Test
     void testAcceptByTokenWhenTokenIsMissingInRequest() throws Exception {
         String body = this.objectMapper.writeValueAsString(
                 PublicEngagementLetterAcceptRequestDto.builder().token(" ").build()
