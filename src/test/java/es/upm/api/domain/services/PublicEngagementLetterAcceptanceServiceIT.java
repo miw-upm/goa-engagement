@@ -168,4 +168,87 @@ class PublicEngagementLetterAcceptanceServiceIT {
         verify(this.engagementLetterPersistence, never()).update(any(UUID.class), any(EngagementLetter.class));
         verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
     }
+
+    @Test
+    void testAcceptPublicEngagementLetterWhenTokenHasExpired() {
+        BDDMockito.given(this.publicAccessTokenPersistence.readByToken("expired-token"))
+                .willReturn(PublicAccessToken.builder()
+                        .token("expired-token")
+                        .purpose(TokenPurpose.ACCEPT_ENGAGEMENT)
+                        .expiresAt(LocalDateTime.now().minusMinutes(1))
+                        .maxUses(5)
+                        .usedCount(0)
+                        .isActive(true)
+                        .engagementLetterId(UUID.randomUUID())
+                        .build());
+
+        assertThatThrownBy(() -> this.engagementLetterService.acceptPublicByToken("expired-token"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("expired");
+        verify(this.engagementLetterPersistence, never()).update(any(UUID.class), any(EngagementLetter.class));
+        verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
+    }
+
+    @Test
+    void testAcceptPublicEngagementLetterWhenTokenExceededMaxUses() {
+        BDDMockito.given(this.publicAccessTokenPersistence.readByToken("maxed-token"))
+                .willReturn(PublicAccessToken.builder()
+                        .token("maxed-token")
+                        .purpose(TokenPurpose.ACCEPT_ENGAGEMENT)
+                        .expiresAt(LocalDateTime.now().plusDays(1))
+                        .maxUses(5)
+                        .usedCount(5)
+                        .isActive(true)
+                        .engagementLetterId(UUID.randomUUID())
+                        .build());
+
+        assertThatThrownBy(() -> this.engagementLetterService.acceptPublicByToken("maxed-token"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("maximum uses");
+        verify(this.engagementLetterPersistence, never()).update(any(UUID.class), any(EngagementLetter.class));
+        verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
+    }
+
+    @Test
+    void testAcceptPublicEngagementLetterWhenTokenPurposeIsInvalid() {
+        BDDMockito.given(this.publicAccessTokenPersistence.readByToken("wrong-purpose-token"))
+                .willReturn(PublicAccessToken.builder()
+                        .token("wrong-purpose-token")
+                        .purpose(null)
+                        .expiresAt(LocalDateTime.now().plusDays(1))
+                        .maxUses(5)
+                        .usedCount(0)
+                        .isActive(true)
+                        .engagementLetterId(UUID.randomUUID())
+                        .build());
+
+        assertThatThrownBy(() -> this.engagementLetterService.acceptPublicByToken("wrong-purpose-token"))
+                .isInstanceOf(BadRequestException.class)
+                .hasMessageContaining("purpose");
+        verify(this.engagementLetterPersistence, never()).update(any(UUID.class), any(EngagementLetter.class));
+        verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
+    }
+
+    @Test
+    void testAcceptPublicEngagementLetterWhenEngagementLetterDoesNotExist() {
+        UUID engagementLetterId = UUID.randomUUID();
+        BDDMockito.given(this.publicAccessTokenPersistence.readByToken("orphan-token"))
+                .willReturn(PublicAccessToken.builder()
+                        .token("orphan-token")
+                        .purpose(TokenPurpose.ACCEPT_ENGAGEMENT)
+                        .expiresAt(LocalDateTime.now().plusDays(1))
+                        .maxUses(5)
+                        .usedCount(0)
+                        .isActive(true)
+                        .engagementLetterId(engagementLetterId)
+                        .build());
+        BDDMockito.given(this.engagementLetterPersistence.readById(eq(engagementLetterId)))
+                .willThrow(new NotFoundException("The EngagementLetter ID doesn't exist: " + engagementLetterId));
+
+        assertThatThrownBy(() -> this.engagementLetterService.acceptPublicByToken("orphan-token"))
+                .isInstanceOf(NotFoundException.class)
+                .hasMessageContaining(engagementLetterId.toString());
+        verify(this.engagementLetterPersistence, never()).update(any(UUID.class), any(EngagementLetter.class));
+        verify(this.publicAccessTokenPersistence, never()).update(any(PublicAccessToken.class));
+    }
 }

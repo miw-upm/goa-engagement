@@ -148,6 +148,7 @@ public class EngagementLetterService {
         if (publicAccessToken.getPurpose() != TokenPurpose.ACCEPT_ENGAGEMENT) {
             throw new BadRequestException("Cannot " + action + " engagement letter: public access token purpose is invalid");
         }
+        this.engagementLetterPersistence.readById(publicAccessToken.getEngagementLetterId());
         return publicAccessToken;
     }
 
