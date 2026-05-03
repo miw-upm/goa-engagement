@@ -9,6 +9,9 @@ spring:
           jwk-set-uri: ${BASE_URL}/api/goa-user/oauth2/jwks
 
 app:
+  administration:
+    name: Administración
+    email: administracion@ocanabogados.es
   hosting: AWS
   oauth2:
     token-uri: ${BASE_URL}/api/goa-user/oauth2/token

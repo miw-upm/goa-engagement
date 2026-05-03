@@ -2,11 +2,7 @@ package es.upm.api.configurations;
 
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadEntity;
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadRepository;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.AcceptanceEngagementEntity;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterEntity;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.EngagementLetterRepository;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.LegalProcedureEntity;
-import es.upm.api.adapter.out.legal.mongo.engagementletter.PaymentMethodEntity;
+import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
@@ -49,11 +45,9 @@ public class DatabaseSeederDev {
     public static final UUID C_0 = ID_4;
     public static final UUID C_1 = ID_5;
     public static final UUID C_2 = ID_6;
-
+    public static final UUID[] US = {C_0, C_1, C_2};
     // Compatibilidad temporal con tests existentes
     public static final UUID[] UUIDS = {ID_0, ID_1, ID_2, ID_3, ID_4, ID_5, ID_6, ID_7, ID_8, ID_9, ID_10, ID_11, ID_12, ID_13};
-    public static final UUID[] US = {C_0, C_1, C_2};
-
     private static final String LEGAL_CLAUSE = "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."

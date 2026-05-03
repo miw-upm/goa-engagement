@@ -12,9 +12,10 @@ import es.upm.miw.exception.BadGatewayException;
 import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.openpdf.text.Element;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -27,6 +28,7 @@ import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class EngagementLetterService {
     private final EngagementLetterGateway engagementLetterGateway;
     private final AccessLinkGateway accessLinkGateway;
@@ -35,6 +37,10 @@ public class EngagementLetterService {
     private final EmailWriter emailWriter;
     private final SignedEngagementLetterEmailTemplateService signedEngagementLetterEmailTemplateService;
     private final PasswordEncoder passwordEncoder;
+    @Value("${app.administration.name}")
+    private String name;
+    @Value("${app.administration.email}")
+    private String email;
 
     public void create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
@@ -210,6 +216,7 @@ public class EngagementLetterService {
         letter.add(acceptance);
         this.encode(acceptance);
         this.engagementLetterGateway.update(letter.getId(), letter);
+
         if (letter.isSigned()) {
             this.sendEmails(letter);
         }
@@ -223,37 +230,46 @@ public class EngagementLetterService {
     }
 
     private void sendEmails(EngagementLetter letter) {
-        List<Exception> errors = new ArrayList<>();
+        byte[] pdf = this.generatePdf(letter.getId());
+        String fileName = "Hoja de Encargo.pdf";
+        List<String> failedEmails = this.collectRecipients(letter).stream()
+                .map(user -> this.trySendEmail(user, pdf, fileName))
+                .flatMap(Optional::stream)
+                .toList();
 
-        trySendEmail(letter.getOwner(), errors);
+        if (!failedEmails.isEmpty()) {
+            String message = "Error enviando emails a: " + String.join(", ", failedEmails) + "."
+                    + " Si no recibe una copia firmada por email, contacte con el despacho. Disculpe las molestias.";
+            throw new BadGatewayException(message);
+        }
+    }
+
+    private List<UserSnapshot> collectRecipients(EngagementLetter letter) {
+        List<UserSnapshot> recipients = new ArrayList<>();
+        recipients.add(UserSnapshot.builder().firstName(this.name).email(this.email).build());
+        recipients.add(this.userFinder.readById(letter.getOwner().getId()));
         if (letter.getAttachments() != null) {
-            letter.getAttachments().forEach(user -> trySendEmail(user, errors));
+            letter.getAttachments().forEach(user ->
+                    recipients.add(this.userFinder.readById(user.getId())));
         }
-
-        if (!errors.isEmpty()) {
-            Exception first = errors.getFirst();
-            String message = first instanceof FeignException.BadRequest
-                    ? "Error de email, algún email ha sido rechazado."
-                    : "Error del host de emails.";
-            message += " Si no recibe una copia firmada por email, contacte con el despacho. Disculpe las molestias.";
-            throw new BadGatewayException(message, first.getCause());
-        }
+        return recipients;
     }
 
-    private void trySendEmail(UserSnapshot user, List<Exception> errors) {
+    private Optional<String> trySendEmail(UserSnapshot user, byte[] pdf, String fileName) {
         try {
-            this.sendEmail(user);
+            this.sendEmail(user, pdf, fileName);
+            return Optional.empty();
         } catch (Exception e) {
-            errors.add(e);
+            return Optional.of(user.getEmail());
         }
     }
 
-    private void sendEmail(UserSnapshot user) {
+    private void sendEmail(UserSnapshot user, byte[] pdf, String fileName) {
         this.emailWriter.sendHtml(
                 this.signedEngagementLetterEmailTemplateService.buildHtmlEmail(
                         user.getEmail(),
                         user.getFirstName()
-                )
+                ), pdf, fileName
         );
     }
 }
