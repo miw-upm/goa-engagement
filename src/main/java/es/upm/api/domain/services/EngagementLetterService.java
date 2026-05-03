@@ -3,6 +3,7 @@ package es.upm.api.domain.services;
 import es.upm.api.domain.exceptions.BadRequestException;
 import es.upm.api.domain.model.*;
 import es.upm.api.domain.model.events.EngagementLetterDeletedEvent;
+import es.upm.api.domain.persistence.AcceptanceEvidencePersistence;
 import es.upm.api.domain.persistence.EngagementLetterPersistence;
 import es.upm.api.domain.persistence.PublicAccessTokenPersistence;
 import es.upm.api.domain.webclients.UserWebClient;
@@ -21,19 +22,23 @@ import java.util.stream.Stream;
 public class EngagementLetterService {
     public static final int PUBLIC_ACCESS_TOKEN_EXPIRY_DAYS = 5;
     public static final int PUBLIC_ACCESS_TOKEN_MAX_USES = 5;
+    public static final String ACCEPT_METHOD_PUBLIC_TOKEN = "PUBLIC_TOKEN";
 
     private final EngagementLetterPersistence engagementLetterPersistence;
     private final PublicAccessTokenPersistence publicAccessTokenPersistence;
+    private final AcceptanceEvidencePersistence acceptanceEvidencePersistence;
     private final UserWebClient userWebClient;
     private final ApplicationEventPublisher eventPublisher;
 
     @Autowired
     public EngagementLetterService(EngagementLetterPersistence engagementLetterPersistence,
                                    PublicAccessTokenPersistence publicAccessTokenPersistence,
+                                   AcceptanceEvidencePersistence acceptanceEvidencePersistence,
                                    UserWebClient userWebClient,
                                    ApplicationEventPublisher eventPublisher) {
         this.engagementLetterPersistence = engagementLetterPersistence;
         this.publicAccessTokenPersistence = publicAccessTokenPersistence;
+        this.acceptanceEvidencePersistence = acceptanceEvidencePersistence;
         this.userWebClient = userWebClient;
         this.eventPublisher = eventPublisher;
     }
@@ -102,7 +107,7 @@ public class EngagementLetterService {
         return this.engagementLetterPersistence.readById(publicAccessToken.getEngagementLetterId());
     }
 
-    public EngagementLetter acceptPublicByToken(String token) {
+    public EngagementLetter acceptPublicByToken(String token, String ipAddress, String userAgent) {
         PublicAccessToken publicAccessToken = this.validatePublicAccessToken(token, "accept");
         EngagementLetter engagementLetter = this.engagementLetterPersistence.readById(publicAccessToken.getEngagementLetterId());
         if (engagementLetter.getClosingDate() != null) {
@@ -112,8 +117,9 @@ public class EngagementLetterService {
             throw new BadRequestException("Cannot accept engagement letter: engagement letter has already been accepted");
         }
 
+        LocalDateTime acceptedAt = LocalDateTime.now();
         AcceptanceEngagement acceptanceEngagement = AcceptanceEngagement.builder()
-                .signatureDate(LocalDateTime.now())
+                .signatureDate(acceptedAt)
                 .signer(Optional.ofNullable(publicAccessToken.getCustomerId())
                         .map(customerId -> UserDto.builder().id(customerId).build())
                         .orElse(null))
@@ -129,6 +135,17 @@ public class EngagementLetterService {
         publicAccessToken.setUsedCount(currentUsedCount + 1);
         publicAccessToken.setIsActive(false);
         this.publicAccessTokenPersistence.update(publicAccessToken);
+
+        AcceptanceEvidence acceptanceEvidence = AcceptanceEvidence.builder()
+                .id(UUID.randomUUID())
+                .engagementLetterId(engagementLetter.getId())
+                .acceptedAt(acceptedAt)
+                .ipAddress(ipAddress)
+                .userAgent(userAgent)
+                .method(ACCEPT_METHOD_PUBLIC_TOKEN)
+                .tokenId(publicAccessToken.getId())
+                .build();
+        this.acceptanceEvidencePersistence.create(acceptanceEvidence);
         return engagementLetter;
     }
 

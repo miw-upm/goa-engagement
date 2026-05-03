@@ -8,6 +8,7 @@ import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.services.EngagementLetterService;
 import es.upm.api.infrastructure.dtos.PublicEngagementLetterAcceptRequestDto;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -21,7 +22,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,7 +46,7 @@ class PublicEngagementLetterAcceptResourceIT {
     void testAcceptByToken() throws Exception {
         UUID engagementLetterId = UUID.randomUUID();
         LocalDateTime signatureDate = LocalDateTime.of(2026, 4, 9, 10, 30, 0);
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("accept-token-123")))
+        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("accept-token-123"), any(), any()))
                 .willReturn(EngagementLetter.builder()
                         .id(engagementLetterId)
                         .acceptanceEngagements(List.of(AcceptanceEngagement.builder()
@@ -57,15 +60,26 @@ class PublicEngagementLetterAcceptResourceIT {
 
         this.mockMvc.perform(post(PublicEngagementLetterResource.PUBLIC_ENGAGEMENT_LETTERS + PublicEngagementLetterResource.ACCEPT)
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("User-Agent", "JUnit-UA/1.0")
+                        .with(request -> {
+                            request.setRemoteAddr("203.0.113.10");
+                            return request;
+                        })
                         .content(body))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.engagementLetterId").value(engagementLetterId.toString()))
                 .andExpect(jsonPath("$.signatureDate").value("2026-04-09T10:30:00"));
+
+        ArgumentCaptor<String> ipCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> userAgentCaptor = ArgumentCaptor.forClass(String.class);
+        verify(this.engagementLetterService).acceptPublicByToken(eq("accept-token-123"), ipCaptor.capture(), userAgentCaptor.capture());
+        org.assertj.core.api.Assertions.assertThat(ipCaptor.getValue()).isEqualTo("203.0.113.10");
+        org.assertj.core.api.Assertions.assertThat(userAgentCaptor.getValue()).isEqualTo("JUnit-UA/1.0");
     }
 
     @Test
     void testAcceptByTokenWhenTokenDoesNotExist() throws Exception {
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("missing-token")))
+        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("missing-token"), any(), any()))
                 .willThrow(new NotFoundException("The PublicAccessToken doesn't exist: missing-token"));
 
         String body = this.objectMapper.writeValueAsString(
@@ -80,7 +94,7 @@ class PublicEngagementLetterAcceptResourceIT {
 
     @Test
     void testAcceptByTokenWhenAlreadyAccepted() throws Exception {
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("accepted-token")))
+        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("accepted-token"), any(), any()))
                 .willThrow(new BadRequestException("Cannot accept engagement letter: engagement letter has already been accepted"));
 
         String body = this.objectMapper.writeValueAsString(
@@ -97,7 +111,7 @@ class PublicEngagementLetterAcceptResourceIT {
 
     @Test
     void testAcceptByTokenWhenTokenIsInactive() throws Exception {
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("inactive-token")))
+        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("inactive-token"), any(), any()))
                 .willThrow(new BadRequestException("Cannot accept engagement letter: public access token is inactive"));
 
         String body = this.objectMapper.writeValueAsString(
@@ -114,7 +128,7 @@ class PublicEngagementLetterAcceptResourceIT {
 
     @Test
     void testAcceptByTokenWhenTokenHasExpired() throws Exception {
-        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("expired-token")))
+        BDDMockito.given(this.engagementLetterService.acceptPublicByToken(eq("expired-token"), any(), any()))
                 .willThrow(new BadRequestException("Cannot accept engagement letter: public access token has expired"));
 
         String body = this.objectMapper.writeValueAsString(
