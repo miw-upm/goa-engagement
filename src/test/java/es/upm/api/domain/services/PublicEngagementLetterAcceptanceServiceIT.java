@@ -88,6 +88,8 @@ class PublicEngagementLetterAcceptanceServiceIT {
         ArgumentCaptor<EngagementLetter> engagementCaptor = ArgumentCaptor.forClass(EngagementLetter.class);
         verify(this.engagementLetterPersistence).update(eq(engagementLetterId), engagementCaptor.capture());
         assertThat(engagementCaptor.getValue().getAcceptanceEngagements()).hasSize(1);
+        assertThat(engagementCaptor.getValue().getAcceptanceEngagements().get(0).getSignatureDate())
+                .isEqualTo(response.getAcceptanceEngagements().get(0).getSignatureDate());
 
         ArgumentCaptor<PublicAccessToken> tokenCaptor = ArgumentCaptor.forClass(PublicAccessToken.class);
         verify(this.publicAccessTokenPersistence).update(tokenCaptor.capture());
