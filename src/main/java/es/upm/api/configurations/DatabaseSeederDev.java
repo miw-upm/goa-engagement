@@ -13,6 +13,7 @@ import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.context.annotation.Profile;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -57,6 +58,7 @@ public class DatabaseSeederDev {
     private final LegalProcedureTemplateRepository legalProcedureTemplateRepository;
     private final EngagementLetterRepository engagementLetterRepository;
     private final CustomerFileDownloadRepository customerFileDownloadRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @PostConstruct
     public void init() {
@@ -222,7 +224,7 @@ public class DatabaseSeederDev {
                         .customerId(C_0)
                         .documentType("engagement-letter")
                         .documentId(ID_0)
-                        .downloadToken(Base64UrlGenerator.token())
+                        .downloadToken(this.passwordEncoder.encode(Base64UrlGenerator.token()))
                         .build(),
                 CustomerFileDownloadEntity.builder()
                         .id(ID_1)
@@ -230,7 +232,7 @@ public class DatabaseSeederDev {
                         .customerId(C_1)
                         .documentType("engagement-letter")
                         .documentId(ID_1)
-                        .downloadToken(Base64UrlGenerator.token())
+                        .downloadToken(this.passwordEncoder.encode(Base64UrlGenerator.token()))
                         .build(),
                 CustomerFileDownloadEntity.builder()
                         .id(ID_2)
@@ -238,7 +240,7 @@ public class DatabaseSeederDev {
                         .customerId(C_0)
                         .documentType("engagement-budget")
                         .documentId(ID_2)
-                        .downloadToken(Base64UrlGenerator.token())
+                        .downloadToken(this.passwordEncoder.encode(Base64UrlGenerator.token()))
                         .build(),
         };
 
