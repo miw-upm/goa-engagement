@@ -5,6 +5,7 @@ import feign.RequestTemplate;
 import feign.codec.EncodeException;
 import feign.codec.Encoder;
 import feign.form.ContentType;
+import feign.form.FormData;
 import feign.form.MultipartFormContentProcessor;
 import feign.form.spring.SpringFormEncoder;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.lang.reflect.Type;
 
@@ -45,31 +47,13 @@ public class FeignConfig {
             @Override
             public boolean isApplicable(Object value) {
                 return value != null
-                        && !(value instanceof feign.form.FormData)
+                        && super.isApplicable(value)
+                        && !(value instanceof FormData)
                         && !(value instanceof byte[])
-                        && !(value instanceof org.springframework.web.multipart.MultipartFile)
+                        && !(value instanceof MultipartFile)
                         && value.getClass().getPackageName().startsWith("es.upm");
             }
         };
-    }
-
-    @Bean
-    public Encoder feignEncoder(ObjectFactory<HttpMessageConverters> messageConverters,
-                                JsonFormWriter jsonFormWriter) {
-        return new SpringFormEncoder(new SpringEncoder(messageConverters)) {
-            @Override
-            public void encode(Object object, Type bodyType, RequestTemplate template) throws EncodeException {
-                MultipartFormContentProcessor processor =
-                        (MultipartFormContentProcessor) getContentProcessor(ContentType.MULTIPART);
-                processor.addFirstWriter(jsonFormWriter);
-                super.encode(object, bodyType, template);
-            }
-        };
-    }
-
-    @Bean
-    public feign.Logger.Level feignLoggerLevel() {
-        return feign.Logger.Level.FULL;
     }
 
 }
