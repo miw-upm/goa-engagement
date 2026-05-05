@@ -20,8 +20,6 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 @Log4j2
 public class ApiExceptionHandler {
 
-    private final Environment environment;
-
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler({
             org.springframework.security.access.AccessDeniedException.class
