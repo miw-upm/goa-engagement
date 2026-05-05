@@ -30,3 +30,5 @@ secrets:
 #> docker compose up --build -d --scale goa-engagement=2
 
 #> docker logs -f goa-user
+#> docker inspect --format='{{.LogPath}}' goa-engagement
+#> sudo truncate -s 0 /var/lib/docker/containers/xxxx/xxxx-json.log
