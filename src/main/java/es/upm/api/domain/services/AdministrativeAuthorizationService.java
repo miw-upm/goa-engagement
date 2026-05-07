@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -46,12 +47,20 @@ public class AdministrativeAuthorizationService {
         this.administrativeAuthorizationGateway.delete(id);
     }
 
+    public Stream<UserSnapshot> findPendingSigners(UUID id) {
+        AdministrativeAuthorization administrativeAuthorization = this.read(id);
+        if (administrativeAuthorization.findPendingSigners().isEmpty()) {
+            throw new InvalidTransitionException("Todos los clientes autorizantes ya han firmado");
+        }
+        return administrativeAuthorization.findPendingSigners().stream();
+    }
+
     public void signWithToken(String scope, String urlId, String token, String signature) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
-        if (!administrativeAuthorization.isUserIncluded(user.getId())) {
-            throw new InvalidTransitionException("El usuario no está incluido en la autorización administrativa");
+        if (!administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
+            throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorización administrativa");
         }
         AdministrativeAuthorizationSignature authorizationSignature = AdministrativeAuthorizationSignature.builder()
                 .signedAt(LocalDateTime.now())

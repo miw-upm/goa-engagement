@@ -13,8 +13,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -51,5 +53,26 @@ public class AdministrativeAuthorization {
                         Optional.ofNullable(this.authorizedRepresentatives).orElse(List.of()).stream())
                 .map(UserSnapshot::getId)
                 .anyMatch(userId::equals);
+    }
+
+    public boolean isAuthorizingCustomer(UUID userId) {
+        return Optional.ofNullable(this.authorizingCustomers)
+                .orElse(List.of())
+                .stream()
+                .map(UserSnapshot::getId)
+                .anyMatch(userId::equals);
+    }
+
+    public List<UserSnapshot> findPendingSigners() {
+        Set<UUID> signedIds = Optional.ofNullable(this.signatures)
+                .orElse(List.of())
+                .stream()
+                .map(AdministrativeAuthorizationSignature::getSignerId)
+                .collect(HashSet::new, Set::add, Set::addAll);
+        return Optional.ofNullable(this.authorizingCustomers)
+                .orElse(List.of())
+                .stream()
+                .filter(customer -> !signedIds.contains(customer.getId()))
+                .toList();
     }
 }
