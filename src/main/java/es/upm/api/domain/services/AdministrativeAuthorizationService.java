@@ -2,6 +2,7 @@ package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.AdministrativeAuthorization;
 import es.upm.api.domain.model.AdministrativeAuthorizationSignature;
+import es.upm.api.domain.model.criteria.AdministrativeAuthorizationFindCriteria;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.AdministrativeAuthorizationGateway;
@@ -16,6 +17,7 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -45,6 +47,17 @@ public class AdministrativeAuthorizationService {
 
     public void delete(UUID id) {
         this.administrativeAuthorizationGateway.delete(id);
+    }
+
+    public Stream<AdministrativeAuthorization> find(AdministrativeAuthorizationFindCriteria criteria) {
+        Stream<AdministrativeAuthorization> authorizations = this.administrativeAuthorizationGateway.find(criteria);
+        if (StringUtils.hasText(criteria.getClient())) {
+            List<UUID> clientIds = this.userFinder.find(criteria.getClient()).stream()
+                    .map(UserSnapshot::getId)
+                    .toList();
+            authorizations = authorizations.filter(authorization -> authorization.isClientInAuthorization(clientIds));
+        }
+        return authorizations;
     }
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {

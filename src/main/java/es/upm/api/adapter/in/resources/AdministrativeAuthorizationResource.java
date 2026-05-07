@@ -2,6 +2,7 @@ package es.upm.api.adapter.in.resources;
 
 import es.upm.api.adapter.in.resources.dtos.AdministrativeAuthorizationSignatureCreationDto;
 import es.upm.api.domain.model.AdministrativeAuthorization;
+import es.upm.api.domain.model.criteria.AdministrativeAuthorizationFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.services.AdministrativeAuthorizationService;
 import es.upm.miw.security.Security;
@@ -34,6 +35,11 @@ public class AdministrativeAuthorizationResource {
     @GetMapping(ID_ID)
     public AdministrativeAuthorization read(@PathVariable UUID id) {
         return this.administrativeAuthorizationService.read(id);
+    }
+
+    @GetMapping
+    public List<AdministrativeAuthorization> find(@ModelAttribute AdministrativeAuthorizationFindCriteria criteria) {
+        return this.administrativeAuthorizationService.find(criteria).toList();
     }
 
     @PutMapping(ID_ID)

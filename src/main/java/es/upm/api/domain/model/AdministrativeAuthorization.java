@@ -75,4 +75,16 @@ public class AdministrativeAuthorization {
                 .filter(customer -> !signedIds.contains(customer.getId()))
                 .toList();
     }
+
+    public boolean isSigned() {
+        return this.findPendingSigners().isEmpty();
+    }
+
+    public boolean isClientInAuthorization(List<UUID> clientIds) {
+        return Optional.ofNullable(this.authorizingCustomers)
+                .orElse(List.of())
+                .stream()
+                .map(UserSnapshot::getId)
+                .anyMatch(clientIds::contains);
+    }
 }

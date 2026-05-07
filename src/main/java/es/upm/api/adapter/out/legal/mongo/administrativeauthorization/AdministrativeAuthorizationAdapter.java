@@ -2,12 +2,16 @@ package es.upm.api.adapter.out.legal.mongo.administrativeauthorization;
 
 import es.upm.api.domain.model.AdministrativeAuthorization;
 import es.upm.api.domain.model.AdministrativeAuthorizationSignature;
+import es.upm.api.domain.model.criteria.AdministrativeAuthorizationFindCriteria;
 import es.upm.api.domain.ports.out.legal.AdministrativeAuthorizationGateway;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 import java.util.UUID;
+import java.util.stream.Stream;
 
 @Repository
 @RequiredArgsConstructor
@@ -50,5 +54,25 @@ public class AdministrativeAuthorizationAdapter implements AdministrativeAuthori
         this.administrativeAuthorizationRepository.save(
                 new AdministrativeAuthorizationEntity(administrativeAuthorization)
         );
+    }
+
+    @Override
+    public Stream<AdministrativeAuthorization> find(AdministrativeAuthorizationFindCriteria criteria) {
+        Stream<AdministrativeAuthorization> administrativeAuthorizations = this.administrativeAuthorizationRepository
+                .findAll(Sort.by(Sort.Direction.DESC, "lastUpdatedDate"))
+                .stream()
+                .map(AdministrativeAuthorizationEntity::toDomain);
+
+        if (StringUtils.hasText(criteria.getAuthorizationPurpose())) {
+            String purpose = criteria.getAuthorizationPurpose().toLowerCase();
+            administrativeAuthorizations = administrativeAuthorizations
+                    .filter(authorization -> authorization.getAuthorizationPurpose() != null &&
+                            authorization.getAuthorizationPurpose().toLowerCase().contains(purpose));
+        }
+        if (criteria.getIsSigned() != null) {
+            administrativeAuthorizations = administrativeAuthorizations
+                    .filter(authorization -> criteria.getIsSigned().equals(authorization.isSigned()));
+        }
+        return administrativeAuthorizations;
     }
 }
