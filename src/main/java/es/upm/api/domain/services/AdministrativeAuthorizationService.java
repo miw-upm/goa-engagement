@@ -1,17 +1,30 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.AdministrativeAuthorization;
+import es.upm.api.domain.model.AdministrativeAuthorizationSignature;
+import es.upm.api.domain.model.external.AccessLinkSnapshot;
+import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.AdministrativeAuthorizationGateway;
+import es.upm.api.domain.ports.out.user.AccessLinkGateway;
+import es.upm.api.domain.ports.out.user.UserFinder;
+import es.upm.miw.exception.InvalidTransitionException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class AdministrativeAuthorizationService {
     private final AdministrativeAuthorizationGateway administrativeAuthorizationGateway;
+    private final AccessLinkGateway accessLinkGateway;
+    private final UserFinder userFinder;
+    private final PasswordEncoder passwordEncoder;
 
     public void create(AdministrativeAuthorization administrativeAuthorization) {
         administrativeAuthorization.setId(UUID.randomUUID());
@@ -32,4 +45,36 @@ public class AdministrativeAuthorizationService {
     public void delete(UUID id) {
         this.administrativeAuthorizationGateway.delete(id);
     }
+
+    public void signWithToken(String scope, String urlId, String token, String signature) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
+        UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
+        AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
+        if (!administrativeAuthorization.isUserIncluded(user.getId())) {
+            throw new InvalidTransitionException("El usuario no está incluido en la autorización administrativa");
+        }
+        AdministrativeAuthorizationSignature authorizationSignature = AdministrativeAuthorizationSignature.builder()
+                .signedAt(LocalDateTime.now())
+                .signerId(user.getId())
+                .signerFullName(user.toFullName())
+                .signatureToken(token)
+                .signatureImage(this.decodeSignature(signature))
+                .build();
+        authorizationSignature.setSignatureToken(
+                this.passwordEncoder.encode(authorizationSignature.getSignatureToken())
+        );
+        this.administrativeAuthorizationGateway.signWithToken(administrativeAuthorization.getId(), authorizationSignature);
+    }
+
+    private byte[] decodeSignature(String signature) {
+        if (!StringUtils.hasText(signature)) {
+            throw new InvalidTransitionException("La firma es obligatoria");
+        }
+        try {
+            return Base64.getDecoder().decode(signature);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidTransitionException("El formato de la firma no es válido");
+        }
+    }
+
 }

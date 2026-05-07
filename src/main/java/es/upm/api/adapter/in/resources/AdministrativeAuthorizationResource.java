@@ -1,5 +1,6 @@
 package es.upm.api.adapter.in.resources;
 
+import es.upm.api.adapter.in.resources.dtos.AdministrativeAuthorizationSignatureCreationDto;
 import es.upm.api.domain.model.AdministrativeAuthorization;
 import es.upm.api.domain.services.AdministrativeAuthorizationService;
 import es.upm.miw.security.Security;
@@ -17,6 +18,8 @@ import java.util.UUID;
 public class AdministrativeAuthorizationResource {
     public static final String ADMINISTRATIVE_AUTHORIZATION = "/administrative-authorizations";
     public static final String ID_ID = "/{id}";
+    public static final String SIGN_ADMINISTRATIVE_AUTHORIZATION = "/sign-administrative-authorization";
+    public static final String URL_ID_TOKEN_ID = "/{urlId}/{token}";
 
     private final AdministrativeAuthorizationService administrativeAuthorizationService;
 
@@ -40,5 +43,17 @@ public class AdministrativeAuthorizationResource {
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
         this.administrativeAuthorizationService.delete(id);
+    }
+
+    @PreAuthorize(Security.ALL)
+    @PatchMapping(SIGN_ADMINISTRATIVE_AUTHORIZATION + URL_ID_TOKEN_ID)
+    public void signWithToken(@PathVariable String urlId, @PathVariable String token,
+                              @Valid @RequestBody AdministrativeAuthorizationSignatureCreationDto signatureCreation) {
+        this.administrativeAuthorizationService.signWithToken(
+                SIGN_ADMINISTRATIVE_AUTHORIZATION.substring(1),
+                urlId,
+                token,
+                signatureCreation.getSignature()
+        );
     }
 }

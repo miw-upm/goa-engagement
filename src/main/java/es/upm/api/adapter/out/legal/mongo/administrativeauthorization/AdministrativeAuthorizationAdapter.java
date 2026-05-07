@@ -1,6 +1,7 @@
 package es.upm.api.adapter.out.legal.mongo.administrativeauthorization;
 
 import es.upm.api.domain.model.AdministrativeAuthorization;
+import es.upm.api.domain.model.AdministrativeAuthorizationSignature;
 import es.upm.api.domain.ports.out.legal.AdministrativeAuthorizationGateway;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -40,5 +41,14 @@ public class AdministrativeAuthorizationAdapter implements AdministrativeAuthori
     @Override
     public void delete(UUID id) {
         this.administrativeAuthorizationRepository.deleteById(id);
+    }
+
+    @Override
+    public void signWithToken(UUID id, AdministrativeAuthorizationSignature signature) {
+        AdministrativeAuthorization administrativeAuthorization = this.read(id);
+        administrativeAuthorization.add(signature);
+        this.administrativeAuthorizationRepository.save(
+                new AdministrativeAuthorizationEntity(administrativeAuthorization)
+        );
     }
 }

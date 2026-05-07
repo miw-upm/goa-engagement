@@ -1,6 +1,7 @@
 package es.upm.api.domain.ports.out.legal;
 
 import es.upm.api.domain.model.AdministrativeAuthorization;
+import es.upm.api.domain.model.AdministrativeAuthorizationSignature;
 import org.springframework.stereotype.Repository;
 
 import java.util.UUID;
@@ -14,4 +15,6 @@ public interface AdministrativeAuthorizationGateway {
     void update(UUID id, AdministrativeAuthorization administrativeAuthorization);
 
     void delete(UUID id);
+
+    void signWithToken(UUID id, AdministrativeAuthorizationSignature signature);
 }
