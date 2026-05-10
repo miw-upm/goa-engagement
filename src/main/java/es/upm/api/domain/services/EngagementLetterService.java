@@ -87,6 +87,11 @@ public class EngagementLetterService {
         return letters
                 .map(letter -> {
                     letter.setOwner(this.userFinder.readById(letter.getOwner().getId()));
+                    letter.setAttachments(
+                            letter.getAttachments().stream()
+                                    .map(user -> this.userFinder.readById(user.getId()))
+                                    .toList()
+                    );
                     return letter;
                 });
     }

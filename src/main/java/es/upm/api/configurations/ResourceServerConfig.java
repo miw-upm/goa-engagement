@@ -14,6 +14,8 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
+import static es.upm.api.adapter.in.resources.AdministrativeAuthorizationResource.ADMINISTRATIVE_AUTHORIZATION;
+import static es.upm.api.adapter.in.resources.AdministrativeAuthorizationResource.SIGN_ADMINISTRATIVE_AUTHORIZATION;
 import static es.upm.api.adapter.in.resources.EngagementLetterResource.ENGAGEMENT_LETTER;
 import static es.upm.api.adapter.in.resources.SystemResource.SYSTEM;
 import static es.upm.api.adapter.in.resources.SystemResource.VERSION_BADGE;
@@ -44,7 +46,11 @@ public class ResourceServerConfig {  // validate tokens y security APIs con SCOP
     @Order(2)
     public SecurityFilterChain documentViewSecurityConfig(HttpSecurity http) throws Exception {
         return http
-                .securityMatcher(ENGAGEMENT_LETTER + "/read-engagement-letter/**", ENGAGEMENT_LETTER + "/sign-engagement-letter/**")
+                .securityMatcher(
+                        ENGAGEMENT_LETTER + "/read-engagement-letter/**",
+                        ENGAGEMENT_LETTER + "/sign-engagement-letter/**",
+                        ADMINISTRATIVE_AUTHORIZATION + SIGN_ADMINISTRATIVE_AUTHORIZATION + "/**"
+                )
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessionManager -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
