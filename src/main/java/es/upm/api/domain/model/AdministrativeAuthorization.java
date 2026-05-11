@@ -82,4 +82,21 @@ public class AdministrativeAuthorization {
                 .map(UserSnapshot::getId)
                 .anyMatch(clientIds::contains);
     }
+
+    public AdministrativeAuthorization ofSummary() {
+        return AdministrativeAuthorization.builder()
+                .id(this.id)
+                .lastUpdatedDate(this.lastUpdatedDate)
+                .authorizingCustomers(this.authorizingCustomers.stream()
+                        .map(UserSnapshot::ofSummary)
+                        .toList())
+                .authorizedRepresentatives(this.authorizedRepresentatives.stream()
+                        .map(UserSnapshot::ofSummary)
+                        .toList())
+                .authorizationPurpose(this.authorizationPurpose)
+                .signatures(this.signatures.stream()
+                        .map(AdministrativeAuthorizationSignature::ofSummary)
+                        .toList())
+                .build();
+    }
 }

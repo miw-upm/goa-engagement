@@ -8,7 +8,11 @@ import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.legal.AdministrativeAuthorizationGateway;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
+import es.upm.api.domain.services.support.EncryptionService;
+import es.upm.api.domain.services.support.HashService;
 import es.upm.miw.exception.InvalidTransitionException;
+import es.upm.miw.pdf.PdfBuilder;
+import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,10 +28,12 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class AdministrativeAuthorizationService {
+    private static final String CRYPTO_VERSION = "v0";
     private final AdministrativeAuthorizationGateway administrativeAuthorizationGateway;
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
-    private final PasswordEncoder passwordEncoder;
+    private final HashService hashService;
+    private final EncryptionService encryptionService;
 
     public void create(AdministrativeAuthorization administrativeAuthorization) {
         administrativeAuthorization.setId(UUID.randomUUID());
@@ -80,10 +86,10 @@ public class AdministrativeAuthorizationService {
                 .signerId(user.getId())
                 .signerFullName(user.toFullName())
                 .signatureToken(token)
-                .signatureImage(this.decodeSignature(signature))
+                .signatureImage(this.encryptionService.encrypt(this.decodeSignature(signature)))
                 .build();
         authorizationSignature.setSignatureToken(
-                this.passwordEncoder.encode(authorizationSignature.getSignatureToken())
+                this.hashService.hash(authorizationSignature.getSignatureToken())
         );
         this.administrativeAuthorizationGateway.signWithToken(administrativeAuthorization.getId(), authorizationSignature);
     }
@@ -99,4 +105,12 @@ public class AdministrativeAuthorizationService {
         }
     }
 
+    public byte[] generatePdf(UUID id) {
+        AdministrativeAuthorization administrativeAuthorization = this.read(id);
+        TextDictionary dict = new TextDictionary("templates/administrative-authorization-texts.yml");
+        PdfBuilder pdf = new PdfBuilder();
+
+
+        return null; //TODO
+    }
 }

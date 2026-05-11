@@ -18,4 +18,11 @@ public class AdministrativeAuthorizationSignature {
     private String signerFullName;
     private String signatureToken;
     private byte[] signatureImage;
+
+    public AdministrativeAuthorizationSignature ofSummary() {
+        return AdministrativeAuthorizationSignature.builder()
+                .signerFullName(this.signerFullName)
+                .build();
+    }
+
 }

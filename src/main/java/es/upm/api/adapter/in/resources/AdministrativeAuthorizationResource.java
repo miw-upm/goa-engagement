@@ -8,6 +8,7 @@ import es.upm.api.domain.services.AdministrativeAuthorizationService;
 import es.upm.miw.security.Security;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class AdministrativeAuthorizationResource {
     public static final String PENDING_SIGNERS = "/pending-signers";
     public static final String SIGN_ADMINISTRATIVE_AUTHORIZATION = "/sign-administrative-authorization";
     public static final String URL_ID_TOKEN_ID = "/{urlId}/{token}";
+    public static final String VIEW = "/view";
 
     private final AdministrativeAuthorizationService administrativeAuthorizationService;
 
@@ -37,9 +39,9 @@ public class AdministrativeAuthorizationResource {
         return this.administrativeAuthorizationService.read(id);
     }
 
-    @GetMapping
-    public List<AdministrativeAuthorization> find(@ModelAttribute AdministrativeAuthorizationFindCriteria criteria) {
-        return this.administrativeAuthorizationService.find(criteria).toList();
+    @GetMapping(value = ID_ID + VIEW, produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] readPdf(@PathVariable UUID id) {
+        return this.administrativeAuthorizationService.generatePdf(id);
     }
 
     @PutMapping(ID_ID)
@@ -52,6 +54,13 @@ public class AdministrativeAuthorizationResource {
     @DeleteMapping(ID_ID)
     public void delete(@PathVariable UUID id) {
         this.administrativeAuthorizationService.delete(id);
+    }
+
+    @GetMapping
+    public List<AdministrativeAuthorization> find(@ModelAttribute AdministrativeAuthorizationFindCriteria criteria) {
+        return this.administrativeAuthorizationService.find(criteria)
+                .map(AdministrativeAuthorization::ofSummary)
+                .toList();
     }
 
     @GetMapping(ID_ID + PENDING_SIGNERS)
