@@ -30,8 +30,7 @@ public class EncryptionService {
         if (!this.isPrefixed(value)) {
             return value;
         }
-        byte[] encryptedWithoutPrefix = this.removePrefix(value);
-        return this.bytesEncryptor.decrypt(encryptedWithoutPrefix);
+        return this.bytesEncryptor.decrypt(this.removePrefix(value));
     }
 
     private boolean isPrefixed(byte[] value) {
