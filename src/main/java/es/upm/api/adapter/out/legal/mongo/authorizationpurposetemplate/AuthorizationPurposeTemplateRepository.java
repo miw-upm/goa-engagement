@@ -9,8 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface AuthorizationPurposeTemplateRepository extends MongoRepository<AuthorizationPurposeTemplateEntity, UUID> {
-    @Query("{ 'title': { $regex: ?0, $options: 'i' } }")
-    List<AuthorizationPurposeTemplateEntity> findByPurposeContainingIgnoreCase(String title, Sort sort);
+    @Query("{ 'purpose': { $regex: ?0, $options: 'i' } }")
+    List<AuthorizationPurposeTemplateEntity> findByPurposeContainingIgnoreCase(String purpose, Sort sort);
 
-    Optional<AuthorizationPurposeTemplateEntity> findByPurpose(String title);
+    Optional<AuthorizationPurposeTemplateEntity> findByPurpose(String purpose);
 }

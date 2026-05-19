@@ -14,7 +14,7 @@ public interface AuthorizationPurposeTemplateGateway {
 
     AuthorizationPurposeTemplate read(UUID id);
 
-    Stream<AuthorizationPurposeTemplate> find(String title);
+    Stream<AuthorizationPurposeTemplate> find(String purpose);
 
     Stream<AuthorizationPurposeTemplate> findAll();
 

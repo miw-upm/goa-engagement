@@ -31,7 +31,7 @@ public class AuthorizationPurposeTemplateService {
         this.authorizationPurposeTemplateGateway.deleteById(id);
     }
 
-    public Stream<AuthorizationPurposeTemplate> find(String title) {
-        return this.authorizationPurposeTemplateGateway.find(title);
+    public Stream<AuthorizationPurposeTemplate> find(String purpose) {
+        return this.authorizationPurposeTemplateGateway.find(purpose);
     }
 }

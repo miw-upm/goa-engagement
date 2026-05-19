@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 @Repository
 @RequiredArgsConstructor
 public class AuthorizationPurposeTemplateAdapter implements AuthorizationPurposeTemplateGateway {
-    public static final Sort TITLE = Sort.by(Sort.Direction.ASC, "title");
+    public static final Sort PURPOSE = Sort.by(Sort.Direction.ASC, "purpose");
 
     private final AuthorizationPurposeTemplateRepository authorizationPurposeTemplateRepository;
 
@@ -24,9 +24,9 @@ public class AuthorizationPurposeTemplateAdapter implements AuthorizationPurpose
         this.authorizationPurposeTemplateRepository.save(new AuthorizationPurposeTemplateEntity(authorizationPurposeTemplate));
     }
 
-    private void assertNotExist(String title) {
-        if (this.authorizationPurposeTemplateRepository.findByPurpose(title).isPresent()) {
-            throw new ConflictException("An authorization purpose template with a similar title already exists: " + title);
+    private void assertNotExist(String purpose) {
+        if (this.authorizationPurposeTemplateRepository.findByPurpose(purpose).isPresent()) {
+            throw new ConflictException("An authorization purpose template with a similar purpose already exists: " + purpose);
         }
     }
 
@@ -43,17 +43,17 @@ public class AuthorizationPurposeTemplateAdapter implements AuthorizationPurpose
     }
 
     @Override
-    public Stream<AuthorizationPurposeTemplate> find(String title) {
-        if (title == null) {
+    public Stream<AuthorizationPurposeTemplate> find(String purpose) {
+        if (purpose == null) {
             return this.findAll();
         }
-        return this.authorizationPurposeTemplateRepository.findByPurposeContainingIgnoreCase(title, TITLE).stream()
+        return this.authorizationPurposeTemplateRepository.findByPurposeContainingIgnoreCase(purpose, PURPOSE).stream()
                 .map(AuthorizationPurposeTemplateEntity::toDomain);
     }
 
     @Override
     public Stream<AuthorizationPurposeTemplate> findAll() {
-        return this.authorizationPurposeTemplateRepository.findAll(TITLE).stream()
+        return this.authorizationPurposeTemplateRepository.findAll(PURPOSE).stream()
                 .map(AuthorizationPurposeTemplateEntity::toDomain);
     }
 
