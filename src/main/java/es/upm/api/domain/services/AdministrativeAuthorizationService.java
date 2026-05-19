@@ -43,7 +43,14 @@ public class AdministrativeAuthorizationService {
     }
 
     public AdministrativeAuthorization read(UUID id) {
-        return this.administrativeAuthorizationGateway.read(id);
+        AdministrativeAuthorization     authorization= this.administrativeAuthorizationGateway.read(id);
+        authorization.setAuthorizingCustomers(authorization.getAuthorizingCustomers().stream()
+                .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+        );
+        authorization.setAuthorizedRepresentatives(authorization.getAuthorizedRepresentatives().stream()
+                .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+        );
+        return authorization;
     }
 
     public void update(UUID id, AdministrativeAuthorization administrativeAuthorization) {
@@ -64,7 +71,16 @@ public class AdministrativeAuthorizationService {
                     .toList();
             authorizations = authorizations.filter(authorization -> authorization.isClientInAuthorization(clientIds));
         }
-        return authorizations;
+        return authorizations
+                .map(auth -> {
+                    auth.setAuthorizingCustomers(auth.getAuthorizingCustomers().stream()
+                                    .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+                        );
+                    auth.setAuthorizedRepresentatives(auth.getAuthorizedRepresentatives().stream()
+                            .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+                    );
+                    return auth;
+                });
     }
 
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
