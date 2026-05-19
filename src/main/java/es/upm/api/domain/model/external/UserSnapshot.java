@@ -50,6 +50,7 @@ public class UserSnapshot {
                 .id(this.id)
                 .firstName(this.firstName)
                 .familyName(this.familyName)
+                .mobile(this.mobile)
                 .build();
     }
 }

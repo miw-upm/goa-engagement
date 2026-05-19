@@ -3,6 +3,8 @@ package es.upm.api.configurations;
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadEntity;
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadRepository;
 import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
+import es.upm.api.adapter.out.legal.mongo.authorizationpurposetemplate.AuthorizationPurposeTemplateEntity;
+import es.upm.api.adapter.out.legal.mongo.authorizationpurposetemplate.AuthorizationPurposeTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateEntity;
 import es.upm.api.adapter.out.legal.mongo.legalproceduretemplate.LegalProcedureTemplateRepository;
 import es.upm.api.adapter.out.legal.mongo.legaltask.LegalTaskEntity;
@@ -55,6 +57,7 @@ public class DatabaseSeederDev {
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!.";
 
     private final LegalTaskRepository legalTaskRepository;
+    private final AuthorizationPurposeTemplateRepository authorizationPurposeTemplateRepository;
     private final LegalProcedureTemplateRepository legalProcedureTemplateRepository;
     private final EngagementLetterRepository engagementLetterRepository;
     private final CustomerFileDownloadRepository customerFileDownloadRepository;
@@ -74,6 +77,7 @@ public class DatabaseSeederDev {
         this.customerFileDownloadRepository.deleteAll();
         this.engagementLetterRepository.deleteAll();
         this.legalProcedureTemplateRepository.deleteAll();
+        this.authorizationPurposeTemplateRepository.deleteAll();
         this.legalTaskRepository.deleteAll();
         log.warn("------- Delete All -----------");
     }
@@ -100,6 +104,13 @@ public class DatabaseSeederDev {
         this.legalTaskRepository.saveAll(List.of(tasks));
         log.warn("        ------- tareas legales --------------------------------------------------------------------");
 
+        AuthorizationPurposeTemplateEntity[] authorizationPurposes = {
+                new AuthorizationPurposeTemplateEntity(ID_0, "Gestiones bancarias y de seguros"),
+                new AuthorizationPurposeTemplateEntity(ID_1, "Actuaciones ante administraciones publicas"),
+                new AuthorizationPurposeTemplateEntity(ID_2, "Representacion para tramites notariales"),
+        };
+        this.authorizationPurposeTemplateRepository.saveAll(List.of(authorizationPurposes));
+        log.warn("        ------- plantillas de proposito de autorizacion --------------------------------------------");
 
         LegalProcedureTemplateEntity[] templates = {
                 new LegalProcedureTemplateEntity(ID_0, "Procedimiento de herencia", new BigDecimal("2500"),
