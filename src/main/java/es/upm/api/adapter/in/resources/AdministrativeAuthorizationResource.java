@@ -59,13 +59,22 @@ public class AdministrativeAuthorizationResource {
     @GetMapping
     public List<AdministrativeAuthorization> find(@ModelAttribute AdministrativeAuthorizationFindCriteria criteria) {
         return this.administrativeAuthorizationService.find(criteria)
-                .map(AdministrativeAuthorization::ofSummary)
                 .toList();
     }
 
     @GetMapping(ID_ID + PENDING_SIGNERS)
     public List<UserSnapshot> findPendingSigners(@PathVariable UUID id) {
         return this.administrativeAuthorizationService.findPendingSigners(id).toList();
+    }
+
+    @PreAuthorize(Security.ALL)
+    @GetMapping(SIGN_ADMINISTRATIVE_AUTHORIZATION + URL_ID_TOKEN_ID)
+    public AdministrativeAuthorization readAuthorizationPurposeWithToken(@PathVariable String urlId, @PathVariable String token) {
+        return this.administrativeAuthorizationService.readAuthorizationPurposeWithToken(
+                SIGN_ADMINISTRATIVE_AUTHORIZATION.substring(1),
+                urlId,
+                token
+        );
     }
 
     @PreAuthorize(Security.ALL)

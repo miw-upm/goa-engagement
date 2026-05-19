@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class AdministrativeAuthorizationService {
-    private static final String CRYPTO_VERSION = "v0";
+    private static final String SIGNATURE_PREFIX = "data:image/png;base64,";
     private final AdministrativeAuthorizationGateway administrativeAuthorizationGateway;
     private final AccessLinkGateway accessLinkGateway;
     private final UserFinder userFinder;
@@ -43,12 +43,12 @@ public class AdministrativeAuthorizationService {
     }
 
     public AdministrativeAuthorization read(UUID id) {
-        AdministrativeAuthorization     authorization= this.administrativeAuthorizationGateway.read(id);
+        AdministrativeAuthorization authorization = this.administrativeAuthorizationGateway.read(id);
         authorization.setAuthorizingCustomers(authorization.getAuthorizingCustomers().stream()
-                .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+                .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
         );
         authorization.setAuthorizedRepresentatives(authorization.getAuthorizedRepresentatives().stream()
-                .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+                .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
         );
         return authorization;
     }
@@ -74,10 +74,10 @@ public class AdministrativeAuthorizationService {
         return authorizations
                 .map(auth -> {
                     auth.setAuthorizingCustomers(auth.getAuthorizingCustomers().stream()
-                                    .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
-                        );
+                            .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
+                    );
                     auth.setAuthorizedRepresentatives(auth.getAuthorizedRepresentatives().stream()
-                            .map(user->this.userFinder.readById(user.getId()).ofSummary()).toList()
+                            .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
                     );
                     return auth;
                 });
@@ -89,6 +89,16 @@ public class AdministrativeAuthorizationService {
             throw new InvalidTransitionException("Todos los clientes autorizantes ya han firmado");
         }
         return administrativeAuthorization.findPendingSigners().stream();
+    }
+
+    public AdministrativeAuthorization readAuthorizationPurposeWithToken(String scope, String urlId, String token) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
+        UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
+        AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
+        if (!administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
+            throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorizaciÃ³n administrativa");
+        }
+        return administrativeAuthorization.ofPurpose();
     }
 
     public void signWithToken(String scope, String urlId, String token, String signature) {
@@ -115,8 +125,11 @@ public class AdministrativeAuthorizationService {
         if (!StringUtils.hasText(signature)) {
             throw new InvalidTransitionException("La firma es obligatoria");
         }
+        if (!signature.startsWith(SIGNATURE_PREFIX)) {
+            throw new InvalidTransitionException("La firma debe tener formato data:image/png;base64,...");
+        }
         try {
-            return Base64.getDecoder().decode(signature);
+            return Base64.getDecoder().decode(signature.substring(SIGNATURE_PREFIX.length()));
         } catch (IllegalArgumentException exception) {
             throw new InvalidTransitionException("El formato de la firma no es válido");
         }
@@ -131,9 +144,9 @@ public class AdministrativeAuthorizationService {
                 .paragraphBold(authorization.buildDate(), Element.ALIGN_RIGHT)
                 .space()
                 .paragraph(dict.getText("autorizacion", Map.of(
-                "autorizantes", authorization.buildCistomersFullNameIdentity(),
-                "representantes", authorization.buildRepresentativesFullNameIdentity(),
-                "proposito", authorization.getAuthorizationPurpose()
+                        "autorizantes", authorization.buildCustomersFullNameIdentity(),
+                        "representantes", authorization.buildRepresentativesFullNameIdentity(),
+                        "proposito", authorization.getAuthorizationPurpose()
                 )))
                 .paragraph(dict.getText("firmas"));
         //TODO faltan firmas...

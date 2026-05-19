@@ -10,7 +10,7 @@ import java.util.Arrays;
 @Service
 @RequiredArgsConstructor
 public class EncryptionService {
-    private static final String PREFIX = "enc::";
+    public static final String PREFIX = "enc::";
     private static final byte[] PREFIX_BYTES = PREFIX.getBytes(StandardCharsets.UTF_8);
 
     private final BytesEncryptor bytesEncryptor;
@@ -35,11 +35,15 @@ public class EncryptionService {
     }
 
     private boolean isPrefixed(byte[] value) {
-        if (value == null || value.length < PREFIX_BYTES.length) {
+        return this.startsWith(value, PREFIX_BYTES);
+    }
+
+    private boolean startsWith(byte[] value, byte[] prefix) {
+        if (value == null || prefix == null || value.length < prefix.length) {
             return false;
         }
-        for (int i = 0; i < PREFIX_BYTES.length; i++) {
-            if (value[i] != PREFIX_BYTES[i]) {
+        for (int i = 0; i < prefix.length; i++) {
+            if (value[i] != prefix[i]) {
                 return false;
             }
         }

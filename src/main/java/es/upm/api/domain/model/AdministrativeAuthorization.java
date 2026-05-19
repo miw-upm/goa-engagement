@@ -87,21 +87,14 @@ public class AdministrativeAuthorization {
                 .anyMatch(clientIds::contains);
     }
 
-    public AdministrativeAuthorization ofSummary() {
+    public AdministrativeAuthorization ofPurpose() {
         return AdministrativeAuthorization.builder()
-                .id(this.id)
-                .lastUpdatedDate(this.lastUpdatedDate)
-                .authorizingCustomers(this.authorizingCustomers.stream()
-                        .map(UserSnapshot::ofSummary)
-                        .toList())
-                .authorizedRepresentatives(this.authorizedRepresentatives.stream()
-                        .map(UserSnapshot::ofSummary)
-                        .toList())
                 .authorizationPurpose(this.authorizationPurpose)
-                .signatures(this.signatures.stream()
-                        .map(AdministrativeAuthorizationSignature::ofSummary)
-                        .toList())
                 .build();
+    }
+
+    public AdministrativeAuthorization ofMask(){
+        return this;
     }
 
     public String buildDate() {
@@ -109,7 +102,7 @@ public class AdministrativeAuthorization {
                 .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES")));
     }
 
-    public String buildCistomersFullNameIdentity() {
+    public String buildCustomersFullNameIdentity() {
         List<UserSnapshot> clients = new ArrayList<>();
         if (this.authorizingCustomers != null && !this.authorizingCustomers.isEmpty()) {
             clients.addAll(this.authorizingCustomers);
@@ -119,6 +112,7 @@ public class AdministrativeAuthorization {
                 .map(UserSnapshot::toDonFullNameAndIdentity)
                 .collect(Collectors.joining(", "));
     }
+
     public String buildRepresentativesFullNameIdentity() {
         List<UserSnapshot> clients = new ArrayList<>();
         if (this.authorizedRepresentatives != null && !this.authorizedRepresentatives.isEmpty()) {
