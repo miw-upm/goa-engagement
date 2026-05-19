@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -149,7 +150,16 @@ public class AdministrativeAuthorizationService {
                         "proposito", authorization.getAuthorizationPurpose()
                 )))
                 .paragraph(dict.getText("firmas"));
-        //TODO faltan firmas...
+        if (authorization.isSigned()) {
+            List<PdfBuilder.LeftSignature> leftSignatures = authorization.getSignatures().stream()
+                    .map(signature -> new PdfBuilder.LeftSignature(
+                            signature.getSignerFullName(),
+                            null,
+                            this.encryptionService.decrypt(signature.getSignatureImage())
+                    ))
+                    .toList();
+            pdf.multiSignatureWithSignatures(leftSignatures);
+        }
         return pdf.build();
     }
 }
