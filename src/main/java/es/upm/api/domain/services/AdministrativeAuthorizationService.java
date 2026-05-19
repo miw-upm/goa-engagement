@@ -20,7 +20,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +45,10 @@ public class AdministrativeAuthorizationService {
     public AdministrativeAuthorization read(UUID id) {
         AdministrativeAuthorization authorization = this.administrativeAuthorizationGateway.read(id);
         authorization.setAuthorizingCustomers(authorization.getAuthorizingCustomers().stream()
-                .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
+                .map(user -> this.userFinder.readById(user.getId())).toList()
         );
         authorization.setAuthorizedRepresentatives(authorization.getAuthorizedRepresentatives().stream()
-                .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
+                .map(user -> this.userFinder.readById(user.getId())).toList()
         );
         return authorization;
     }
@@ -75,10 +74,10 @@ public class AdministrativeAuthorizationService {
         return authorizations
                 .map(auth -> {
                     auth.setAuthorizingCustomers(auth.getAuthorizingCustomers().stream()
-                            .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
+                            .map(user -> this.userFinder.readById(user.getId())).toList()
                     );
                     auth.setAuthorizedRepresentatives(auth.getAuthorizedRepresentatives().stream()
-                            .map(user -> this.userFinder.readById(user.getId()).ofSummary()).toList()
+                            .map(user -> this.userFinder.readById(user.getId())).toList()
                     );
                     return auth;
                 });
@@ -140,15 +139,23 @@ public class AdministrativeAuthorizationService {
         AdministrativeAuthorization authorization = this.read(id);
         TextDictionary dict = new TextDictionary("templates/administrative-authorization-texts.yml");
         PdfBuilder pdf = new PdfBuilder()
+                .space(6)
                 .title(dict.getTitle("titulo"))
-                .space()
+                .space(3)
                 .paragraphBold(authorization.buildDate(), Element.ALIGN_RIGHT)
+                .space(3)
+                .paragraph(dict.getText("autorizante",
+                        Map.of("autorizantes", authorization.buildCustomersFullNameIdentity()))
+                )
                 .space()
-                .paragraph(dict.getText("autorizacion", Map.of(
-                        "autorizantes", authorization.buildCustomersFullNameIdentity(),
-                        "representantes", authorization.buildRepresentativesFullNameIdentity(),
-                        "proposito", authorization.getAuthorizationPurpose()
-                )))
+                .paragraph(dict.getText("autorizado",
+                        Map.of("representantes", authorization.buildRepresentativesFullNameIdentity()))
+                )
+                .space()
+                .paragraph(dict.getText("para",
+                        Map.of("proposito", authorization.getAuthorizationPurpose()))
+                )
+                .space(2)
                 .paragraph(dict.getText("firmas"));
         if (authorization.isSigned()) {
             List<PdfBuilder.LeftSignature> leftSignatures = authorization.getSignatures().stream()

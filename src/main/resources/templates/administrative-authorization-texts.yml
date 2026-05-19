@@ -1,12 +1,16 @@
 ﻿titulo:
   title: "AUTORIZACIÓN ADMINISTRATIVA"
-autorizacion:
+autorizante:
   text: >-
-    {{autorizantes}}, en su nombre y derecho, AUTORIZAN a doña Nuria Ocaña Pérez con
-    número de N.I.F. n.º 46.882.956-D y {{representantes}} a recoger, consultar y tramitar todas las gestiones
+    {{autorizantes}}, en su nombre y derecho,
+autorizado:
+  text: >-
+    AUTORIZAN a Dña. Nuria Ocaña Pérez con número de N.I.F. n.º 46.882.956-D y {{representantes}}
+para:
+  text: >-
+    A recoger, consultar y tramitar todas las gestiones
     necesarias ante los Organismos Públicos y Privados competentes para {{proposito}}, e incluso, a recoger en su
     nombre notificaciones si las hubiere.
-
 firmas:
   text: >-
     Y para que así conste, firman la presente en lugar y fecha indicados en el encabezamiento.

@@ -93,7 +93,7 @@ public class AdministrativeAuthorization {
                 .build();
     }
 
-    public AdministrativeAuthorization ofMask(){
+    public AdministrativeAuthorization ofMask() {
         return this;
     }
 

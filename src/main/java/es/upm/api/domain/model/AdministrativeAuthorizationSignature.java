@@ -22,7 +22,7 @@ public class AdministrativeAuthorizationSignature {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private byte[] signatureImage;
 
-    public String getSignatureVersion(){
+    public String getSignatureVersion() {
         return EncryptionService.PREFIX;
     }
 
