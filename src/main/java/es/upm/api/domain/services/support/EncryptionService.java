@@ -2,13 +2,10 @@ package es.upm.api.domain.services.support;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
-import org.springframework.security.crypto.encrypt.TextEncryptor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor

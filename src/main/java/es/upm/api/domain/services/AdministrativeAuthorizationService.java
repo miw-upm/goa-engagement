@@ -14,7 +14,7 @@ import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.openpdf.text.Element;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -22,6 +22,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -106,11 +107,20 @@ public class AdministrativeAuthorizationService {
     }
 
     public byte[] generatePdf(UUID id) {
-        AdministrativeAuthorization administrativeAuthorization = this.read(id);
+        AdministrativeAuthorization authorization = this.read(id);
         TextDictionary dict = new TextDictionary("templates/administrative-authorization-texts.yml");
-        PdfBuilder pdf = new PdfBuilder();
-
-
-        return null; //TODO
+        PdfBuilder pdf = new PdfBuilder()
+                .title(dict.getTitle("titulo"))
+                .space()
+                .paragraphBold(authorization.buildDate(), Element.ALIGN_RIGHT)
+                .space()
+                .paragraph(dict.getText("autorizacion", Map.of(
+                "autorizantes", authorization.buildCistomersFullNameIdentity(),
+                "representantes", authorization.buildRepresentativesFullNameIdentity(),
+                "proposito", authorization.getAuthorizationPurpose()
+                )))
+                .paragraph(dict.getText("firmas"));
+        //TODO faltan firmas...
+        return pdf.build();
     }
 }
