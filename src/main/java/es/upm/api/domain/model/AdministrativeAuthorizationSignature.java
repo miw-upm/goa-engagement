@@ -21,12 +21,9 @@ public class AdministrativeAuthorizationSignature {
     private String signatureToken;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private byte[] signatureImage;
+    private String signatureImagePreview;
 
-    public String getSignatureVersion() {
-        return EncryptionService.PREFIX;
-    }
-
-    public String toDonFullName() {
+    public String getFormalDisplayName() {
         return "D./Dña. " + this.signerFullName;
     }
 

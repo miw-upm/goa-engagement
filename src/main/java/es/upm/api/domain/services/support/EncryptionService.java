@@ -1,10 +1,13 @@
 package es.upm.api.domain.services.support;
 
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Arrays;
 
 @Service
@@ -12,6 +15,8 @@ import java.util.Arrays;
 public class EncryptionService {
     public static final String PREFIX = "enc::";
     private static final byte[] PREFIX_BYTES = PREFIX.getBytes(StandardCharsets.UTF_8);
+    private static final String PREFIX_BASE = PREFIX.substring(0, PREFIX.indexOf(':') + 1);
+    private static final byte[] PREFIX_BASE_BYTES = PREFIX_BASE.getBytes(StandardCharsets.UTF_8);
 
     private final BytesEncryptor bytesEncryptor;
 
@@ -31,6 +36,19 @@ public class EncryptionService {
             return value;
         }
         return this.bytesEncryptor.decrypt(this.removePrefix(value));
+    }
+
+    public String getPrefixAndFirst6DecryptedBase64(byte[] value) {
+        if (value == null || value.length == 0) {
+            return "";
+        }
+        int prefixLength = this.resolvePrefixLength(value);
+        String prefix = new String(value, 0, prefixLength, StandardCharsets.UTF_8);
+        byte[] encryptedPayload = Arrays.copyOfRange(value, prefixLength, value.length);
+        byte[] decryptedPayload = this.bytesEncryptor.decrypt(encryptedPayload);
+        String base64 = Base64.getEncoder().encodeToString(decryptedPayload);
+        String first6 = base64.substring(0, Math.min(6, base64.length()));
+        return prefix + first6 + "****";
     }
 
     private boolean isPrefixed(byte[] value) {
@@ -58,5 +76,17 @@ public class EncryptionService {
 
     private byte[] removePrefix(byte[] value) {
         return Arrays.copyOfRange(value, PREFIX_BYTES.length, value.length);
+    }
+
+    private int resolvePrefixLength(byte[] value) {
+        if (!this.startsWith(value, PREFIX_BASE_BYTES)) {
+            throw new ConflictException("Formato de prefijo de encriptación no soportado");
+        }
+        for (int i = PREFIX_BASE_BYTES.length; i < value.length; i++) {
+            if (value[i] == ':') {
+                return i + 1;
+            }
+        }
+        throw new ConflictException("Formato de prefijo de encriptación no soportado");
     }
 }

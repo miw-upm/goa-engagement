@@ -50,6 +50,10 @@ public class AdministrativeAuthorizationService {
         authorization.setAuthorizedRepresentatives(authorization.getAuthorizedRepresentatives().stream()
                 .map(user -> this.userFinder.readById(user.getId())).toList()
         );
+        authorization.getSignatures().forEach(signature -> {
+            String preview = this.encryptionService.getPrefixAndFirst6DecryptedBase64(signature.getSignatureImage());
+            signature.setSignatureImagePreview(preview);
+        });
         return authorization;
     }
 
@@ -160,7 +164,7 @@ public class AdministrativeAuthorizationService {
         if (authorization.isSigned()) {
             List<PdfBuilder.LeftSignature> leftSignatures = authorization.getSignatures().stream()
                     .map(signature -> new PdfBuilder.LeftSignature(
-                            signature.toDonFullName(),
+                            signature.getFormalDisplayName(),
                             null,
                             this.encryptionService.decrypt(signature.getSignatureImage())
                     ))
