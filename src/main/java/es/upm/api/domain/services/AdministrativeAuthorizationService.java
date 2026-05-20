@@ -167,9 +167,9 @@ public class AdministrativeAuthorizationService {
                     .toList();
             pdf.multiSignatureWithSignatures(leftSignatures);
         } else {
-            List<PdfBuilder.LeftSignature> leftSignatures = authorization.getSignatures().stream()
-                    .map(signature ->
-                            new PdfBuilder.LeftSignature(signature.toDonFullName(), null, null)
+            List<PdfBuilder.LeftSignature> leftSignatures = authorization.getAuthorizingCustomers().stream()
+                    .map(user ->
+                            new PdfBuilder.LeftSignature(user.toDonFullName(), null, null)
                     ).toList();
             pdf.multiSignatureWithSignatures(leftSignatures);
         }
