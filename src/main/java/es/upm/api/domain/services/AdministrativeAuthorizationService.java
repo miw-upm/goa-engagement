@@ -171,7 +171,7 @@ public class AdministrativeAuthorizationService {
                     .map(user ->
                             new PdfBuilder.LeftSignature(user.toDonFullName(), null, null)
                     ).toList();
-            pdf.space(2).multiSignatureWithSignatures(leftSignatures);
+            pdf.space(6).multiSignatureWithSignatures(leftSignatures);
         }
         return pdf.build();
     }
