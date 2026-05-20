@@ -50,10 +50,12 @@ public class AdministrativeAuthorizationService {
         authorization.setAuthorizedRepresentatives(authorization.getAuthorizedRepresentatives().stream()
                 .map(user -> this.userFinder.readById(user.getId())).toList()
         );
-        authorization.getSignatures().forEach(signature -> {
-            String preview = this.encryptionService.getPrefixAndFirst6DecryptedBase64(signature.getSignatureImage());
-            signature.setSignatureImagePreview(preview);
-        });
+        if (authorization.getSignatures() != null) {
+            authorization.getSignatures().forEach(signature -> {
+                String preview = this.encryptionService.getPrefixAndFirst6DecryptedBase64(signature.getSignatureImage());
+                signature.setSignatureImagePreview(preview);
+            });
+        }
         return authorization;
     }
 
