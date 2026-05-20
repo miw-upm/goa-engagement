@@ -9,7 +9,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -22,7 +22,7 @@ class AuthorizationPurposeTemplateServiceIT {
 
     @Test
     void shouldFindById() {
-        assertThat(this.authorizationPurposeTemplateService.read(UUIDS[0]))
+        assertThat(this.authorizationPurposeTemplateService.read(ID_0))
                 .isNotNull()
                 .extracting(AuthorizationPurposeTemplate::getPurpose)
                 .isEqualTo("Gestiones bancarias y de seguros");

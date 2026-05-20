@@ -9,7 +9,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -28,7 +28,7 @@ class LegalTaskResourceIT {
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
-        mockMvc.perform(get(LegalTaskResource.LEGAL_TASKS + LegalTaskResource.ID_ID, UUIDS[0]))
+        mockMvc.perform(get(LegalTaskResource.LEGAL_TASKS + LegalTaskResource.ID_ID, ID_0))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Estudio de antecedentes y documentación"));
     }

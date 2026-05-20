@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 import java.util.List;
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -23,7 +23,7 @@ class LegalProcedureTemplateServiceIT {
 
     @Test
     void shouldFindById() {
-        assertThat(legalProcedureTemplateService.readById(UUIDS[0]))
+        assertThat(legalProcedureTemplateService.readById(ID_0))
                 .isNotNull()
                 .extracting(LegalProcedureTemplate::getTitle)
                 .isEqualTo("Procedimiento de herencia");

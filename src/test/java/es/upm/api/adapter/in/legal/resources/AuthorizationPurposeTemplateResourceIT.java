@@ -9,7 +9,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,7 +29,7 @@ class AuthorizationPurposeTemplateResourceIT {
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
         this.mockMvc.perform(get(AuthorizationPurposeTemplateResource.AUTHORIZATION_PURPOSE_TEMPLATES
-                + AuthorizationPurposeTemplateResource.ID_ID, UUIDS[0]))
+                        + AuthorizationPurposeTemplateResource.ID_ID, ID_0))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.purpose").value("Gestiones bancarias y de seguros"));
     }

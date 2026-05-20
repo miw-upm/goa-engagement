@@ -15,7 +15,8 @@ import java.nio.file.Path;
 import java.util.UUID;
 
 import static es.upm.api.configurations.DatabaseSeederDev.C_0;
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_4;
 import static org.mockito.ArgumentMatchers.any;
 
 @Log4j2
@@ -33,7 +34,7 @@ class EngagementLetterPdfCheck {
     void testGenerateBudgePdfCheck() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(mockedC0User());
-        byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[0]);
+        byte[] pdf = this.engagementLetterService.generatePdf(ID_0);
         Path output = Path.of("target", "presupuesto-check.pdf");
         Files.write(output, pdf);
         log.info("PDF generado en: {}", output.toAbsolutePath());
@@ -43,7 +44,7 @@ class EngagementLetterPdfCheck {
     void testGenerateLetterPdfCheck() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willReturn(mockedC0User());
-        byte[] pdf = this.engagementLetterService.generatePdf(UUIDS[4]);
+        byte[] pdf = this.engagementLetterService.generatePdf(ID_4);
         Path output = Path.of("target", "hoja-check.pdf");
         Files.write(output, pdf);
         log.info("PDF generado en: {}", output.toAbsolutePath());
