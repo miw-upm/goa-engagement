@@ -1,0 +1,9 @@
+# application.yml / application-prod.yml
+app:
+  crypto:
+    password: ${APP_CRYPTO_PASSWORD}
+    salt: ${APP_CRYPTO_SALT}
+
+    # Solo durante ventana de rotación (lectura de antiguos):
+    previous-password: ${APP_CRYPTO_PREVIOUS_PASSWORD:}
+    previous-salt: ${APP_CRYPTO_PREVIOUS_SALT:}
