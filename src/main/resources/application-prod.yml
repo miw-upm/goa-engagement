@@ -17,6 +17,9 @@ app:
     token-uri: ${BASE_URL}/api/goa-user/oauth2/token
     api-client-id: ${API_CLIENT_ID}
     api-client-secret: ${API_CLIENT_SECRET}
+  crypto:
+    password: ${APP_CRYPTO_PASSWORD}
+    salt: ${APP_CRYPTO_SALT}
 
 eureka:
   client:

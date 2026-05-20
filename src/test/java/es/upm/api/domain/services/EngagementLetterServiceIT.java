@@ -23,7 +23,8 @@ import java.util.UUID;
 import static es.upm.api.configurations.DatabaseSeederDev.C_0;
 import static es.upm.api.configurations.DatabaseSeederDev.C_1;
 import static es.upm.api.configurations.DatabaseSeederDev.C_2;
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_1;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_3;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -63,7 +64,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testReadSuccess() {
-        assertThat(engagementLetterService.read(UUIDS[1]))
+        assertThat(engagementLetterService.read(ID_1))
                 .isNotNull()
                 .satisfies(retrieveEngagement -> {
                     assertThat(retrieveEngagement.getOwner().getFirstName()).isEqualTo("c1");
@@ -231,7 +232,7 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindPendingSignersWithoutAttachments() {
-        EngagementLetter letter = this.engagementLetterService.read(UUIDS[3]);
+        EngagementLetter letter = this.engagementLetterService.read(ID_3);
         List<UserSnapshot> pending = letter.findPendingSigners();
         assertThat(pending)
                 .hasSize(1)
@@ -241,26 +242,26 @@ class EngagementLetterServiceIT {
 
     @Test
     void testFindPendingSignersWhenAllHaveSigned() {
-        EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
+        EngagementLetter letter = this.engagementLetterService.read(ID_1);
         List<UserSnapshot> pending = letter.findPendingSigners();
         assertThat(pending).isEmpty();
     }
 
     @Test
     void testIsSignedReturnsTrueWhenAllSignersHaveSigned() {
-        EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
+        EngagementLetter letter = this.engagementLetterService.read(ID_1);
         assertThat(letter.isSigned()).isTrue();
     }
 
     @Test
     void testIsSignedReturnsFalseWhenSomeSignersArePending() {
-        EngagementLetter letter = this.engagementLetterService.read(UUIDS[3]);
+        EngagementLetter letter = this.engagementLetterService.read(ID_3);
         assertThat(letter.isSigned()).isFalse();
     }
 
     @Test
     void testAreAllUsersCompleteReturnsTrueWithSeedUsers() {
-        EngagementLetter letter = this.engagementLetterService.read(UUIDS[1]);
+        EngagementLetter letter = this.engagementLetterService.read(ID_1);
         assertThat(letter.areAllUsersComplete()).isTrue();
     }
 

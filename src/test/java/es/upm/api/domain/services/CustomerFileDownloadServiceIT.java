@@ -19,7 +19,9 @@ import java.util.UUID;
 import static es.upm.api.configurations.DatabaseSeederDev.C_0;
 import static es.upm.api.configurations.DatabaseSeederDev.C_1;
 import static es.upm.api.configurations.DatabaseSeederDev.C_2;
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_1;
+import static es.upm.api.configurations.DatabaseSeederDev.ID_2;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -45,14 +47,14 @@ class CustomerFileDownloadServiceIT {
 
     @Test
     void shouldReadFromSeederAndHydrateCustomer() {
-        CustomerFileDownload result = this.customerFileDownloadService.read(UUIDS[0]);
+        CustomerFileDownload result = this.customerFileDownloadService.read(ID_0);
 
         assertThat(result)
                 .isNotNull()
                 .satisfies(download -> {
-                    assertThat(download.getId()).isEqualTo(UUIDS[0]);
+                    assertThat(download.getId()).isEqualTo(ID_0);
                     assertThat(download.getDocumentType()).isEqualTo("engagement-letter");
-                    assertThat(download.getDocumentId()).isEqualTo(UUIDS[0]);
+                    assertThat(download.getDocumentId()).isEqualTo(ID_0);
                     assertThat(download.getCustomer()).isNotNull();
                     assertThat(download.getCustomer().getId()).isEqualTo(C_0);
                     assertThat(download.getCustomer().getFirstName()).isEqualTo("c1");
@@ -74,7 +76,7 @@ class CustomerFileDownloadServiceIT {
         assertThat(results)
                 .hasSize(3)
                 .extracting(CustomerFileDownload::getId)
-                .containsExactly(UUIDS[2], UUIDS[1], UUIDS[0]);
+                .containsExactly(ID_2, ID_1, ID_0);
     }
 
     @Test
@@ -101,7 +103,7 @@ class CustomerFileDownloadServiceIT {
                 .hasSize(1)
                 .first()
                 .satisfies(download -> {
-                    assertThat(download.getId()).isEqualTo(UUIDS[2]);
+                    assertThat(download.getId()).isEqualTo(ID_2);
                     assertThat(download.getCustomer().getId()).isEqualTo(C_0);
                     assertThat(download.getDocumentType().toLowerCase()).contains("budget");
                 });

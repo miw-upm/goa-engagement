@@ -1,6 +1,6 @@
 package es.upm.api.adapter.in.legal.resources;
 
-import es.upm.api.adapter.in.resources.LegalTaskResource;
+import es.upm.api.adapter.in.resources.AuthorizationPurposeTemplateResource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -17,10 +17,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ActiveProfiles("test")
 @AutoConfigureMockMvc
-class LegalTaskResourceIT {
+class AuthorizationPurposeTemplateResourceIT {
 
     @Autowired
-    LegalTaskResource legalTaskResource;
+    AuthorizationPurposeTemplateResource authorizationPurposeTemplateResource;
 
     @Autowired
     private MockMvc mockMvc;
@@ -28,9 +28,9 @@ class LegalTaskResourceIT {
     @Test
     @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
     void testRead() throws Exception {
-        mockMvc.perform(get(LegalTaskResource.LEGAL_TASKS + LegalTaskResource.ID_ID, ID_0))
+        this.mockMvc.perform(get(AuthorizationPurposeTemplateResource.AUTHORIZATION_PURPOSE_TEMPLATES
+                        + AuthorizationPurposeTemplateResource.ID_ID, ID_0))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("Estudio de antecedentes y documentación"));
+                .andExpect(jsonPath("$.purpose").value("Gestiones bancarias y de seguros"));
     }
-
 }

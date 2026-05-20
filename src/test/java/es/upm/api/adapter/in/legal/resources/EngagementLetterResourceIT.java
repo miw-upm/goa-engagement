@@ -15,10 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.C_0;
-import static es.upm.api.configurations.DatabaseSeederDev.C_1;
-import static es.upm.api.configurations.DatabaseSeederDev.C_2;
-import static es.upm.api.configurations.DatabaseSeederDev.UUIDS;
+import static es.upm.api.configurations.DatabaseSeederDev.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,7 +38,7 @@ class EngagementLetterResourceIT {
     void testRead() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation -> mockedUser(invocation.getArgument(0)));
-        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, UUIDS[0]))
+        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, ID_0))
                 .andExpect(status().isOk());
 
     }

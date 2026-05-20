@@ -44,4 +44,13 @@ public class UserSnapshot {
     private String valueOrUndefined(String value) {
         return value != null ? value : SIN_DEFINIR;
     }
+
+    public UserSnapshot ofSummary() {
+        return UserSnapshot.builder()
+                .id(this.id)
+                .firstName(this.firstName)
+                .familyName(this.familyName)
+                .mobile(this.mobile)
+                .build();
+    }
 }

@@ -1,5 +1,9 @@
 package es.upm.api.configurations;
 
+import es.upm.api.adapter.out.legal.mongo.authorizationpurposetemplate.AuthorizationPurposeTemplateEntity;
+import es.upm.api.adapter.out.legal.mongo.authorizationpurposetemplate.AuthorizationPurposeTemplateRepository;
+import es.upm.api.adapter.out.legal.mongo.administrativeauthorization.AdministrativeAuthorizationEntity;
+import es.upm.api.adapter.out.legal.mongo.administrativeauthorization.AdministrativeAuthorizationRepository;
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadEntity;
 import es.upm.api.adapter.out.legal.mongo.customerfiledownload.CustomerFileDownloadRepository;
 import es.upm.api.adapter.out.legal.mongo.engagementletter.*;
@@ -42,21 +46,24 @@ public class DatabaseSeederDev {
     public static final UUID ID_11 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000b");
     public static final UUID ID_12 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000c");
     public static final UUID ID_13 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000d");
+    public static final UUID ID_14 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000e");
+    public static final UUID ID_15 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff000f");
+    public static final UUID ID_16 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0010");
+    public static final UUID ID_17 = UUID.fromString("aaaaaaaa-bbbb-cccc-dddd-eeeeffff0011");
 
     public static final UUID C_0 = ID_4;
     public static final UUID C_1 = ID_5;
     public static final UUID C_2 = ID_6;
-    public static final UUID[] US = {C_0, C_1, C_2};
-    // Compatibilidad temporal con tests existentes
-    public static final UUID[] UUIDS = {ID_0, ID_1, ID_2, ID_3, ID_4, ID_5, ID_6, ID_7, ID_8, ID_9, ID_10, ID_11, ID_12, ID_13};
     private static final String LEGAL_CLAUSE = "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!."
             + "Clausula especial legal!!!. Clausula especial legal!!!. Clausula especial legal!!!.";
 
     private final LegalTaskRepository legalTaskRepository;
+    private final AuthorizationPurposeTemplateRepository authorizationPurposeTemplateRepository;
     private final LegalProcedureTemplateRepository legalProcedureTemplateRepository;
     private final EngagementLetterRepository engagementLetterRepository;
+    private final AdministrativeAuthorizationRepository administrativeAuthorizationRepository;
     private final CustomerFileDownloadRepository customerFileDownloadRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -72,8 +79,10 @@ public class DatabaseSeederDev {
 
     private void deleteAllAndInitialize() {
         this.customerFileDownloadRepository.deleteAll();
+        this.administrativeAuthorizationRepository.deleteAll();
         this.engagementLetterRepository.deleteAll();
         this.legalProcedureTemplateRepository.deleteAll();
+        this.authorizationPurposeTemplateRepository.deleteAll();
         this.legalTaskRepository.deleteAll();
         log.warn("------- Delete All -----------");
     }
@@ -100,6 +109,13 @@ public class DatabaseSeederDev {
         this.legalTaskRepository.saveAll(List.of(tasks));
         log.warn("        ------- tareas legales --------------------------------------------------------------------");
 
+        AuthorizationPurposeTemplateEntity[] authorizationPurposes = {
+                new AuthorizationPurposeTemplateEntity(ID_0, "Gestiones bancarias y de seguros"),
+                new AuthorizationPurposeTemplateEntity(ID_1, "Actuaciones ante administraciones publicas"),
+                new AuthorizationPurposeTemplateEntity(ID_2, "Representacion para tramites notariales"),
+        };
+        this.authorizationPurposeTemplateRepository.saveAll(List.of(authorizationPurposes));
+        log.warn("        ------- plantillas de proposito de autorizacion --------------------------------------------");
 
         LegalProcedureTemplateEntity[] templates = {
                 new LegalProcedureTemplateEntity(ID_0, "Procedimiento de herencia", new BigDecimal("2500"),
@@ -216,6 +232,39 @@ public class DatabaseSeederDev {
 
         this.engagementLetterRepository.saveAll(List.of(encargos));
         log.warn("        ------- Hojas de encargo ------------------------------------------------------------------");
+
+        AdministrativeAuthorizationEntity[] administrativeAuthorizations = {
+                AdministrativeAuthorizationEntity.builder()
+                        .id(ID_14)
+                        .lastUpdatedDate(LocalDate.now().minusDays(3))
+                        .authorizingCustomerIds(List.of(C_0))
+                        .authorizedRepresentativeIds(List.of(C_1))
+                        .authorizationPurpose("Gestiones bancarias y de seguros para tramites de herencia y regularizacion patrimonial.")
+                        .build(),
+                AdministrativeAuthorizationEntity.builder()
+                        .id(ID_15)
+                        .lastUpdatedDate(LocalDate.now().minusDays(2))
+                        .authorizingCustomerIds(List.of(C_1, C_2))
+                        .authorizedRepresentativeIds(List.of(C_0))
+                        .authorizationPurpose("Representacion para actuaciones ante administraciones publicas y organismos tributarios.")
+                        .build(),
+                AdministrativeAuthorizationEntity.builder()
+                        .id(ID_16)
+                        .lastUpdatedDate(LocalDate.now().minusDays(1))
+                        .authorizingCustomerIds(List.of(C_2))
+                        .authorizedRepresentativeIds(List.of(C_0, C_1))
+                        .authorizationPurpose("Tramites notariales y registrales vinculados a aceptacion y particion de herencia.")
+                        .build(),
+                AdministrativeAuthorizationEntity.builder()
+                        .id(ID_17)
+                        .lastUpdatedDate(LocalDate.now())
+                        .authorizingCustomerIds(List.of(C_0, C_1))
+                        .authorizedRepresentativeIds(List.of(C_2))
+                        .authorizationPurpose("Gestiones integrales ante banca, aseguradoras, notaria y administracion para cierre de expediente sucesorio.")
+                        .build(),
+        };
+        this.administrativeAuthorizationRepository.saveAll(List.of(administrativeAuthorizations));
+        log.warn("        ------- Autorizaciones administrativas ------------------------------------------------------");
 
         CustomerFileDownloadEntity[] customerFileDownloads = {
                 CustomerFileDownloadEntity.builder()

@@ -1,6 +1,7 @@
 package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.validations.ListNotEmpty;
@@ -12,7 +13,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Builder
@@ -22,6 +25,7 @@ import java.util.stream.Stream;
 public class AdministrativeAuthorization {
     private UUID id;
     @JsonFormat(pattern = "yyyy-MM-dd")
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDate lastUpdatedDate;
     @ListNotEmpty
     private List<UserSnapshot> authorizingCustomers;
@@ -82,4 +86,42 @@ public class AdministrativeAuthorization {
                 .map(UserSnapshot::getId)
                 .anyMatch(clientIds::contains);
     }
+
+    public AdministrativeAuthorization ofPurpose() {
+        return AdministrativeAuthorization.builder()
+                .authorizationPurpose(this.authorizationPurpose)
+                .build();
+    }
+
+    public AdministrativeAuthorization ofMask() {
+        return this;
+    }
+
+    public String buildDate() {
+        return "En Madrid, a " + lastUpdatedDate
+                .format(DateTimeFormatter.ofPattern("d 'de' MMMM 'de' yyyy", Locale.of("es", "ES")));
+    }
+
+    public String buildCustomersFullNameIdentity() {
+        List<UserSnapshot> clients = new ArrayList<>();
+        if (this.authorizingCustomers != null && !this.authorizingCustomers.isEmpty()) {
+            clients.addAll(this.authorizingCustomers);
+        }
+
+        return clients.stream()
+                .map(UserSnapshot::toDonFullNameAndIdentity)
+                .collect(Collectors.joining(", "));
+    }
+
+    public String buildRepresentativesFullNameIdentity() {
+        List<UserSnapshot> clients = new ArrayList<>();
+        if (this.authorizedRepresentatives != null && !this.authorizedRepresentatives.isEmpty()) {
+            clients.addAll(this.authorizedRepresentatives);
+        }
+
+        return clients.stream()
+                .map(UserSnapshot::toDonFullNameAndIdentity)
+                .collect(Collectors.joining(", "));
+    }
+
 }
