@@ -16,7 +16,7 @@ public class AccessLinkGatewayAdapter implements AccessLinkGateway {
         try {
             return this.goaUserClient.consumeAccessLinkToken(scope, urlId, token);
         } catch (Exception exception) {
-            throw new BadGatewayException("Error consumiendo enlace con token", exception.getCause());
+            throw new BadGatewayException(exception.getMessage(), exception.getCause());
         }
     }
 }
