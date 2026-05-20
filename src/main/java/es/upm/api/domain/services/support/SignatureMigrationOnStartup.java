@@ -81,7 +81,7 @@ public class SignatureMigrationOnStartup implements ApplicationRunner {
 
     private boolean tryRotateSignature(AdministrativeAuthorizationSignature signature) {
         byte[] image = signature.getSignatureImage();
-        if (!LEGACY_PREFIX.equals(this.encryptionService.buildPrefix(image))) {
+        if (!LEGACY_PREFIX.equals(this.encryptionService.extractAllPrefix(image))) {
             return false;
         }
         byte[] legacyPayload = Arrays.copyOfRange(image, LEGACY_PREFIX.length(), image.length);

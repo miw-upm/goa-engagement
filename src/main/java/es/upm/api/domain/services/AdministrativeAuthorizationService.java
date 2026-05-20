@@ -52,7 +52,7 @@ public class AdministrativeAuthorizationService {
         );
         if (authorization.getSignatures() != null) {
             authorization.getSignatures().forEach(signature -> {
-                String preview = this.encryptionService.buildPreview(signature.getSignatureImage());
+                String preview = this.encryptionService.extractPreview(signature.getSignatureImage());
                 signature.setSignatureImagePreview(preview);
             });
         }
