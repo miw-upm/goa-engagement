@@ -1,14 +1,13 @@
 package es.upm.api.domain.services.support;
 
-import es.upm.miw.exception.BadRequestException;
 import es.upm.miw.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 import java.util.Arrays;
+import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
@@ -21,20 +20,18 @@ public class EncryptionService {
     private final BytesEncryptor bytesEncryptor;
 
     public byte[] encrypt(byte[] value) {
-        if (value == null || value.length == 0 || this.isPrefixed(value)) {
-            return value;
+        if (value == null || value.length == 0) {
+            throw new ConflictException("Se esperaba un valor para encriptar no vacio");
+        }
+        if (this.startsWith(value, PREFIX_BYTES)) {
+            throw new ConflictException("El valor ya esta encriptado");
         }
         byte[] encrypted = this.bytesEncryptor.encrypt(value);
         return this.prependPrefix(encrypted);
     }
 
     public byte[] decrypt(byte[] value) {
-        if (value == null || value.length == 0) {
-            return value;
-        }
-        if (!this.isPrefixed(value)) {
-            return value;
-        }
+        this.ensurePrefixed(value);
         return this.bytesEncryptor.decrypt(this.removePrefix(value));
     }
 
@@ -51,14 +48,13 @@ public class EncryptionService {
         return prefix + first6 + "****";
     }
 
-    private boolean isPrefixed(byte[] value) {
-        return this.startsWith(value, PREFIX_BYTES);
+    private void ensurePrefixed(byte[] value) {
+        if (!this.startsWith(value, PREFIX_BYTES)) {
+            throw new ConflictException("Se esperaba un valor encriptado con prefijo valido");
+        }
     }
 
     private boolean startsWith(byte[] value, byte[] prefix) {
-        if (value == null || prefix == null || value.length < prefix.length) {
-            return false;
-        }
         for (int i = 0; i < prefix.length; i++) {
             if (value[i] != prefix[i]) {
                 return false;
@@ -80,13 +76,13 @@ public class EncryptionService {
 
     private int resolvePrefixLength(byte[] value) {
         if (!this.startsWith(value, PREFIX_BASE_BYTES)) {
-            throw new ConflictException("Formato de prefijo de encriptación no soportado");
+            throw new ConflictException("Formato de prefijo de encriptacion no soportado");
         }
         for (int i = PREFIX_BASE_BYTES.length; i < value.length; i++) {
             if (value[i] == ':') {
                 return i + 1;
             }
         }
-        throw new ConflictException("Formato de prefijo de encriptación no soportado");
+        throw new ConflictException("Formato de prefijo de encriptacion no soportado");
     }
 }
