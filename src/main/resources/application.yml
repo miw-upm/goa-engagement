@@ -35,8 +35,8 @@ app:
     api-client-id: ${API_CLIENT_ID:api-client-id}
     api-client-secret: ${API_CLIENT_SECRET:api-client-secret}
   crypto:
-    password: ${APP_CRYPTO_PASSWORD:dev-crypto-password-please-change-in-production}
     salt: ${APP_CRYPTO_SALT:0123456789abcdef0123456789abcdef}
+    password: ${APP_CRYPTO_PASSWORD:dev-crypto-password-please-change-in-production}
 
 management:
   endpoints:

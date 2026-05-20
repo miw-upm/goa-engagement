@@ -18,8 +18,8 @@ app:
     api-client-id: ${API_CLIENT_ID}
     api-client-secret: ${API_CLIENT_SECRET}
   crypto:
-    password: ${APP_CRYPTO_PASSWORD}
     salt: ${APP_CRYPTO_SALT}
+    password: ${APP_CRYPTO_PASSWORD}
 
 eureka:
   client:
