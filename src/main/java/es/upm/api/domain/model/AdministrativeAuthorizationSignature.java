@@ -26,4 +26,8 @@ public class AdministrativeAuthorizationSignature {
         return EncryptionService.PREFIX;
     }
 
+    public String toDonFullName() {
+        return "D./Dña. " + this.signerFullName;
+    }
+
 }

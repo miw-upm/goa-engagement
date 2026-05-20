@@ -160,7 +160,7 @@ public class AdministrativeAuthorizationService {
         if (authorization.isSigned()) {
             List<PdfBuilder.LeftSignature> leftSignatures = authorization.getSignatures().stream()
                     .map(signature -> new PdfBuilder.LeftSignature(
-                            signature.getSignerFullName(),
+                            signature.toDonFullName(),
                             null,
                             this.encryptionService.decrypt(signature.getSignatureImage())
                     ))
