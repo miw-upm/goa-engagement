@@ -63,11 +63,11 @@ public class AdministrativeAuthorizationAdapter implements AdministrativeAuthori
                 .stream()
                 .map(AdministrativeAuthorizationEntity::toDomain);
 
-        if (StringUtils.hasText(criteria.getAuthorizationPurpose())) {
-            String purpose = criteria.getAuthorizationPurpose().toLowerCase();
+        if (StringUtils.hasText(criteria.getPurpose())) {
+            String purpose = criteria.getPurpose().toLowerCase();
             administrativeAuthorizations = administrativeAuthorizations
-                    .filter(authorization -> authorization.getAuthorizationPurpose() != null &&
-                            authorization.getAuthorizationPurpose().toLowerCase().contains(purpose));
+                    .filter(authorization -> authorization.getPurpose() != null &&
+                            authorization.getPurpose().toLowerCase().contains(purpose));
         }
         if (criteria.getIsSigned() != null) {
             administrativeAuthorizations = administrativeAuthorizations

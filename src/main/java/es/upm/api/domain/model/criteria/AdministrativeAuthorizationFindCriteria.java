@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AdministrativeAuthorizationFindCriteria {
     private String client;
-    private String authorizationPurpose;
+    private String purpose;
     private Boolean isSigned;
 }
