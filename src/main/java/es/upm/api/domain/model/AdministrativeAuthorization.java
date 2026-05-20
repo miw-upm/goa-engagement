@@ -33,7 +33,7 @@ public class AdministrativeAuthorization {
     private List<UserSnapshot> authorizedRepresentatives;
     @NotNull
     @NotBlank
-    private String authorizationPurpose;
+    private String purpose;
     private List<AdministrativeAuthorizationSignature> signatures;
 
     public void add(AdministrativeAuthorizationSignature signature) {
@@ -59,7 +59,7 @@ public class AdministrativeAuthorization {
                 .orElse(List.of())
                 .stream()
                 .map(UserSnapshot::getId)
-                .anyMatch(userId::equals);
+                .noneMatch(userId::equals);
     }
 
     public List<UserSnapshot> findPendingSigners() {
@@ -89,12 +89,8 @@ public class AdministrativeAuthorization {
 
     public AdministrativeAuthorization ofPurpose() {
         return AdministrativeAuthorization.builder()
-                .authorizationPurpose(this.authorizationPurpose)
+                .purpose(this.purpose)
                 .build();
-    }
-
-    public AdministrativeAuthorization ofMask() {
-        return this;
     }
 
     public String buildDate() {

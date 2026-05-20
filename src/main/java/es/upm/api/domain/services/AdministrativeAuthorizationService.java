@@ -95,7 +95,7 @@ public class AdministrativeAuthorizationService {
         AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
-        if (!administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
+        if (administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
             throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorizaciÃ³n administrativa");
         }
         return administrativeAuthorization.ofPurpose();
@@ -105,7 +105,7 @@ public class AdministrativeAuthorizationService {
         AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
-        if (!administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
+        if (administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
             throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorización administrativa");
         }
         AdministrativeAuthorizationSignature authorizationSignature = AdministrativeAuthorizationSignature.builder()
@@ -153,14 +153,14 @@ public class AdministrativeAuthorizationService {
                 )
                 .space()
                 .paragraph(dict.getText("para",
-                        Map.of("proposito", authorization.getAuthorizationPurpose()))
+                        Map.of("proposito", authorization.getPurpose()))
                 )
                 .space(2)
                 .paragraph(dict.getText("firmas"));
         if (authorization.isSigned()) {
             List<PdfBuilder.LeftSignature> leftSignatures = authorization.getSignatures().stream()
                     .map(signature -> new PdfBuilder.LeftSignature(
-                            signature.getSignerFullName(),
+                            signature.toDonFullName(),
                             null,
                             this.encryptionService.decrypt(signature.getSignatureImage())
                     ))

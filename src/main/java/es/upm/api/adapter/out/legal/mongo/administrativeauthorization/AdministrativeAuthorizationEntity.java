@@ -26,7 +26,7 @@ public class AdministrativeAuthorizationEntity {
     private LocalDate lastUpdatedDate;
     private List<UUID> authorizingCustomerIds;
     private List<UUID> authorizedRepresentativeIds;
-    private String authorizationPurpose;
+    private String purpose;
     private List<AdministrativeAuthorizationSignatureEntity> signatureEntities;
 
     public AdministrativeAuthorizationEntity(AdministrativeAuthorization administrativeAuthorization) {

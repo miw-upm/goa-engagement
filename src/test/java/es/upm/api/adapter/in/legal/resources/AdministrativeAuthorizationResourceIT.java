@@ -48,7 +48,7 @@ class AdministrativeAuthorizationResourceIT {
                         + AdministrativeAuthorizationResource.ID_ID, ID_14))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ID_14.toString()))
-                .andExpect(jsonPath("$.authorizationPurpose").exists());
+                .andExpect(jsonPath("$.purpose").exists());
     }
 
     @Test

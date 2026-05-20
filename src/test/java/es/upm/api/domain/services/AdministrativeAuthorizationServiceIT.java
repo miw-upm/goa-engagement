@@ -62,7 +62,7 @@ class AdministrativeAuthorizationServiceIT {
                     assertThat(authorization.getAuthorizingCustomers()).hasSize(1);
                     assertThat(authorization.getAuthorizingCustomers().getFirst().getId()).isEqualTo(C_0);
                     assertThat(authorization.getAuthorizedRepresentatives()).hasSize(1);
-                    assertThat(authorization.getAuthorizationPurpose()).containsIgnoringCase("bancarias");
+                    assertThat(authorization.getPurpose()).containsIgnoringCase("bancarias");
                     assertThat(authorization.isSigned()).isFalse();
                 });
     }
@@ -82,7 +82,7 @@ class AdministrativeAuthorizationServiceIT {
         assertThat(results)
                 .isNotEmpty()
                 .allSatisfy(authorization ->
-                        assertThat(authorization.getAuthorizationPurpose().toLowerCase()).contains("bancarias"));
+                        assertThat(authorization.getPurpose().toLowerCase()).contains("bancarias"));
     }
 
     @Test
@@ -125,7 +125,7 @@ class AdministrativeAuthorizationServiceIT {
         AdministrativeAuthorization result = this.administrativeAuthorizationService
                 .readAuthorizationPurposeWithToken(scope, urlId, token);
 
-        assertThat(result.getAuthorizationPurpose()).containsIgnoringCase("bancarias");
+        assertThat(result.getPurpose()).containsIgnoringCase("bancarias");
         assertThat(result.getId()).isNull();
     }
 
