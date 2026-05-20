@@ -92,8 +92,8 @@ public class AdministrativeAuthorizationService {
     }
 
     public AdministrativeAuthorization readAuthorizationPurposeWithToken(String scope, String urlId, String token) {
-        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
         if (administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
             throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorizaciÃ³n administrativa");
@@ -102,8 +102,8 @@ public class AdministrativeAuthorizationService {
     }
 
     public void signWithToken(String scope, String urlId, String token, String signature) {
-        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
         if (administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
             throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorización administrativa");
