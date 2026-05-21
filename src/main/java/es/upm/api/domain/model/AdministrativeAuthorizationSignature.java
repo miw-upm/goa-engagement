@@ -1,7 +1,6 @@
 package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import es.upm.api.domain.services.support.EncryptionService;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

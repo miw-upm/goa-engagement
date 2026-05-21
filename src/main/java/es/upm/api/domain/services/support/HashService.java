@@ -35,7 +35,7 @@ public class HashService {
         return StringUtils.hasText(value) && value.startsWith(BCRYPT_PREFIX);
     }
 
-    public void assertMatches (String rawToken, String hashToken) {
+    public void assertMatches(String rawToken, String hashToken) {
         if (!this.passwordEncoder.matches(rawToken, hashToken)) {
             throw new UnauthorizedException("Unauthorized. Token Invalid");
         }

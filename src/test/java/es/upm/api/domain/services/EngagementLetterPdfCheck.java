@@ -14,9 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.C_0;
-import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
-import static es.upm.api.configurations.DatabaseSeederDev.ID_4;
+import static es.upm.api.configurations.DatabaseSeederDev.*;
 import static org.mockito.ArgumentMatchers.any;
 
 @Log4j2

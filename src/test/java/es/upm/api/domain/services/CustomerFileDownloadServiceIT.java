@@ -16,12 +16,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import java.util.List;
 import java.util.UUID;
 
-import static es.upm.api.configurations.DatabaseSeederDev.C_0;
-import static es.upm.api.configurations.DatabaseSeederDev.C_1;
-import static es.upm.api.configurations.DatabaseSeederDev.C_2;
-import static es.upm.api.configurations.DatabaseSeederDev.ID_0;
-import static es.upm.api.configurations.DatabaseSeederDev.ID_1;
-import static es.upm.api.configurations.DatabaseSeederDev.ID_2;
+import static es.upm.api.configurations.DatabaseSeederDev.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
