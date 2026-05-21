@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Service;
 
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Base64;
@@ -24,17 +25,14 @@ public class EncryptionService {
     private final BytesEncryptor bytesEncryptor;
 
     public byte[] encrypt(byte[] value) {
-        if (value == null || value.length == 0) {
-            throw new ConflictException("Expected a non-empty value to encrypt");
-        }
         if (this.startsWith(value, PREFIX_BYTES)) {
             throw new ConflictException("Value is already encrypted");
         }
         byte[] encrypted = this.bytesEncryptor.encrypt(value);
-        byte[] prefixedEncrypted  = new byte[PREFIX_BYTES.length + encrypted.length];
-        System.arraycopy(PREFIX_BYTES, 0, prefixedEncrypted , 0, PREFIX_BYTES.length);
-        System.arraycopy(encrypted, 0, prefixedEncrypted , PREFIX_BYTES.length, encrypted.length);
-        return prefixedEncrypted ;
+        return ByteBuffer.allocate(PREFIX_BYTES.length + encrypted.length)
+                .put(PREFIX_BYTES)
+                .put(encrypted)
+                .array();
     }
 
     public byte[] decrypt(byte[] value) {
@@ -46,43 +44,34 @@ public class EncryptionService {
     }
 
     public String extractPreview(byte[] value) {
-        if (value == null || value.length == 0) {
-            throw new ConflictException("Expected an encrypted value to build preview");
-        }
         String prefix = this.extractAllPrefix(value);
         int prefixLength = prefix.length();
-        byte[] encryptedPayload = Arrays.copyOfRange(value, prefixLength, value.length);
-        String previewChars = Base64.getEncoder()
-                .encodeToString(Arrays.copyOf(encryptedPayload, PREVIEW_CHARS)).substring(0, PREVIEW_CHARS);
+        byte[] previewBytes = Arrays.copyOfRange(value, prefixLength, prefixLength + PREVIEW_CHARS);
+        String previewChars = Base64.getEncoder().encodeToString(previewBytes).substring(0, PREVIEW_CHARS);
         return prefix + previewChars + PREVIEW_TRUNCATION_MARK;
     }
 
     public String extractAllPrefix(byte[] value) {
-        if (value == null || value.length == 0) {
-            throw new ConflictException("Expected an encrypted value with a prefix");
+        if (!this.startsWith(value, PREFIX_BASE_BYTES)) {
+            throw new ConflictException("Unsupported encryption prefix format");
         }
-        int prefixLength = this.resolvePrefixLength(value);
-        return new String(value, 0, prefixLength, StandardCharsets.UTF_8);
+        for (int i = PREFIX_BASE_BYTES.length; i < value.length; i++) {
+            if (value[i] == SEPARATOR) {
+                return new String(value, 0, i + 1, StandardCharsets.UTF_8);
+            }
+        }
+        throw new ConflictException("Malformed encryption prefix - missing separator");
     }
 
     private boolean startsWith(byte[] value, byte[] prefix) {
+        if (value.length < prefix.length) {
+            return false;
+        }
         for (int i = 0; i < prefix.length; i++) {
             if (value[i] != prefix[i]) {
                 return false;
             }
         }
         return true;
-    }
-
-    private int resolvePrefixLength(byte[] value) {
-        if (!this.startsWith(value, PREFIX_BASE_BYTES)) {
-            throw new ConflictException("Unsupported encryption prefix format");
-        }
-        for (int i = PREFIX_BASE_BYTES.length; i < value.length; i++) {
-            if (value[i] == SEPARATOR) {
-                return i + 1;
-            }
-        }
-        throw new ConflictException("Malformed encryption prefix - missing separator");
     }
 }

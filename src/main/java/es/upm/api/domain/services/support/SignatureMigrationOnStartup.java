@@ -15,6 +15,8 @@ import org.springframework.security.crypto.encrypt.BytesEncryptor;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 @Service
 @Log4j2
@@ -48,14 +50,17 @@ public class SignatureMigrationOnStartup implements ApplicationRunner {
         int authsProcessed = 0;
         int authsUpdated = 0;
         int signaturesRotated = 0;
-        for (AdministrativeAuthorization authorization : this.administrativeAuthorizationGateway
-                .find(new AdministrativeAuthorizationFindCriteria())
-                .toList()) {
-            authsProcessed++;
-            int updated = this.rotateAuthorization(authorization);
-            if (updated > 0) {
-                authsUpdated++;
-                signaturesRotated += updated;
+        try (Stream<AdministrativeAuthorization> stream = this.administrativeAuthorizationGateway
+                .find(new AdministrativeAuthorizationFindCriteria())) {
+            Iterator<AdministrativeAuthorization> it = stream.iterator();
+            while (it.hasNext()) {
+                AdministrativeAuthorization authorization = it.next();
+                authsProcessed++;
+                int updated = this.rotateAuthorization(authorization);
+                if (updated > 0) {
+                    authsUpdated++;
+                    signaturesRotated += updated;
+                }
             }
         }
         log.warn("Legacy signature migration completed - authorizations processed: {}, authorizations updated: {}, signatures rotated: {}",
