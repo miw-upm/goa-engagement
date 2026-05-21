@@ -15,7 +15,7 @@ import java.util.Base64;
 public class EncryptionService {
     private static final char SEPARATOR = ':';
     public static final String PREFIX_BASE = "enc" + SEPARATOR;
-    public static final String PREFIX = PREFIX_BASE + SEPARATOR;
+    public static final String PREFIX = PREFIX_BASE + "v1" + SEPARATOR;
     private static final byte[] PREFIX_BASE_BYTES = PREFIX_BASE.getBytes(StandardCharsets.UTF_8);
     private static final byte[] PREFIX_BYTES = PREFIX.getBytes(StandardCharsets.UTF_8);
 
