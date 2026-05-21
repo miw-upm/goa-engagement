@@ -53,6 +53,7 @@ logging:
   level:
     root: WARN
     es.upm.api: DEBUG
+    org.springframework.security: WARN
 
 eureka:
   instance:

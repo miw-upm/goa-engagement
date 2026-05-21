@@ -1,4 +1,4 @@
-package es.upm.api.infrastructure.resources.httperrors;
+package es.upm.api.adapter.in.resources.httperrors;
 
 import es.upm.miw.exception.*;
 import feign.FeignException;
