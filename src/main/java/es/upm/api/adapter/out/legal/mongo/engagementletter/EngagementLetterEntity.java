@@ -7,6 +7,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +35,7 @@ public class EngagementLetterEntity {
     private String legalClause;
     @Singular
     private List<AcceptanceEngagementEntity> acceptanceEngagementEntities;
+    private List<BigDecimal> discounts;
 
     public EngagementLetterEntity(EngagementLetter engagementLetter) {
         BeanUtils.copyProperties(engagementLetter, this);

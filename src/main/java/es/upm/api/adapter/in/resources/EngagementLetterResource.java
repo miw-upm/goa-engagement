@@ -30,6 +30,7 @@ public class EngagementLetterResource {
     public static final String SIGN_ENGAGEMENT_LETTER = "/sign-engagement-letter";
     public static final String URL_ID_TOKEN_ID = "/{urlId}/{token}";
     public static final String VIEW = "/view";
+    public static final String CLOSE = "/close";
 
     private final EngagementLetterService engagementLetterService;
 
@@ -52,6 +53,12 @@ public class EngagementLetterResource {
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
         this.engagementLetterService.update(id, engagementLetter);
+    }
+
+    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR_URL_TOKEN)
+    @PostMapping(ID_ID + CLOSE)
+    public void closeEngagement(@PathVariable UUID id) {
+        this.engagementLetterService.close(id);
     }
 
     @PreAuthorize(Security.ADMIN)

@@ -273,10 +273,15 @@ public class EngagementLetterService {
 
     private void sendEmail(UserSnapshot user, byte[] pdf, String fileName) {
         this.emailWriter.sendHtml(
-                this.signedEngagementLetterEmailTemplateService.buildHtmlEmail(
-                        user.getEmail(),
-                        user.getFirstName()
-                ), pdf, fileName
+                this.signedEngagementLetterEmailTemplateService.buildHtmlEmail(user.getEmail(),user.getFirstName()),
+                pdf,
+                fileName
         );
+    }
+
+    public void close(UUID id) {
+        EngagementLetter engagementLetter = this.engagementLetterGateway.read(id);
+        engagementLetter.setClosingDate(LocalDate.now());
+        this.engagementLetterGateway.update(id, engagementLetter);
     }
 }

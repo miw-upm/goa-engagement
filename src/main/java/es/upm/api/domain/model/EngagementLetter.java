@@ -2,6 +2,7 @@ package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.Max;
@@ -12,6 +13,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -41,6 +43,7 @@ public class EngagementLetter {
     private List<PaymentMethod> paymentMethods;
     private String legalClause;
     private List<AcceptanceEngagement> acceptanceEngagements;
+    private List<BigDecimal> discounts;
 
     public String buildClientsFullNameIdentity() {
         List<UserSnapshot> clients = new ArrayList<>();
@@ -108,5 +111,9 @@ public class EngagementLetter {
                         Optional.ofNullable(this.getAttachments()).orElse(List.of()).stream())
                 .map(UserSnapshot::getId)
                 .anyMatch(clientIds::contains);
+    }
+
+    public String getReference() {
+        return Base64UrlGenerator.encode(this.id).substring(0, 4);
     }
 }
