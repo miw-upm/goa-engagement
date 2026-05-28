@@ -3,6 +3,7 @@ package es.upm.api.adapter.out.legal.mongo.engagementletter;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
+import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -49,22 +50,17 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
             letters = letters.filter(letter -> criteria.getBudgetOnly().equals(letter.getBudgetOnly()));
         }
 
+        if (StringUtils.hasText(criteria.getReference())) {
+            letters = letters.filter(letter -> letter.getId() != null
+                    && Base64UrlGenerator.encode(letter.getId()).startsWith(criteria.getReference()));
+        }
+
         if (StringUtils.hasText(criteria.getLegalProcedureTitle())) {
             String titleLower = criteria.getLegalProcedureTitle().toLowerCase();
             letters = letters.filter(letter -> letter.getLegalProcedureEntities() != null &&
                     letter.getLegalProcedureEntities().stream()
                             .anyMatch(proc -> proc.getTitle() != null &&
                                     proc.getTitle().toLowerCase().contains(titleLower)));
-        }
-
-        if (StringUtils.hasText(criteria.getTaskTitle())) {
-            String taskLower = criteria.getTaskTitle().toLowerCase();
-            letters = letters.filter(letter -> letter.getLegalProcedureEntities() != null &&
-                    letter.getLegalProcedureEntities().stream()
-                            .anyMatch(proc -> proc.getLegalTasks() != null &&
-                                    proc.getLegalTasks().stream()
-                                            .anyMatch(task -> task != null &&
-                                                    task.toLowerCase().contains(taskLower))));
         }
 
         return letters.map(EngagementLetterEntity::toDomain);

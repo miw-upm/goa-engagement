@@ -6,6 +6,7 @@ import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -156,15 +157,15 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testFindFiltersByTaskTitle() {
+    void testFindFiltersByReferencePrefix() {
+        String referencePrefix = Base64UrlGenerator.encode(ID_1).substring(0, 4);
         EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
-        criteria.setTaskTitle("asesoramiento");
+        criteria.setReference(referencePrefix);
         List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
         assertThat(results)
                 .isNotEmpty()
-                .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
-                        .anyMatch(proc -> proc.getLegalTasks().stream()
-                                .anyMatch(task -> task.toLowerCase().contains("asesoramiento"))));
+                .anySatisfy(letter -> assertThat(letter.getId()).isEqualTo(ID_1))
+                .allSatisfy(letter -> assertThat(Base64UrlGenerator.encode(letter.getId())).startsWith(referencePrefix));
     }
 
     @Test
