@@ -157,18 +157,6 @@ class EngagementLetterServiceIT {
     }
 
     @Test
-    void testFindFiltersByReferencePrefix() {
-        String referencePrefix = Base64UrlGenerator.encode(ID_1).substring(0, 4);
-        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
-        criteria.setReference(referencePrefix);
-        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-        assertThat(results)
-                .isNotEmpty()
-                .anySatisfy(letter -> assertThat(letter.getId()).isEqualTo(ID_1))
-                .allSatisfy(letter -> assertThat(Base64UrlGenerator.encode(letter.getId())).startsWith(referencePrefix));
-    }
-
-    @Test
     void testSearchNullSafeIgnoresCase() {
         EngagementLetterFindCriteria criteriaUpper = new EngagementLetterFindCriteria();
         criteriaUpper.setLegalProcedureTitle("HERENCIA");

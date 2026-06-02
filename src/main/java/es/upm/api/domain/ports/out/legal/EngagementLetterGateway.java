@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 public interface EngagementLetterGateway {
     EngagementLetter read(UUID id);
 
-    void create(EngagementLetter engagementLetter);
+    EngagementLetter create(EngagementLetter engagementLetter);
 
     void delete(UUID id);
 

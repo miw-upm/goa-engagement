@@ -3,7 +3,6 @@ package es.upm.api.adapter.out.legal.mongo.engagementletter;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
-import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Sort;
@@ -20,8 +19,8 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
     private final EngagementLetterRepository engagementLetterRepository;
 
     @Override
-    public void create(EngagementLetter engagementLetter) {
-        this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter));
+    public EngagementLetter create(EngagementLetter engagementLetter) {
+        return this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter)).toDomain();
     }
 
     @Override
@@ -50,9 +49,9 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
             letters = letters.filter(letter -> criteria.getBudgetOnly().equals(letter.getBudgetOnly()));
         }
 
-        if (StringUtils.hasText(criteria.getReference())) {
+        if (StringUtils.hasText(criteria.getId())) {
             letters = letters.filter(letter -> letter.getId() != null
-                    && Base64UrlGenerator.encode(letter.getId()).startsWith(criteria.getReference()));
+                    && letter.getId().toString().startsWith(criteria.getId()));
         }
 
         if (StringUtils.hasText(criteria.getLegalProcedureTitle())) {

@@ -11,11 +11,11 @@ public class EngagementLetterFindCriteria {
     private Boolean opened;
     private Boolean budgetOnly;
     private String client;
-    private String reference;
+    private String id;
     private String legalProcedureTitle;
 
     public boolean all() {
-        return opened == null && budgetOnly == null && client == null && reference == null && legalProcedureTitle == null;
+        return opened == null && budgetOnly == null && client == null && id == null && legalProcedureTitle == null;
     }
 
 }
