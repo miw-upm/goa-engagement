@@ -19,8 +19,8 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
     private final EngagementLetterRepository engagementLetterRepository;
 
     @Override
-    public void create(EngagementLetter engagementLetter) {
-        this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter));
+    public EngagementLetter create(EngagementLetter engagementLetter) {
+        return this.engagementLetterRepository.save(new EngagementLetterEntity(engagementLetter)).toDomain();
     }
 
     @Override
@@ -49,22 +49,17 @@ public class EngagementLetterAdapter implements EngagementLetterGateway {
             letters = letters.filter(letter -> criteria.getBudgetOnly().equals(letter.getBudgetOnly()));
         }
 
+        if (StringUtils.hasText(criteria.getId())) {
+            letters = letters.filter(letter -> letter.getId() != null
+                    && letter.getId().toString().startsWith(criteria.getId()));
+        }
+
         if (StringUtils.hasText(criteria.getLegalProcedureTitle())) {
             String titleLower = criteria.getLegalProcedureTitle().toLowerCase();
             letters = letters.filter(letter -> letter.getLegalProcedureEntities() != null &&
                     letter.getLegalProcedureEntities().stream()
                             .anyMatch(proc -> proc.getTitle() != null &&
                                     proc.getTitle().toLowerCase().contains(titleLower)));
-        }
-
-        if (StringUtils.hasText(criteria.getTaskTitle())) {
-            String taskLower = criteria.getTaskTitle().toLowerCase();
-            letters = letters.filter(letter -> letter.getLegalProcedureEntities() != null &&
-                    letter.getLegalProcedureEntities().stream()
-                            .anyMatch(proc -> proc.getLegalTasks() != null &&
-                                    proc.getLegalTasks().stream()
-                                            .anyMatch(task -> task != null &&
-                                                    task.toLowerCase().contains(taskLower))));
         }
 
         return letters.map(EngagementLetterEntity::toDomain);

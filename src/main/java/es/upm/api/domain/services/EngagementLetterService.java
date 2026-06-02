@@ -42,7 +42,7 @@ public class EngagementLetterService {
     @Value("${app.administration.email}")
     private String email;
 
-    public void create(EngagementLetter engagementLetter) {
+    public EngagementLetter create(EngagementLetter engagementLetter) {
         engagementLetter.setId(UUID.randomUUID());
         engagementLetter.setOwner(this.userFinder.readByMobile(engagementLetter.getOwner().getMobile()));
         engagementLetter.setLastUpdatedDate(LocalDate.now());
@@ -51,7 +51,7 @@ public class EngagementLetterService {
                     attachment -> attachment.setId(this.userFinder.readByMobile(attachment.getMobile()).getId())
             );
         }
-        this.engagementLetterGateway.create(engagementLetter);
+        return this.engagementLetterGateway.create(engagementLetter);
     }
 
     public EngagementLetter read(UUID id) {
@@ -273,7 +273,7 @@ public class EngagementLetterService {
 
     private void sendEmail(UserSnapshot user, byte[] pdf, String fileName) {
         this.emailWriter.sendHtml(
-                this.signedEngagementLetterEmailTemplateService.buildHtmlEmail(user.getEmail(),user.getFirstName()),
+                this.signedEngagementLetterEmailTemplateService.buildHtmlEmail(user.getEmail(), user.getFirstName()),
                 pdf,
                 fileName
         );

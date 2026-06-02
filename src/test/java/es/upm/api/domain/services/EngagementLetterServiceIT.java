@@ -6,6 +6,7 @@ import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.UserSnapshot;
+import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -153,18 +154,6 @@ class EngagementLetterServiceIT {
                 .isNotEmpty()
                 .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
                         .anyMatch(proc -> proc.getTitle().toLowerCase().contains("herencia")));
-    }
-
-    @Test
-    void testFindFiltersByTaskTitle() {
-        EngagementLetterFindCriteria criteria = new EngagementLetterFindCriteria();
-        criteria.setTaskTitle("asesoramiento");
-        List<EngagementLetter> results = engagementLetterService.find(criteria).toList();
-        assertThat(results)
-                .isNotEmpty()
-                .allSatisfy(letter -> assertThat(letter.getLegalProcedures())
-                        .anyMatch(proc -> proc.getLegalTasks().stream()
-                                .anyMatch(task -> task.toLowerCase().contains("asesoramiento"))));
     }
 
     @Test

@@ -2,7 +2,6 @@ package es.upm.api.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import es.upm.api.domain.model.external.UserSnapshot;
-import es.upm.miw.base64url.Base64UrlGenerator;
 import es.upm.miw.exception.ConflictException;
 import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.Max;
@@ -113,7 +112,4 @@ public class EngagementLetter {
                 .anyMatch(clientIds::contains);
     }
 
-    public String getReference() {
-        return Base64UrlGenerator.encode(this.id).substring(0, 4);
-    }
 }

@@ -35,8 +35,8 @@ public class EngagementLetterResource {
     private final EngagementLetterService engagementLetterService;
 
     @PostMapping
-    public void create(@Valid @RequestBody EngagementLetter engagementLetter) {
-        this.engagementLetterService.create(engagementLetter);
+    public EngagementLetter create(@Valid @RequestBody EngagementLetter engagementLetter) {
+        return this.engagementLetterService.create(engagementLetter);
     }
 
     @GetMapping(ID_ID)
