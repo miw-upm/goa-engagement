@@ -43,6 +43,7 @@ public class EngagementLetter {
     private String legalClause;
     private List<AcceptanceEngagement> acceptanceEngagements;
     private List<BigDecimal> discounts;
+    private Boolean wetSignature;
 
     public String buildClientsFullNameIdentity() {
         List<UserSnapshot> clients = new ArrayList<>();
@@ -95,7 +96,7 @@ public class EngagementLetter {
     }
 
     public boolean isSigned() {
-        return this.findPendingSigners().isEmpty();
+        return this.findPendingSigners().isEmpty() || Boolean.TRUE.equals(this.wetSignature);
     }
 
     public boolean areAllUsersComplete() {
