@@ -36,6 +36,7 @@ public class EngagementLetterEntity {
     @Singular
     private List<AcceptanceEngagementEntity> acceptanceEngagementEntities;
     private List<BigDecimal> discounts;
+    private Boolean wetSignature;
 
     public EngagementLetterEntity(EngagementLetter engagementLetter) {
         BeanUtils.copyProperties(engagementLetter, this);
