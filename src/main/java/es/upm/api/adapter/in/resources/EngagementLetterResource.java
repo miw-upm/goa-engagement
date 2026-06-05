@@ -49,7 +49,6 @@ public class EngagementLetterResource {
         return this.engagementLetterService.generatePdf(id);
     }
 
-    @PreAuthorize(Security.ADMIN)
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
         this.engagementLetterService.update(id, engagementLetter);
