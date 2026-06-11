@@ -281,6 +281,10 @@ public class EngagementLetterService {
 
     public void close(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.read(id);
+        if (engagementLetter.getLegalProcedures().stream()
+                .anyMatch(procedure -> procedure.getBudget() == null)) {
+            throw new InvalidTransitionException("No se puede cerrar una hoja de encargo con procedimientos sin presupuesto concreto, el % debe resolverse primero");
+        }
         engagementLetter.setClosingDate(LocalDate.now());
         this.engagementLetterGateway.update(id, engagementLetter);
     }

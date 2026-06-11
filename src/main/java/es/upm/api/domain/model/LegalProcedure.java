@@ -26,11 +26,15 @@ public class LegalProcedure {
     private LocalDate startDate;
     private LocalDate closingDate;
     private BigDecimal budget;
+    private String budgetProposal;
     private Boolean vatIncluded;
     @ListNotEmpty
     private List<String> legalTasks;
 
     public String buildFormatBudget() {
+        if (budget == null) {
+            return budgetProposal;
+        }
         DecimalFormat df = new DecimalFormat("#,##0.00");
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("es", "ES"));
         df.setDecimalFormatSymbols(symbols);
