@@ -33,11 +33,12 @@ public class LegalProcedure {
 
     public String buildFormatBudget() {
         if (budget == null) {
-            return budgetProposal;
+            return budgetProposal + (Boolean.TRUE.equals(vatIncluded) ? " (IVA incluido)" : " (+ IVA)");
+        } else {
+            DecimalFormat df = new DecimalFormat("#,##0.00");
+            DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("es", "ES"));
+            df.setDecimalFormatSymbols(symbols);
+            return df.format(budget) + " €" + (Boolean.TRUE.equals(vatIncluded) ? " (IVA incluido)" : " (+ IVA)");
         }
-        DecimalFormat df = new DecimalFormat("#,##0.00");
-        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.of("es", "ES"));
-        df.setDecimalFormatSymbols(symbols);
-        return df.format(budget) + " €" + (Boolean.TRUE.equals(vatIncluded) ? " (IVA incluido)" : " (+ IVA)");
     }
 }
