@@ -1,6 +1,7 @@
 package es.upm.api.domain.services;
 
 import es.upm.api.domain.model.*;
+import es.upm.api.domain.model.criteria.CustomerFileDownloadFindCriteria;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
@@ -207,6 +208,14 @@ public class EngagementLetterService {
                 .downloadToken(token).build();
         this.customerFileDownloadService.create(customerFileDownload);
         return this.generatePdf(accessLink.getDocumentId());
+    }
+
+    public boolean hasBeenReadWithToken(String scope, String urlId, String token) {
+        UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
+        return this.customerFileDownloadService.find(new CustomerFileDownloadFindCriteria(null, scope))
+                .anyMatch(download -> download.getCustomer() != null
+                        && user.getId().equals(download.getCustomer().getId())
+                        && this.passwordEncoder.matches(token, download.getDownloadToken()));
     }
 
     public void signWithToken(String scope, String urlId, AcceptanceEngagement acceptance) {
