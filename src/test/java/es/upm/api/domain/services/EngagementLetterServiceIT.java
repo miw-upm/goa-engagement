@@ -5,8 +5,10 @@ import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.LegalProcedure;
 import es.upm.api.domain.model.PaymentMethod;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
+import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.miw.base64url.Base64UrlGenerator;
+import es.upm.miw.exception.InvalidTransitionException;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,7 @@ import static es.upm.api.configurations.DatabaseSeederDev.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -56,6 +59,8 @@ class EngagementLetterServiceIT {
                 .willAnswer(invocation -> mockedUserById(invocation.getArgument(0)));
         BDDMockito.given(this.userFinderClient.findUser(any(String.class)))
                 .willReturn(List.of());
+        BDDMockito.given(this.userFinderClient.readUserByUrlIdWithToken(any(String.class), any(String.class), any(String.class)))
+                .willReturn(mockedUserById(C_0));
         this.engagementLetterService.create(this.engagementLetter);
     }
 
@@ -116,6 +121,62 @@ class EngagementLetterServiceIT {
         assertThatThrownBy(() -> this.engagementLetterService.read(engagementLetterId))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining(engagementLetterId.toString());
+    }
+
+    @Test
+    void testCloseSuccess() {
+        UUID engagementLetterId = this.engagementLetter.getId();
+
+        this.engagementLetterService.close(engagementLetterId);
+
+        assertThat(this.engagementLetterService.read(engagementLetterId).getClosingDate())
+                .isEqualTo(LocalDate.now());
+    }
+
+    @Test
+    void testCloseWithoutProcedureBudgetThrowsInvalidTransitionException() {
+        EngagementLetter letterWithoutProcedureBudget = EngagementLetter.builder()
+                .owner(UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").build())
+                .legalProcedures(List.of(LegalProcedure.builder()
+                        .title("procedimiento sin presupuesto")
+                        .budgetProposal("Pendiente de valorar")
+                        .legalTasks(List.of("tarea"))
+                        .build()))
+                .paymentMethods(List.of(PaymentMethod.builder().description("Todo").percentage("100%").build()))
+                .build();
+        this.engagementLetterService.create(letterWithoutProcedureBudget);
+
+        assertThatThrownBy(() -> this.engagementLetterService.close(letterWithoutProcedureBudget.getId()))
+                .isInstanceOf(InvalidTransitionException.class)
+                .hasMessageContaining("procedimientos sin presupuesto");
+        assertThat(this.engagementLetterService.read(letterWithoutProcedureBudget.getId()).getClosingDate())
+                .isNull();
+    }
+
+    @Test
+    void testHasBeenReadWithTokenReturnsFalseWhenDownloadDoesNotExist() {
+        String scope = "sign-engagement-letter";
+        String urlId = "url-id";
+        String token = Base64UrlGenerator.token();
+        BDDMockito.given(this.userFinderClient.consumeAccessLinkToken(eq(scope), eq(urlId), eq(token)))
+                .willReturn(AccessLinkSnapshot.builder().documentId(UUID.randomUUID()).build());
+
+        assertThat(this.engagementLetterService.hasBeenReadWithToken(scope, urlId, token))
+                .isFalse();
+    }
+
+    @Test
+    void testHasBeenReadWithTokenReturnsTrueAfterReadPdfWithToken() {
+        String scope = "sign-engagement-letter";
+        String urlId = "url-id";
+        String token = Base64UrlGenerator.token();
+        BDDMockito.given(this.userFinderClient.consumeAccessLinkToken(eq(scope), eq(urlId), eq(token)))
+                .willReturn(AccessLinkSnapshot.builder().documentId(ID_3).build());
+
+        this.engagementLetterService.readPdfWithToken(scope, urlId, token);
+
+        assertThat(this.engagementLetterService.hasBeenReadWithToken(scope, urlId, token))
+                .isTrue();
     }
 
     @Test

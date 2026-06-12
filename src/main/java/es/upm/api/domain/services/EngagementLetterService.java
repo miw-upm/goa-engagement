@@ -209,6 +209,11 @@ public class EngagementLetterService {
         return this.generatePdf(accessLink.getDocumentId());
     }
 
+    public boolean hasBeenReadWithToken(String scope, String urlId, String token) {
+        AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
+        return this.customerFileDownloadService.existsByDocumentId(accessLink.getDocumentId());
+    }
+
     public void signWithToken(String scope, String urlId, AcceptanceEngagement acceptance) {
         AccessLinkSnapshot accessLink = this.accessLinkGateway
                 .consume(scope, urlId, acceptance.getSignatureToken());
@@ -281,6 +286,10 @@ public class EngagementLetterService {
 
     public void close(UUID id) {
         EngagementLetter engagementLetter = this.engagementLetterGateway.read(id);
+        if (engagementLetter.getLegalProcedures().stream()
+                .anyMatch(procedure -> procedure.getBudget() == null)) {
+            throw new InvalidTransitionException("No se puede cerrar una hoja de encargo con procedimientos sin presupuesto concreto, el % debe resolverse primero");
+        }
         engagementLetter.setClosingDate(LocalDate.now());
         this.engagementLetterGateway.update(id, engagementLetter);
     }

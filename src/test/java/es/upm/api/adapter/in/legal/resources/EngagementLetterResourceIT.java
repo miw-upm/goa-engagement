@@ -2,6 +2,7 @@ package es.upm.api.adapter.in.legal.resources;
 
 import es.upm.api.adapter.in.resources.EngagementLetterResource;
 import es.upm.api.adapter.out.user.feign.GoaUserClient;
+import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import static es.upm.api.configurations.DatabaseSeederDev.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -41,6 +43,23 @@ class EngagementLetterResourceIT {
         mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER + EngagementLetterResource.ID_ID, ID_0))
                 .andExpect(status().isOk());
 
+    }
+
+    @Test
+    void testHasBeenReadBeforeSigningWithToken() throws Exception {
+        BDDMockito.given(this.userFinderClient.readUserByUrlIdWithToken(any(String.class), any(String.class), any(String.class)))
+                .willReturn(mockedUser(C_0));
+        BDDMockito.given(this.userFinderClient.consumeAccessLinkToken(any(String.class), any(String.class), any(String.class)))
+                .willReturn(AccessLinkSnapshot.builder().documentId(UUID.randomUUID()).build());
+        BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
+                .willAnswer(invocation -> mockedUser(invocation.getArgument(0)));
+
+        mockMvc.perform(get(EngagementLetterResource.ENGAGEMENT_LETTER
+                        + EngagementLetterResource.SIGN_ENGAGEMENT_LETTER
+                        + "/url-id/token"
+                        + EngagementLetterResource.READ_STATUS))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.read").value(false));
     }
 
     private UserSnapshot mockedUser(UUID id) {

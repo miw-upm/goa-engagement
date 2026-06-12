@@ -47,4 +47,9 @@ public class CustomerFileDownloadAdapter implements CustomerFileDownloadGateway 
         return entities.stream().map(CustomerFileDownloadEntity::toDomain);
     }
 
+    @Override
+    public boolean existsByDocumentId(UUID documentId) {
+        return this.customerFileDownloadRepository.existsByDocumentId(documentId);
+    }
+
 }

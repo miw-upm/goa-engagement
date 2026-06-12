@@ -1,6 +1,7 @@
 package es.upm.api.adapter.in.resources;
 
 import es.upm.api.adapter.in.resources.dtos.AcceptanceEngagementCreationDto;
+import es.upm.api.adapter.in.resources.dtos.ReadStatusDto;
 import es.upm.api.domain.model.AcceptanceEngagement;
 import es.upm.api.domain.model.EngagementLetter;
 import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
@@ -31,6 +32,7 @@ public class EngagementLetterResource {
     public static final String URL_ID_TOKEN_ID = "/{urlId}/{token}";
     public static final String VIEW = "/view";
     public static final String CLOSE = "/close";
+    public static final String READ_STATUS = "/read-status";
 
     private final EngagementLetterService engagementLetterService;
 
@@ -86,6 +88,14 @@ public class EngagementLetterResource {
     @GetMapping(value = SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID, produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] readBeforeSigningWithToken(@PathVariable String urlId, @PathVariable String token) {
         return this.engagementLetterService.readPdfWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), urlId, token);
+    }
+
+    @PreAuthorize(Security.ALL)
+    @GetMapping(SIGN_ENGAGEMENT_LETTER + URL_ID_TOKEN_ID + READ_STATUS)
+    public ReadStatusDto hasBeenReadBeforeSigningWithToken(@PathVariable String urlId, @PathVariable String token) {
+        return ReadStatusDto.builder()
+                .read(this.engagementLetterService.hasBeenReadWithToken(SIGN_ENGAGEMENT_LETTER.substring(1), urlId, token))
+                .build();
     }
 
     @PreAuthorize(Security.ALL)

@@ -20,6 +20,7 @@ public class LegalProcedureEntity {
     private LocalDate startDate;
     private LocalDate closingDate;
     private BigDecimal budget;
+    private String budgetProposal;
     private Boolean vatIncluded;
     private List<String> legalTasks;
 
