@@ -155,7 +155,13 @@ class EngagementLetterServiceIT {
 
     @Test
     void testHasBeenReadWithTokenReturnsFalseWhenDownloadDoesNotExist() {
-        assertThat(this.engagementLetterService.hasBeenReadWithToken("sign-engagement-letter", "url-id", "token"))
+        String scope = "sign-engagement-letter";
+        String urlId = "url-id";
+        String token = Base64UrlGenerator.token();
+        BDDMockito.given(this.userFinderClient.consumeAccessLinkToken(eq(scope), eq(urlId), eq(token)))
+                .willReturn(AccessLinkSnapshot.builder().documentId(UUID.randomUUID()).build());
+
+        assertThat(this.engagementLetterService.hasBeenReadWithToken(scope, urlId, token))
                 .isFalse();
     }
 

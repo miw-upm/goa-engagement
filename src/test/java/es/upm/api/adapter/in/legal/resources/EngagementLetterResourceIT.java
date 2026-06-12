@@ -2,6 +2,7 @@ package es.upm.api.adapter.in.legal.resources;
 
 import es.upm.api.adapter.in.resources.EngagementLetterResource;
 import es.upm.api.adapter.out.user.feign.GoaUserClient;
+import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import org.junit.jupiter.api.Test;
 import org.mockito.BDDMockito;
@@ -48,6 +49,8 @@ class EngagementLetterResourceIT {
     void testHasBeenReadBeforeSigningWithToken() throws Exception {
         BDDMockito.given(this.userFinderClient.readUserByUrlIdWithToken(any(String.class), any(String.class), any(String.class)))
                 .willReturn(mockedUser(C_0));
+        BDDMockito.given(this.userFinderClient.consumeAccessLinkToken(any(String.class), any(String.class), any(String.class)))
+                .willReturn(AccessLinkSnapshot.builder().documentId(UUID.randomUUID()).build());
         BDDMockito.given(this.userFinderClient.readUserById(any(UUID.class)))
                 .willAnswer(invocation -> mockedUser(invocation.getArgument(0)));
 

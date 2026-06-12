@@ -46,6 +46,10 @@ public class CustomerFileDownloadService {
         }
     }
 
+    public boolean existsByDocumentId(UUID documentId) {
+        return this.customerFileDownloadGateway.existsByDocumentId(documentId);
+    }
+
     private CustomerFileDownload enrichCustomer(CustomerFileDownload customerFileDownload) {
         Optional.ofNullable(customerFileDownload.getCustomer())
                 .map(UserSnapshot::getId)

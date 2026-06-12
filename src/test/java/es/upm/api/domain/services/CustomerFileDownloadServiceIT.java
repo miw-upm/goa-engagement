@@ -116,6 +116,18 @@ class CustomerFileDownloadServiceIT {
         assertThat(results).isEmpty();
     }
 
+    @Test
+    void shouldReturnTrueWhenDocumentIdExists() {
+        assertThat(this.customerFileDownloadService.existsByDocumentId(ID_1))
+                .isTrue();
+    }
+
+    @Test
+    void shouldReturnFalseWhenDocumentIdDoesNotExist() {
+        assertThat(this.customerFileDownloadService.existsByDocumentId(UUID.randomUUID()))
+                .isFalse();
+    }
+
     private UserSnapshot mockedUser(UUID id) {
         if (C_0.equals(id)) {
             return UserSnapshot.builder().id(C_0).mobile("666666000").firstName("c1").familyName("family-c1")

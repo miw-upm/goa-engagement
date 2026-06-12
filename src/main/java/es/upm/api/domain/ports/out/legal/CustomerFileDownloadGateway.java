@@ -16,5 +16,7 @@ public interface CustomerFileDownloadGateway {
 
     Stream<CustomerFileDownload> find(CustomerFileDownloadFindCriteria criteria);
 
+    boolean existsByDocumentId(UUID documentId);
+
     void create(CustomerFileDownload customerFileDownload);
 }

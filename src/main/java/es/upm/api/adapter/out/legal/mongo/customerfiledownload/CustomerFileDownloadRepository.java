@@ -11,4 +11,6 @@ public interface CustomerFileDownloadRepository extends MongoRepository<Customer
     List<CustomerFileDownloadEntity> findByDocumentTypeContainingIgnoreCase(String documentType);
 
     List<CustomerFileDownloadEntity> findByCustomerIdInAndDocumentTypeContainingIgnoreCase(List<UUID> customerIds, String documentType);
+
+    boolean existsByDocumentId(UUID documentId);
 }
