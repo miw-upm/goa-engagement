@@ -9,7 +9,7 @@ import es.upm.api.domain.ports.out.legal.EngagementLetterGateway;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
 import es.upm.miw.exception.BadGatewayException;
-import es.upm.miw.exception.InvalidTransitionException;
+import es.upm.miw.exception.ClientBusinessException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
@@ -101,13 +101,13 @@ public class EngagementLetterService {
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
         EngagementLetter letter = this.read(id);
         if (Boolean.TRUE.equals(letter.getBudgetOnly())) {
-            throw new InvalidTransitionException("Un presupuesto no puede ser firmado");
+            throw new ClientBusinessException("Un presupuesto no puede ser firmado");
         }
         if (!letter.areAllUsersComplete()) {
-            throw new InvalidTransitionException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
+            throw new ClientBusinessException("Para poder firmar, tanto el propietario como los adjuntos deben estar totalmente completados");
         }
         if (letter.isSigned()) {
-            throw new InvalidTransitionException("Todos los intervinientes ya han firmado");
+            throw new ClientBusinessException("Todos los intervinientes ya han firmado");
         }
         return letter.findPendingSigners().stream();
     }
@@ -288,7 +288,7 @@ public class EngagementLetterService {
         EngagementLetter engagementLetter = this.engagementLetterGateway.read(id);
         if (engagementLetter.getLegalProcedures().stream()
                 .anyMatch(procedure -> procedure.getBudget() == null)) {
-            throw new InvalidTransitionException("No se puede cerrar una hoja de encargo con procedimientos sin presupuesto concreto, el % debe resolverse primero");
+            throw new ClientBusinessException("No se puede cerrar una hoja de encargo con procedimientos sin presupuesto concreto, el % debe resolverse primero");
         }
         engagementLetter.setClosingDate(LocalDate.now());
         this.engagementLetterGateway.update(id, engagementLetter);

@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Service
 public class SignedEngagementLetterEmailTemplateService {
-    private static final String SUBJECT = "Firmado Hoja de Encargo en Ocaña Abogados";
+    private static final String SUBJECT = "Firmado Hoja de Encargo";
     private static final String HTML_TEMPLATE_PATH = "templates/signed-engagement-letter.html";
 
     public Email buildHtmlEmail(String to, String firstName) {
