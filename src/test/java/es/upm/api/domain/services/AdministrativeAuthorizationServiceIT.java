@@ -6,7 +6,7 @@ import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
-import es.upm.miw.exception.InvalidTransitionException;
+import es.upm.miw.exception.ForbiddenException;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -137,7 +137,7 @@ class AdministrativeAuthorizationServiceIT {
                 .willReturn(mockedUserById(C_2));
 
         assertThatThrownBy(() -> this.administrativeAuthorizationService.readAuthorizationPurposeWithToken(scope, urlId, token))
-                .isInstanceOf(InvalidTransitionException.class);
+                .isInstanceOf(ForbiddenException.class);
     }
 
     private UserSnapshot mockedUserById(UUID id) {

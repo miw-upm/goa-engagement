@@ -26,7 +26,7 @@ class SignedEngagementLetterEmailTemplateServiceIT {
                 .isNotNull()
                 .satisfies(result -> {
                     assertThat(result.getTo()).isEqualTo("client@example.com");
-                    assertThat(result.getSubject()).isEqualTo("Firmado Hoja de Encargo en Ocaña Abogados");
+                    assertThat(result.getSubject()).isEqualTo("Firmado Hoja de Encargo");
                     assertThat(result.getBody()).isNotBlank();
                     assertThat(result.getBody()).contains("John");
                     assertThat(result.getBody()).doesNotContain("FIRST_NAME");
