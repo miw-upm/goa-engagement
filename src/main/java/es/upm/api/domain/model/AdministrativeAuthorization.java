@@ -54,7 +54,7 @@ public class AdministrativeAuthorization {
                 .anyMatch(userId::equals);
     }
 
-    public boolean isAuthorizingCustomer(UUID userId) {
+    public boolean isNotAuthorizingCustomer(UUID userId) {
         return Optional.ofNullable(this.authorizingCustomers)
                 .orElse(List.of())
                 .stream()

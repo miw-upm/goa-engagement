@@ -10,7 +10,9 @@ import es.upm.api.domain.ports.out.user.AccessLinkGateway;
 import es.upm.api.domain.ports.out.user.UserFinder;
 import es.upm.api.domain.services.support.EncryptionService;
 import es.upm.api.domain.services.support.HashService;
-import es.upm.miw.exception.InvalidTransitionException;
+import es.upm.miw.exception.BadRequestException;
+import es.upm.miw.exception.ClientBusinessException;
+import es.upm.miw.exception.ForbiddenException;
 import es.upm.miw.pdf.PdfBuilder;
 import es.upm.miw.pdf.TextDictionary;
 import lombok.RequiredArgsConstructor;
@@ -92,7 +94,7 @@ public class AdministrativeAuthorizationService {
     public Stream<UserSnapshot> findPendingSigners(UUID id) {
         AdministrativeAuthorization administrativeAuthorization = this.read(id);
         if (administrativeAuthorization.findPendingSigners().isEmpty()) {
-            throw new InvalidTransitionException("Todos los clientes autorizantes ya han firmado");
+            throw new ClientBusinessException("Todos los clientes autorizantes ya han firmado");
         }
         return administrativeAuthorization.findPendingSigners().stream();
     }
@@ -101,8 +103,8 @@ public class AdministrativeAuthorizationService {
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
         AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
-        if (administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
-            throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorizaciÃ³n administrativa");
+        if (administrativeAuthorization.isNotAuthorizingCustomer(user.getId())) {
+            throw new ForbiddenException("User is not an authorizing customer of this administrative authorization, " + user.getId());
         }
         return administrativeAuthorization.ofPurpose();
     }
@@ -111,8 +113,8 @@ public class AdministrativeAuthorizationService {
         UserSnapshot user = this.userFinder.readByUrlIdWithToken(scope, urlId, token);
         AccessLinkSnapshot accessLink = this.accessLinkGateway.consume(scope, urlId, token);
         AdministrativeAuthorization administrativeAuthorization = this.read(accessLink.getDocumentId());
-        if (administrativeAuthorization.isAuthorizingCustomer(user.getId())) {
-            throw new InvalidTransitionException("El usuario no es un cliente autorizante de esta autorización administrativa");
+        if (administrativeAuthorization.isNotAuthorizingCustomer(user.getId())) {
+            throw new ForbiddenException("User is not an authorizing customer of this administrative authorization, " + user.getId());
         }
         AdministrativeAuthorizationSignature authorizationSignature = AdministrativeAuthorizationSignature.builder()
                 .signedAt(LocalDateTime.now())
@@ -129,15 +131,15 @@ public class AdministrativeAuthorizationService {
 
     private byte[] decodeSignature(String signature) {
         if (!StringUtils.hasText(signature)) {
-            throw new InvalidTransitionException("La firma es obligatoria");
+            throw new BadRequestException("Signature is required");
         }
         if (!signature.startsWith(SIGNATURE_PREFIX)) {
-            throw new InvalidTransitionException("La firma debe tener formato data:image/png;base64,...");
+            throw new BadRequestException("Signature must have format data:image/png;base64,...");
         }
         try {
             return Base64.getDecoder().decode(signature.substring(SIGNATURE_PREFIX.length()));
         } catch (IllegalArgumentException exception) {
-            throw new InvalidTransitionException("El formato de la firma no es válido");
+            throw new BadRequestException("Invalid signature format");
         }
     }
 
