@@ -8,7 +8,7 @@ import es.upm.api.domain.model.criteria.EngagementLetterFindCriteria;
 import es.upm.api.domain.model.external.AccessLinkSnapshot;
 import es.upm.api.domain.model.external.UserSnapshot;
 import es.upm.miw.base64url.Base64UrlGenerator;
-import es.upm.miw.exception.InvalidTransitionException;
+import es.upm.miw.exception.ClientBusinessException;
 import es.upm.miw.exception.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -147,7 +147,7 @@ class EngagementLetterServiceIT {
         this.engagementLetterService.create(letterWithoutProcedureBudget);
 
         assertThatThrownBy(() -> this.engagementLetterService.close(letterWithoutProcedureBudget.getId()))
-                .isInstanceOf(InvalidTransitionException.class)
+                .isInstanceOf(ClientBusinessException.class)
                 .hasMessageContaining("procedimientos sin presupuesto");
         assertThat(this.engagementLetterService.read(letterWithoutProcedureBudget.getId()).getClosingDate())
                 .isNull();
