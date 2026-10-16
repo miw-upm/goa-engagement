@@ -43,8 +43,9 @@ public class LegalTaskResource {
     }
 
     @GetMapping
-    public List<LegalTask> find(@RequestParam(required = false) String title) {
-        return this.legalTaskService.find(title).toList();
+    public List<LegalTask> find(@RequestParam(required = false) String title,
+                                @RequestParam(required = false) Boolean unassigned) {
+        return this.legalTaskService.find(title, unassigned).toList();
     }
 
 }
