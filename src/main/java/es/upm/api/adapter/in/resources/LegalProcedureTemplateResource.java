@@ -7,6 +7,7 @@ import es.upm.miw.security.Security;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -29,8 +30,12 @@ public class LegalProcedureTemplateResource {
 
     @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
     @GetMapping(ID_ID)
-    public LegalProcedureTemplate read(@PathVariable UUID id) {
-        return this.legalProcedureTemplateService.readById(id);
+    public LegalProcedureTemplate read(@PathVariable UUID id, Authentication authentication) {
+        LegalProcedureTemplate template = this.legalProcedureTemplateService.readById(id);
+        if (this.hasLawyerRole(authentication)) {
+            template.setBudget(null);
+        }
+        return template;
     }
 
     @PutMapping(ID_ID)
@@ -46,8 +51,18 @@ public class LegalProcedureTemplateResource {
 
     @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
     @GetMapping
-    public List<LegalProcedureTemplate> find(@ModelAttribute LegalProcedureTemplateFindCriteria criteria) {
-        return this.legalProcedureTemplateService.find(criteria).toList();
+    public List<LegalProcedureTemplate> find(@ModelAttribute LegalProcedureTemplateFindCriteria criteria,
+                                             Authentication authentication) {
+        List<LegalProcedureTemplate> templates = this.legalProcedureTemplateService.find(criteria).toList();
+        if (this.hasLawyerRole(authentication)) {
+            templates.forEach(template -> template.setBudget(null));
+        }
+        return templates;
+    }
+
+    private boolean hasLawyerRole(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_lawyer".equals(authority.getAuthority()));
     }
 }
 
