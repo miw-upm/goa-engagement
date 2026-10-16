@@ -56,7 +56,7 @@ public class EngagementLetterResource {
         this.engagementLetterService.update(id, engagementLetter);
     }
 
-    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR_URL_TOKEN)
+    @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR_URL_TOKEN)
     @PostMapping(ID_ID + CLOSE)
     public void closeEngagement(@PathVariable UUID id) {
         this.engagementLetterService.close(id);
