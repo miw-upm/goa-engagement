@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@PreAuthorize(Security.ADMIN_MANAGER)
 @RestController
 @RequestMapping(LegalProcedureTemplateResource.LEGAL_PROCEDURE_TEMPLATE)
 @RequiredArgsConstructor
@@ -27,6 +27,7 @@ public class LegalProcedureTemplateResource {
         this.legalProcedureTemplateService.create(template);
     }
 
+    @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
     @GetMapping(ID_ID)
     public LegalProcedureTemplate read(@PathVariable UUID id) {
         return this.legalProcedureTemplateService.readById(id);
@@ -43,6 +44,7 @@ public class LegalProcedureTemplateResource {
         this.legalProcedureTemplateService.delete(id);
     }
 
+    @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
     @GetMapping
     public List<LegalProcedureTemplate> find(@ModelAttribute LegalProcedureTemplateFindCriteria criteria) {
         return this.legalProcedureTemplateService.find(criteria).toList();
