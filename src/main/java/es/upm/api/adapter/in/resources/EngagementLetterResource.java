@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
 @RestController
 @RequestMapping(EngagementLetterResource.ENGAGEMENT_LETTER)
 @RequiredArgsConstructor
@@ -36,6 +36,7 @@ public class EngagementLetterResource {
 
     private final EngagementLetterService engagementLetterService;
 
+    @PreAuthorize(Security.ADMIN_MANAGER)
     @PostMapping
     public EngagementLetter create(@Valid @RequestBody EngagementLetter engagementLetter) {
         return this.engagementLetterService.create(engagementLetter);
@@ -46,11 +47,13 @@ public class EngagementLetterResource {
         return this.engagementLetterService.read(id);
     }
 
+    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
     @GetMapping(value = ID_ID + VIEW, produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] readPdf(@PathVariable UUID id) {
         return this.engagementLetterService.generatePdf(id);
     }
 
+    @PreAuthorize(Security.ADMIN_MANAGER)
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
         this.engagementLetterService.update(id, engagementLetter);
