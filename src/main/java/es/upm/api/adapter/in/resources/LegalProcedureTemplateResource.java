@@ -23,6 +23,7 @@ public class LegalProcedureTemplateResource {
 
     private final LegalProcedureTemplateService legalProcedureTemplateService;
 
+    @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
     @PostMapping
     public void create(@Valid @RequestBody LegalProcedureTemplate template) {
         this.legalProcedureTemplateService.create(template);
