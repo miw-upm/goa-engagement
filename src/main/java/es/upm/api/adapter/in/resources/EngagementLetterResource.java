@@ -14,12 +14,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
 
-@PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
 @RestController
 @RequestMapping(EngagementLetterResource.ENGAGEMENT_LETTER)
 @RequiredArgsConstructor
@@ -36,27 +37,36 @@ public class EngagementLetterResource {
 
     private final EngagementLetterService engagementLetterService;
 
+    @PreAuthorize(Security.ADMIN_MANAGER)
     @PostMapping
     public EngagementLetter create(@Valid @RequestBody EngagementLetter engagementLetter) {
         return this.engagementLetterService.create(engagementLetter);
     }
 
     @GetMapping(ID_ID)
-    public EngagementLetter read(@PathVariable UUID id) {
-        return this.engagementLetterService.read(id);
+    public EngagementLetter read(@PathVariable UUID id, Authentication authentication) {
+        EngagementLetter engagementLetter = this.engagementLetterService.read(id);
+        if (authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_lawyer".equals(authority.getAuthority()))
+                && engagementLetter.getLegalProcedures() != null) {
+            engagementLetter.getLegalProcedures().forEach(procedure -> procedure.setBudget(null));
+        }
+        return engagementLetter;
     }
 
+    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
     @GetMapping(value = ID_ID + VIEW, produces = MediaType.APPLICATION_PDF_VALUE)
     public byte[] readPdf(@PathVariable UUID id) {
         return this.engagementLetterService.generatePdf(id);
     }
 
+    @PreAuthorize(Security.ADMIN_MANAGER)
     @PutMapping(ID_ID)
     public void update(@PathVariable UUID id, @Valid @RequestBody EngagementLetter engagementLetter) {
         this.engagementLetterService.update(id, engagementLetter);
     }
 
-    @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR_URL_TOKEN)
+    @PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR_URL_TOKEN)
     @PostMapping(ID_ID + CLOSE)
     public void closeEngagement(@PathVariable UUID id) {
         this.engagementLetterService.close(id);

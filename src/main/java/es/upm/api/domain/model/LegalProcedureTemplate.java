@@ -1,5 +1,6 @@
 package es.upm.api.domain.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import es.upm.miw.validations.ListNotEmpty;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ public class LegalProcedureTemplate {
     @NotNull
     @NotBlank
     private String title;
+    @JsonInclude(JsonInclude.Include.ALWAYS)
     private BigDecimal budget;
     @ListNotEmpty
     private List<LegalTask> legalTasks;

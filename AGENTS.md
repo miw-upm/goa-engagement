@@ -186,3 +186,68 @@ Reglas de build:
 - SpEL literal en `@PreAuthorize`.
 - Mezclar contratos de microservicios externos dentro del modelo de dominio.
 - Exponer datos sensibles en claro despues de procesos de firma/descarga.
+
+# Convención de nombres de modelos
+
+## Dominio
+
+Los modelos de dominio se nombran en singular y sin sufijo técnico.
+
+Reglas:
+- DEBE ubicarse en `domain.model`.
+- DEBE representar conceptos de negocio.
+- NO DEBE usar sufijos como `Model`, `Dto` o `Entity`.
+- PUEDE utilizarse para devolver la respuesta.
+- PUEDE utilizarse para entradas HTTP.
+
+## DTOs
+
+Los DTOs HTTP se nombran con el sufijo `Dto`.
+Formato: `<Concepto><Accion>Dto`
+- creation, updating...: entradas
+- response: salida
+- sin sufijo: E/S
+
+Reglas:
+- DEBE ubicarse en `adapter.in.resources.dtos`.
+- DEBE usar sufijo `Dto`.
+- DEBE representar contratos HTTP explícitos.
+- DEBEN mantenerse separados del modelo de dominio cuando el contrato HTTP no coincida exactamente con el dominio.
+- DEBE depender de modelos del dominio.
+- NO DEBE contener lógica de negocio.
+
+## Entidades Mongo
+
+Las entidades Mongo se nombran con el sufijo `Entity`.
+Formato: `<Modelo>Entity`
+
+Reglas:
+- DEBE ubicarse en `adapter.out.<contexto>.mongo.<agregado>`.
+- DEBE representar la estructura persistida en MongoDB.
+- DEBE usar `@Document` si no es embebida.
+- El identificador persistido DEBE usar `@Id` si no es embebido.
+- Las entidades embebidas DEBEN usar el sufijo `Entity`.
+- DEBE encargarse del mapeo entre entidad y dominio cuando aplique.
+- NO DEBE contener lógica de negocio.
+
+## Criterios de búsqueda
+
+Los criterios de búsqueda se nombran con el sufijo `FindCriteria`.
+Formato: `<Modelo>FindCriteria`
+
+Reglas:
+- DEBE ubicarse en `domain.model.criteria`.
+- DEBE representar filtros de consulta.
+- DEBE usarse como criterios de búsqueda, normalmente con `@ModelAttribute`.
+- Los campos DEBEN ser null-safe.
+- NO DEBE contener lógica de negocio.
+
+## Snapshots externos
+
+Los modelos que representan datos de otros microservicios se nombran con el sufijo `Snapshot`.
+Formato: `<Concepto>Snapshot`
+
+Reglas:
+- DEBE ubicarse en `domain.model.external`.
+- DEBE representar una copia local de datos externos, solo de los campos que interesen en este microservicio.
+

@@ -33,4 +33,17 @@ class LegalTaskResourceIT {
                 .andExpect(jsonPath("$.title").value("Estudio de antecedentes y documentación"));
     }
 
+    @Test
+    @WithMockUser(username = "admin", authorities = {"ROLE_admin"})
+    void shouldRejectInvalidUnassignedParameter() throws Exception {
+        mockMvc.perform(get(LegalTaskResource.LEGAL_TASKS).param("unassigned", "invalid"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldRequireAuthenticationForUnassignedSearch() throws Exception {
+        mockMvc.perform(get(LegalTaskResource.LEGAL_TASKS).param("unassigned", "true"))
+                .andExpect(status().isUnauthorized());
+    }
+
 }

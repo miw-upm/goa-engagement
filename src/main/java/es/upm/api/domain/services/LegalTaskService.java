@@ -6,7 +6,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -44,8 +46,16 @@ public class LegalTaskService {
         this.legalTaskPersistence.deleteById(id);
     }
 
-    public Stream<LegalTask> find(String title) {
-        return this.legalTaskPersistence.find(title);
+    public Stream<LegalTask> find(String title, Boolean unassigned) {
+        if (!Boolean.TRUE.equals(unassigned)) {
+            return this.legalTaskPersistence.find(title);
+        }
+        Set<UUID> assignedTaskIds = this.legalProcedureTemplateService.findAll()
+                .flatMap(template -> template.getLegalTasks().stream())
+                .map(LegalTask::getId)
+                .collect(Collectors.toSet());
+        return this.legalTaskPersistence.find(title)
+                .filter(task -> !assignedTaskIds.contains(task.getId()));
     }
 
 }

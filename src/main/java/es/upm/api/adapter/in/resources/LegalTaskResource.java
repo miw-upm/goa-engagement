@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
 @RestController
 @RequestMapping(LegalTaskResource.LEGAL_TASKS)
 @RequiredArgsConstructor
@@ -43,8 +43,9 @@ public class LegalTaskResource {
     }
 
     @GetMapping
-    public List<LegalTask> find(@RequestParam(required = false) String title) {
-        return this.legalTaskService.find(title).toList();
+    public List<LegalTask> find(@RequestParam(required = false) String title,
+                                @RequestParam(required = false) Boolean unassigned) {
+        return this.legalTaskService.find(title, unassigned).toList();
     }
 
 }
