@@ -14,6 +14,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -43,8 +44,14 @@ public class EngagementLetterResource {
     }
 
     @GetMapping(ID_ID)
-    public EngagementLetter read(@PathVariable UUID id) {
-        return this.engagementLetterService.read(id);
+    public EngagementLetter read(@PathVariable UUID id, Authentication authentication) {
+        EngagementLetter engagementLetter = this.engagementLetterService.read(id);
+        if (authentication.getAuthorities().stream()
+                .anyMatch(authority -> "ROLE_lawyer".equals(authority.getAuthority()))
+                && engagementLetter.getLegalProcedures() != null) {
+            engagementLetter.getLegalProcedures().forEach(procedure -> procedure.setBudget(null));
+        }
+        return engagementLetter;
     }
 
     @PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
