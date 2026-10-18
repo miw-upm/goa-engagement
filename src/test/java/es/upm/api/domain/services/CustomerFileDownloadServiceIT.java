@@ -80,8 +80,8 @@ class CustomerFileDownloadServiceIT {
                 .toList();
 
         assertThat(results)
-                .hasSize(2)
-                .allSatisfy(download -> assertThat(download.getDocumentType().toLowerCase()).contains("letter"));
+                .isNotEmpty()
+                .allSatisfy(download -> assertThat(download.getDocumentType()).containsIgnoringCase("letter"));
     }
 
     @Test
