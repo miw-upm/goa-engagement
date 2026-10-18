@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@PreAuthorize(Security.ADMIN_MANAGER_OPERATOR)
+@PreAuthorize(Security.ADMIN_MANAGER_LAWYER_OPERATOR)
 @RestController
 @RequestMapping(CustomerFileDownloadResource.CUSTOMER_FILE_DOWNLOADS)
 @RequiredArgsConstructor
